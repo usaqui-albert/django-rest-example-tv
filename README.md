@@ -41,6 +41,10 @@ To run migrations to the database you have to type the following command:
 
     python manage.py migrate
 
-To run unit tests type the following:
+Running tests, htmlcov folder automatically generated with an index.html inside of it:
 
     py.test
+
+You can open this index.html which contain the coverage status of the project:
+
+    firefox htmlcov/index.html
