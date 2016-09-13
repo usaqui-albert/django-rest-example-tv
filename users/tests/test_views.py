@@ -1,4 +1,5 @@
-# testing views
+"""Testing serializers"""
+
 import pytest
 
 from mixer.backend.django import mixer

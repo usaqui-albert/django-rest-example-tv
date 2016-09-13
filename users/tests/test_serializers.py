@@ -1,4 +1,4 @@
-# testing serializers
+"""Testing serializers"""
 
 import pytest
 from .. import serializers
@@ -10,7 +10,8 @@ class TestCreateUserSerializer:
     def test_serializer_no_data_given(self):
         serializer = serializers.CreateUserSerializer(data={})
         assert serializer.is_valid() is False, (
-            'Should be invalid if no data is given')
+            'Should be invalid if no data is given'
+        )
 
     def test_serializer_empty_email(self):
         data = {
