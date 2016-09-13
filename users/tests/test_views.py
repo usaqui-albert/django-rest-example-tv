@@ -51,8 +51,7 @@ class TestUserDetailView:
 
     def test_update_request(self):
         user = mixer.blend(models.User)
-        req = self.factory.put('/',
-                                   data={'full_name': 'Albert Usaqui'})
+        req = self.factory.put('/', data={'full_name': 'Albert Usaqui'})
         resp = views.UserDetailView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, (
             'Should return status code 200(OK) given the data to update is valid')
