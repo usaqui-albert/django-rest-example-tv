@@ -10,8 +10,10 @@ pytestmark = pytest.mark.django_db
 
 
 class TestUserView:
+    factory = RequestFactory()
+
     def test_get_request(self):
-        req = RequestFactory().get('/')
+        req = self.factory.get('/')
         resp = views.UserView.as_view()(req)
         assert resp.status_code == 405, 'Should return status code 405(Method not allowed)'
 
@@ -22,7 +24,7 @@ class TestUserView:
             'full_name': 'John Doe',
             'username': 'JDoe'
         }
-        req = RequestFactory().post('/', data=data)
+        req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)
         assert resp.status_code == 201, 'Should return status code 201(Created)'
 
@@ -33,21 +35,23 @@ class TestUserView:
             'full_name': 'John Doe',
             'username': 'JDoe'
         }
-        req = RequestFactory().post('/', data=data)
+        req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)
         assert resp.status_code == 400, 'Should return status code 400(Bad request)'
 
 
 class TestUserDetailView:
+    factory = RequestFactory()
+
     def test_get_request(self):
         user = mixer.blend(models.User)
-        req = RequestFactory().get('/')
+        req = self.factory.get('/')
         resp = views.UserDetailView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, 'Should return status code 200(OK)'
 
     def test_update_request(self):
         user = mixer.blend(models.User)
-        req = RequestFactory().put('/',
+        req = self.factory.put('/',
                                    data={'full_name': 'Albert Usaqui'})
         resp = views.UserDetailView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, (

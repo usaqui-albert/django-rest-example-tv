@@ -10,7 +10,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def validate_full_name(value):
-        """
+        """Method to validate the full name field (example to do some tests)
 
         :param value:
         :return:
@@ -22,7 +22,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def validate_password(value):
-        """
+        """Method to validate the password field (example to do some tests)
 
         :param value:
         :return:
