@@ -31,10 +31,3 @@ class CreateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Invalid password, should be longer than 8 characters')
         return value
-
-
-class UserSerializer(serializers.ModelSerializer):
-    """Serializer to handle updates and retrieves methods for a user"""
-    class Meta:
-        model = User
-        fields = '__all__'
