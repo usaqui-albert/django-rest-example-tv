@@ -1,4 +1,4 @@
-"""Testing serializers"""
+"""Testing Views"""
 import pytest
 
 from django.test import RequestFactory
