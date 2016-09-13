@@ -24,7 +24,7 @@ class Breeder(models.Model):
         User, on_delete=models.CASCADE)
     country = models.ForeignKey('countries.country')
     state = models.ForeignKey('countries.state')
-    veriy = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Breeder"
@@ -47,7 +47,7 @@ class Veterinarian(models.Model):
     area_interest = models.CharField(max_length=150)
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
-    veriy = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False)
     user = models.OneToOneField(
         User, on_delete=models.CASCADE)
     veterinarian_type = models.CharField(
