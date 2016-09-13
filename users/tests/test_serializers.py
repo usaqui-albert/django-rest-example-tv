@@ -21,9 +21,9 @@ class TestCreateUserSerializer:
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is False and 'email' in serializer.errors, (
-            'Should be invalid if the email field is empty'
-        )
+        assert serializer.is_valid() is False and (
+            'email' in serializer.errors
+        ), 'Should be invalid if the email field is empty'
 
     def test_serializer_wrong_format_email(self):
         data = {
@@ -33,9 +33,9 @@ class TestCreateUserSerializer:
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is False and 'email' in serializer.errors, (
-            'Should be invalid if the format email is wrong'
-        )
+        assert serializer.is_valid() is False and (
+            'email' in serializer.errors
+        ), 'Should be invalid if the format email is wrong'
 
     def test_serializer_right_format_email(self):
         data = {
@@ -45,7 +45,8 @@ class TestCreateUserSerializer:
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is True, 'Should be valid if email format is right'
+        assert serializer.is_valid() is True, (
+            'Should be valid if email format is right')
 
     def test_serializer_full_name_too_short(self):
         data = {
@@ -55,9 +56,9 @@ class TestCreateUserSerializer:
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is False and 'full_name' in serializer.errors, (
-            'Should be invalid if fullname is not long enough'
-        )
+        assert serializer.is_valid() is False and (
+            'full_name' in serializer.errors
+        ), 'Should be invalid if fullname is not long enough'
 
     def test_serializer_full_name_long_enough(self):
         data = {
@@ -67,7 +68,8 @@ class TestCreateUserSerializer:
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is True, 'Should be valid if fullname is long enough'
+        assert serializer.is_valid() is True, (
+            'Should be valid if fullname is long enough')
 
     def test_serializer_password_too_short(self):
         data = {
@@ -77,9 +79,9 @@ class TestCreateUserSerializer:
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is False and 'password' in serializer.errors, (
-            'Should be invalid if password is not long enough'
-        )
+        assert serializer.is_valid() is False and (
+            'password' in serializer.errors
+        ), 'Should be invalid if password is not long enough'
 
     def test_serializer_password_long_enough(self):
         data = {
@@ -89,4 +91,5 @@ class TestCreateUserSerializer:
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is True, 'Should be valid if password is long enough'
+        assert serializer.is_valid() is True, (
+            'Should be valid if password is long enough')
