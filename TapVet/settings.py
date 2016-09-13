@@ -40,12 +40,13 @@ DJANGO_APPS = (
 
 INTERNAL_APPS = (
     'users',
+    'countries',
 )
 
 THIRD_PARTY_APPS = (
     'rest_framework',
     'django_extensions',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
 )
 
 INSTALLED_APPS = DJANGO_APPS + INTERNAL_APPS + THIRD_PARTY_APPS
