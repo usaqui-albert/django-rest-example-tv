@@ -9,7 +9,7 @@ class Country(models.Model):
 
     class Meta:
         verbose_name = "Country"
-        verbose_name_plural = "Countrys"
+        verbose_name_plural = "Countries"
 
     def __unicode__(self):
         return self.name
