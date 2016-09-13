@@ -17,7 +17,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         """
         if len(value) < 5:
             raise serializers.ValidationError(
-                'Invalid fullname, should be longer than 10 characters')
+                'Invalid fullname, should be longer than 5 characters')
         return value
 
     @staticmethod
