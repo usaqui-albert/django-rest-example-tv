@@ -2,11 +2,11 @@ from rest_framework import permissions
 from rest_framework.generics import ListAPIView
 from django.db.models.query import QuerySet
 
-from .models import State
-from .serializers import StateSerializer
+from .models import State, Country
+from .serializers import StateSerializer, CountriesSerilizer
 
 
-class StateList(ListAPIView):
+class StateListView(ListAPIView):
     queryset = State.objects.all()
     serializer_class = StateSerializer
     permission_classes = (permissions.AllowAny,)
@@ -38,3 +38,9 @@ class StateList(ListAPIView):
                 queryset = queryset.all()
             queryset = queryset.filter(country=self.kwargs['pk'])
             return queryset
+
+
+class CountryListView(ListAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountriesSerilizer
+    permission_classes = (permissions.AllowAny,)
