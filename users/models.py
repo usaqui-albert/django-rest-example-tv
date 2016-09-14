@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, UserManager
+from django.db.models.signals import post_save
+
+from .signals import create_auth_token
 
 from .mixins import PermissionsMixin
 
@@ -31,6 +34,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.full_name
+
+
+post_save.connect(
+    create_auth_token, sender=User, dispatch_uid="users.models.user_post_save")
 
 
 class Breeder(models.Model):
