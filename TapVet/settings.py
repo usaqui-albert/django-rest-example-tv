@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = (
     'django_extensions',
     'rest_framework.authtoken',
     'corsheaders',
+    'rest_framework_docs',
 )
 
 INSTALLED_APPS = DJANGO_APPS + INTERNAL_APPS + THIRD_PARTY_APPS
