@@ -1,3 +1,5 @@
+from django.contrib.auth.models import Group
+
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -6,7 +8,7 @@ from rest_framework import generics, permissions
 from .models import User, Breeder, Veterinarian
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
-    BreederSerializer
+    BreederSerializer, GroupsSerializer
 )
 
 
@@ -32,6 +34,13 @@ class UserAuth(ObtainAuthToken):
 class UserCreateView(generics.CreateAPIView):
     serializer_class = CreateUserSerializer
     permission_classes = (permissions.AllowAny,)
+
+
+class GroupsListView(generics.ListAPIView):
+    serializer_class = GroupsSerializer
+    permission_classes = (permissions.AllowAny,)
+    queryset = Group.objects.all()
+    allowed_methods = ('GET',)
 
 
 class UserListView(generics.ListAPIView):

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import Group
 
 from .models import User, Breeder, Veterinarian
 
@@ -56,3 +57,9 @@ class VeterinarianSerializer(serializers.ModelSerializer):
             'area_interest', 'veterinary_school', 'graduating_year',
             'verified', 'user', 'veterinarian_type'
         )
+
+
+class GroupsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ('id', 'name')
