@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import User
+
+from .models import User, Breeder
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -31,3 +32,20 @@ class CreateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Invalid password, should be longer than 8 characters')
         return value
+
+
+class UserSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'full_name', 'groups')
+
+
+class BreederSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Breeder
+        fields = (
+            'user', 'breeder_type', 'bussiness_name', 'business_website',
+            'country', 'state', 'verified'
+        )
+        read_only_fields = ('user')

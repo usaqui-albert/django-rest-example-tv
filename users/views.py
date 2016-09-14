@@ -3,7 +3,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework import generics, permissions
 
-from .serializers import CreateUserSerializer
+from .models import User
+from .serializers import CreateUserSerializer, UserSerializers
 
 
 class UserAuth(ObtainAuthToken):
@@ -25,6 +26,13 @@ class UserAuth(ObtainAuthToken):
         )
 
 
-class UserView(generics.CreateAPIView):
+class UserCreateView(generics.CreateAPIView):
     serializer_class = CreateUserSerializer
     permission_classes = (permissions.AllowAny,)
+
+
+class UserListView(generics.ListAPIView):
+    serializer_class = UserSerializers
+    permission_classes = (permissions.AllowAny,)
+    queryset = User.objects.all()
+    allowed_methods = ('get',)
