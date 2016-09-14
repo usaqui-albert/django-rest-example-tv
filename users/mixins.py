@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib import auth
-from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import (
+    Group, Permission, _user_get_all_permissions, _user_has_perm,
+    _user_has_module_perms
+)
 
 
 class PermissionsMixin(models.Model):
@@ -94,43 +96,3 @@ class PermissionsMixin(models.Model):
             return True
 
         return _user_has_module_perms(self, app_label)
-
-
-def _user_get_all_permissions(user, obj):
-    permissions = set()
-    for backend in auth.get_backends():
-        if hasattr(backend, "get_all_permissions"):
-            permissions.update(backend.get_all_permissions(user, obj))
-    return permissions
-
-
-def _user_has_perm(user, perm, obj):
-    """
-    A backend can raise `PermissionDenied` to short-circuit
-    permission checking.
-    """
-    for backend in auth.get_backends():
-        if not hasattr(backend, 'has_perm'):
-            continue
-        try:
-            if backend.has_perm(user, perm, obj):
-                return True
-        except PermissionDenied:
-            return False
-    return False
-
-
-def _user_has_module_perms(user, app_label):
-    """
-    A backend can raise `PermissionDenied` to short-circuit
-    permission checking.
-    """
-    for backend in auth.get_backends():
-        if not hasattr(backend, 'has_module_perms'):
-            continue
-        try:
-            if backend.has_module_perms(user, app_label):
-                return True
-        except PermissionDenied:
-            return False
-    return False
