@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import User, Breeder
+from .models import User, Breeder, Veterinarian
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -41,11 +41,18 @@ class UserSerializers(serializers.ModelSerializer):
 
 
 class BreederSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Breeder
         fields = (
             'user', 'breeder_type', 'bussiness_name', 'business_website',
             'country', 'state', 'verified'
         )
-        read_only_fields = ('user')
+
+
+class VeterinarianSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Veterinarian
+        fields = (
+            'area_interest', 'veterinary_school', 'graduating_year',
+            'verified', 'user', 'veterinarian_type'
+        )

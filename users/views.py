@@ -3,8 +3,11 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework import generics, permissions
 
-from .models import User
-from .serializers import CreateUserSerializer, UserSerializers
+from .models import User, Breeder, Veterinarian
+from .serializers import (
+    CreateUserSerializer, UserSerializers, VeterinarianSerializer,
+    BreederSerializer
+)
 
 
 class UserAuth(ObtainAuthToken):
@@ -35,4 +38,18 @@ class UserListView(generics.ListAPIView):
     serializer_class = UserSerializers
     permission_classes = (permissions.AllowAny,)
     queryset = User.objects.all()
-    allowed_methods = ('get',)
+    allowed_methods = ('GET',)
+
+
+class BreederListCreateView(generics.ListCreateAPIView):
+    serializer_class = BreederSerializer
+    permission_classes = (permissions.AllowAny,)
+    queryset = Breeder.objects.all()
+    allowed_methods = ('GET', 'POST')
+
+
+class VeterinarianListCreateView(generics.ListCreateAPIView):
+    serializer_class = VeterinarianSerializer
+    permission_classes = (permissions.AllowAny,)
+    queryset = Veterinarian.objects.all()
+    allowed_methods = ('GET', 'POST')
