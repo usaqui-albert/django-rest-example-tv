@@ -6,7 +6,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
     """Serializer to handle the creation of a user"""
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('password', 'username', 'email', 'full_name', 'groups')
 
     @staticmethod
     def validate_full_name(value):
