@@ -1,6 +1,7 @@
-from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 
+from .mixins import PermissionsMixin
 
 VETERINARIAN_TYPES = (
     ('tech', 'Technician'),
@@ -9,13 +10,13 @@ VETERINARIAN_TYPES = (
 )
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True)
     full_name = models.CharField(max_length=100)
 
     is_active = models.BooleanField(default=True)
-    is_superuser = models.BooleanField(default=False)
+    # is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -28,6 +29,9 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+    def get_short_name(self):
+        return self.full_name
 
 
 class Breeder(models.Model):
