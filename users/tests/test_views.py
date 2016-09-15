@@ -77,12 +77,12 @@ class TestUserAuth:
 class TestUserView:
     factory = RequestFactory()
 
-    def test_get_request(self):
+    def test_get_request_no_auth(self):
         req = self.factory.get('/')
-        resp = views.UserCreateView.as_view()(req)
-        assert resp.status_code == 405, (
-            'Should return Method Not Allowed (405) given ' +
-            'the method does not exists'
+        resp = views.UserView.as_view()(req)
+        assert resp.status_code == 403, (
+            'Should return Method Not Allowed (403) given ' +
+            'the method need auth'
         )
 
     def test_post_valid_data(self):
@@ -93,7 +93,7 @@ class TestUserView:
             'username': 'JDoe'
         }
         req = self.factory.post('/', data=data)
-        resp = views.UserCreateView.as_view()(req)
+        resp = views.UserView.as_view()(req)
         assert resp.status_code == 201, (
             'Should return Created (201) with all valid parameters'
         )
@@ -106,10 +106,17 @@ class TestUserView:
             'username': 'JDoe'
         }
         req = self.factory.post('/', data=data)
-        resp = views.UserCreateView.as_view()(req)
+        resp = views.UserView.as_view()(req)
         assert resp.status_code == 400, (
             'Should return Bad Request (400) with an invalid email'
         )
+
+    def test_get_request(self):
+        user = mixer.blend(models.User)
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.UserView.as_view()(req)
+        assert resp.status_code == 200, 'Should return OK (200)'
 
 
 class TestUserDetailView:
@@ -142,21 +149,6 @@ class GroupsListView:
     def test_post_request(self):
         req = self.factory.post('/')
         resp = views.GroupsListView.as_view()(req)
-        assert resp.status_code == 405, (
-            '"detail": "Method \"POST\" not allowed."')
-
-
-class UserListView:
-    factory = RequestFactory()
-
-    def test_get_request(self):
-        req = self.factory.get('/')
-        resp = views.UserListView.as_view()(req)
-        assert resp.status_code == 200, 'Should return OK (200)'
-
-    def test_post_request(self):
-        req = self.factory.post('/')
-        resp = views.UserListView.as_view()(req)
         assert resp.status_code == 405, (
             '"detail": "Method \"POST\" not allowed."')
 
@@ -284,13 +276,11 @@ class TestVeterinarianListCreateView:
 
     def test_post_request(self):
         user = mixer.blend(models.User)
-        country = mixer.blend(models_c.Country)
-        state = mixer.blend(models_c.State, country=country)
         data = {
-            'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
-            'country': country.id,
-            'state': state.id
+            'veterinary_school': 'CharField',
+            'graduating_year': 1989,
+            'veterinarian_type': 'tech',
+            'area_interest': 'dogs'
 
         }
         req = self.factory.post('/', data=data)
@@ -301,28 +291,6 @@ class TestVeterinarianListCreateView:
             'Should return Created (201) with all valid parameters'
         )
 
-    def test_post_request_bad_state(self):
-        user = mixer.blend(models.User)
-        country = mixer.blend(models_c.Country)
-        country2 = mixer.blend(models_c.Country)
-        state = mixer.blend(models_c.State, country=country)
-        data = {
-            'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
-            'country': country2.id,
-            'state': state.id
-
-        }
-        req = self.factory.post('/', data=data)
-        force_authenticate(req, user=user)
-        try:
-            resp = views.VeterinarianListCreateView.as_view()(req)
-            assert resp.status_code == 201, (
-                'Should return Created (201) with all valid parameters'
-            )
-        except ValueError, e:
-            assert e
-
     def test_post_request_empty(self):
         user = mixer.blend(models.User)
         req = self.factory.post('/')
@@ -330,19 +298,17 @@ class TestVeterinarianListCreateView:
         resp = views.VeterinarianListCreateView.as_view()(req)
 
         assert resp.status_code == 400, (
-            'This field <country, state, bussiness_name, breeder_type>' +
-            ' is required'
+            'This field <veterinary_school, graduating_year,' +
+            ' veterinarian_type, area_interest> is required'
         )
 
-    def test_post_request_bad_country(self):
+    def test_post_request_bad_type(self):
         user = mixer.blend(models.User)
-        country = mixer.blend(models_c.Country)
-        state = mixer.blend(models_c.State, country=country)
         data = {
-            'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
-            'country': 100,
-            'state': state.id
+            'veterinary_school': 'CharField',
+            'graduating_year': 1989,
+            'veterinarian_type': 'other',
+            'area_interest': 'dogs'
 
         }
         req = self.factory.post('/', data=data)

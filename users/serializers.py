@@ -8,7 +8,11 @@ class CreateUserSerializer(serializers.ModelSerializer):
     """Serializer to handle the creation of a user"""
     class Meta:
         model = User
-        fields = ('password', 'username', 'email', 'full_name', 'groups')
+        fields = ('password', 'username', 'email', 'full_name', 'groups', 'id')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'id': {'read_only': True}
+        }
 
     @staticmethod
     def validate_full_name(value):
@@ -33,6 +37,12 @@ class CreateUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Invalid password, should be longer than 8 characters')
         return value
+
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(user.password)
+        user.save()
+        return user
 
 
 class UserSerializers(serializers.ModelSerializer):

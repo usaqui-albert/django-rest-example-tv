@@ -37,16 +37,39 @@ class UserAuth(ObtainAuthToken):
         )
 
 
-class UserCreateView(generics.CreateAPIView):
+class UserView(generics.ListCreateAPIView):
     """
-    Service to create new users.
+    Service to create new users. Need authentication to list user
 
     :accepted methods:
+        GET
         POST
     """
     serializer_class = CreateUserSerializer
     permission_classes = (permissions.AllowAny,)
-    allowed_methods = ('POST',)
+    allowed_methods = ('GET', 'POST',)
+    queryset = User.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            dict(serializer.data, token=str(user.auth_token)),
+            status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            message = {
+                "detail": "Authentication credentials were not provided."
+            }
+            return Response(
+                message,
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return self.list(request, *args, **kwargs)
 
 
 class GroupsListView(generics.ListAPIView):
@@ -59,19 +82,6 @@ class GroupsListView(generics.ListAPIView):
     serializer_class = GroupsSerializer
     permission_classes = (permissions.AllowAny,)
     queryset = Group.objects.all()
-    allowed_methods = ('GET',)
-
-
-class UserListView(generics.ListAPIView):
-    """
-    Service to list users.
-
-    :accepted methods:
-        GET
-    """
-    serializer_class = UserSerializers
-    permission_classes = (permissions.AllowAny,)
-    queryset = User.objects.all()
     allowed_methods = ('GET',)
 
 
@@ -123,3 +133,16 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class UserDetailView(generics.RetrieveUpdateAPIView):
+    '''
+        Service to Retrive and Update user
+        :accepted methods:
+            POST
+            GET
+    '''
+    serializer_class = UserSerializers
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = Veterinarian.objects.all()
+    allowed_methods = ('GET', 'POST')
