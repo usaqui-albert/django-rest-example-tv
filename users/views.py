@@ -52,26 +52,49 @@ class UserListView(generics.ListAPIView):
 
 
 class BreederListCreateView(generics.ListCreateAPIView):
+    """
+    Service to create and list Breeder users. Need and authenticated user
+
+    :accepted methods:
+        POST
+        GET
+    """
     serializer_class = BreederSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Breeder.objects.all()
-    allowed_methods = ('GET', 'POST')
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'user': request.user}
+        )
         serializer.is_valid(raise_exception=True)
-        user = User.objects.get(id=1)
-        self.perform_create(serializer, user=user)
+        serializer.save()
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def perform_create(self, serializer, user):
-        serializer.save(user=user)
-
 
 class VeterinarianListCreateView(generics.ListCreateAPIView):
+    """
+    Service to create and list Veterinarians users. Need and authenticated user
+
+    :accepted methods:
+        POST
+        GET
+    """
     serializer_class = VeterinarianSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Veterinarian.objects.all()
     allowed_methods = ('GET', 'POST')
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'user': request.user}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
