@@ -60,10 +60,10 @@ class VeterinarianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Veterinarian
         fields = (
-            'area_interest', 'veterinary_school', 'graduating_year',
-            'verified', 'user', 'veterinarian_type'
+            'user', 'area_interest', 'veterinary_school', 'graduating_year',
+            'verified', 'veterinarian_type'
         )
-        read_only_fields = ('users',)
+        read_only_fields = ('user',)
 
     def create(self, validated_data):
         veterinarian = Veterinarian(

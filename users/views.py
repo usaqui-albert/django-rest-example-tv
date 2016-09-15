@@ -62,6 +62,7 @@ class BreederListCreateView(generics.ListCreateAPIView):
     serializer_class = BreederSerializer
     permission_classes = (permissions.IsAuthenticated,)
     queryset = Breeder.objects.all()
+    allowed_methods = ('GET', 'POST')
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
