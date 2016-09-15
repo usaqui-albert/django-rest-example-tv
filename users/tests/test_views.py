@@ -4,6 +4,7 @@ import pytest
 from django.test import RequestFactory
 from mixer.backend.django import mixer
 
+from countries import models as models_c
 from .. import views
 from .. import models
 
@@ -76,7 +77,7 @@ class TestUserView:
 
     def test_get_request(self):
         req = self.factory.get('/')
-        resp = views.UserView.as_view()(req)
+        resp = views.UserCreateView.as_view()(req)
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405) given ' +
             'the method does not exists'
@@ -90,7 +91,7 @@ class TestUserView:
             'username': 'JDoe'
         }
         req = self.factory.post('/', data=data)
-        resp = views.UserView.as_view()(req)
+        resp = views.UserCreateView.as_view()(req)
         assert resp.status_code == 201, (
             'Should return Created (201) with all valid parameters'
         )
@@ -103,7 +104,7 @@ class TestUserView:
             'username': 'JDoe'
         }
         req = self.factory.post('/', data=data)
-        resp = views.UserView.as_view()(req)
+        resp = views.UserCreateView.as_view()(req)
         assert resp.status_code == 400, (
             'Should return Bad Request (400) with an invalid email'
         )
@@ -126,3 +127,71 @@ class TestUserDetailView:
             'Should return OK (200) given the data to update is valid')
         user.refresh_from_db()
         assert user.full_name == 'Albert Usaqui', 'Should update the user'
+
+
+class GroupsListView:
+    factory = RequestFactory()
+
+    def test_get_request(self):
+        req = self.factory.get('/')
+        resp = views.GroupsListView.as_view()(req)
+        assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_post_request(self):
+        req = self.factory.post('/')
+        resp = views.GroupsListView.as_view()(req)
+        assert resp.status_code == 405, (
+            '"detail": "Method \"POST\" not allowed."')
+
+
+class UserListView:
+    factory = RequestFactory()
+
+    def test_get_request(self):
+        req = self.factory.get('/')
+        resp = views.UserListView.as_view()(req)
+        assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_post_request(self):
+        req = self.factory.post('/')
+        resp = views.UserListView.as_view()(req)
+        assert resp.status_code == 405, (
+            '"detail": "Method \"POST\" not allowed."')
+
+
+class TestBreederListCreateView:
+    factory = RequestFactory()
+
+    def test_get_request(self):
+        req = self.factory.get('/')
+        resp = views.BreederListCreateView.as_view()(req)
+        assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_post_request(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'user': user.id,
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': country.id,
+            'state': state.id
+
+        }
+        req = self.factory.post('/', data=data)
+        resp = views.BreederListCreateView.as_view()(req)
+        # import ipdb; ipdb.set_trace()
+        print resp.data
+        assert resp.status_code == 201, (
+            'Should return Created (201) with all valid parameters'
+        )
+
+
+class TestVeterinarianListCreateView:
+    factory = RequestFactory()
+
+    def test_get_request(self):
+        req = self.factory.get('/')
+        resp = views.VeterinarianListCreateView.as_view()(req)
+        assert resp.status_code == 200, 'Should return OK (200)'

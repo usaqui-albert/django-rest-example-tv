@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework import generics, permissions
+from rest_framework import status
 
 from .models import User, Breeder, Veterinarian
 from .serializers import (
@@ -55,6 +56,18 @@ class BreederListCreateView(generics.ListCreateAPIView):
     permission_classes = (permissions.AllowAny,)
     queryset = Breeder.objects.all()
     allowed_methods = ('GET', 'POST')
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.get(id=1)
+        self.perform_create(serializer, user=user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer, user):
+        serializer.save(user=user)
 
 
 class VeterinarianListCreateView(generics.ListCreateAPIView):

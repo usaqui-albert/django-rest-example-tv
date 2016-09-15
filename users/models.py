@@ -57,14 +57,10 @@ class Breeder(models.Model):
     def __unicode__(self):
         return u'%s %s' % (self.user.full_name, self.breeder_type)
 
-    def save(
-        self, force_insert=False, force_update=False, using=None,
-        update_fields=None
-    ):
+    def save(self, *args, **kwargs):
         if self.country != self.state.country:
             raise ValueError("State missmatch country.")
-        super(self, Breeder).save(
-            force_insert, force_update, using, update_fields)
+        return super(Breeder, self).save(self, *args, **kwargs)
 
 
 class Veterinarian(models.Model):
