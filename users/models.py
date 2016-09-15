@@ -59,7 +59,8 @@ class Breeder(models.Model):
 
     def save(self, *args, **kwargs):
         if self.country != self.state.country:
-            raise ValueError("State missmatch country.")
+            raise ValueError(
+                "The state provided is not from the country provided.")
         super(Breeder, self).save(self, *args, **kwargs)
 
 

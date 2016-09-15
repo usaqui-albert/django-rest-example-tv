@@ -14,8 +14,13 @@ from .serializers import (
 
 
 class UserAuth(ObtainAuthToken):
-    throttle_classes = ()
-    permission_classes = ()
+    """
+    Service to authenticate users.
+
+    :accepted methods:
+        POST
+    """
+    allowed_methods = ('POST',)
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -33,11 +38,24 @@ class UserAuth(ObtainAuthToken):
 
 
 class UserCreateView(generics.CreateAPIView):
+    """
+    Service to create new users.
+
+    :accepted methods:
+        POST
+    """
     serializer_class = CreateUserSerializer
     permission_classes = (permissions.AllowAny,)
+    allowed_methods = ('POST',)
 
 
 class GroupsListView(generics.ListAPIView):
+    """
+    Service to list users groups.
+
+    :accepted methods:
+        GET
+    """
     serializer_class = GroupsSerializer
     permission_classes = (permissions.AllowAny,)
     queryset = Group.objects.all()
@@ -45,6 +63,12 @@ class GroupsListView(generics.ListAPIView):
 
 
 class UserListView(generics.ListAPIView):
+    """
+    Service to list users.
+
+    :accepted methods:
+        GET
+    """
     serializer_class = UserSerializers
     permission_classes = (permissions.AllowAny,)
     queryset = User.objects.all()

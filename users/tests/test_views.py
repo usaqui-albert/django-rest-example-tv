@@ -4,6 +4,8 @@ import pytest
 from django.test import RequestFactory
 from mixer.backend.django import mixer
 
+from rest_framework.test import force_authenticate
+
 from countries import models as models_c
 from .. import views
 from .. import models
@@ -163,16 +165,23 @@ class TestBreederListCreateView:
     factory = RequestFactory()
 
     def test_get_request(self):
+        user = mixer.blend(models.User)
         req = self.factory.get('/')
+        force_authenticate(req, user=user)
         resp = views.BreederListCreateView.as_view()(req)
         assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_get_request_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.BreederListCreateView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Authentication credentials were not provided')
 
     def test_post_request(self):
         user = mixer.blend(models.User)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
         data = {
-            'user': user.id,
             'breeder_type': 'CharField',
             'bussiness_name': 'CharField',
             'country': country.id,
@@ -180,11 +189,80 @@ class TestBreederListCreateView:
 
         }
         req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
         resp = views.BreederListCreateView.as_view()(req)
-        # import ipdb; ipdb.set_trace()
-        print resp.data
+
         assert resp.status_code == 201, (
             'Should return Created (201) with all valid parameters'
+        )
+
+    def test_post_request_bad_state(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        country2 = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': country2.id,
+            'state': state.id
+
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        try:
+            resp = views.BreederListCreateView.as_view()(req)
+            assert resp.status_code == 201, (
+                'Should return Created (201) with all valid parameters'
+            )
+        except ValueError, e:
+            assert e
+
+    def test_post_request_empty(self):
+        user = mixer.blend(models.User)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.BreederListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'This field <country, state, bussiness_name, breeder_type>' +
+            ' is required'
+        )
+
+    def test_post_request_bad_country(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': 100,
+            'state': state.id
+
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.BreederListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'Invalid pk 100 - object does not exist'
+        )
+
+    def test_post_request_bad_state_no_exists(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        data = {
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': country.id,
+            'state': 100
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.BreederListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'Invalid pk 100 - object does not exist'
         )
 
 
@@ -192,6 +270,102 @@ class TestVeterinarianListCreateView:
     factory = RequestFactory()
 
     def test_get_request(self):
+        user = mixer.blend(models.User)
         req = self.factory.get('/')
+        force_authenticate(req, user=user)
         resp = views.VeterinarianListCreateView.as_view()(req)
         assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_get_request_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.VeterinarianListCreateView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Authentication credentials were not provided')
+
+    def test_post_request(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': country.id,
+            'state': state.id
+
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+
+        assert resp.status_code == 201, (
+            'Should return Created (201) with all valid parameters'
+        )
+
+    def test_post_request_bad_state(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        country2 = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': country2.id,
+            'state': state.id
+
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        try:
+            resp = views.VeterinarianListCreateView.as_view()(req)
+            assert resp.status_code == 201, (
+                'Should return Created (201) with all valid parameters'
+            )
+        except ValueError, e:
+            assert e
+
+    def test_post_request_empty(self):
+        user = mixer.blend(models.User)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'This field <country, state, bussiness_name, breeder_type>' +
+            ' is required'
+        )
+
+    def test_post_request_bad_country(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': 100,
+            'state': state.id
+
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'Invalid pk 100 - object does not exist'
+        )
+
+    def test_post_request_bad_state_no_exists(self):
+        user = mixer.blend(models.User)
+        country = mixer.blend(models_c.Country)
+        data = {
+            'breeder_type': 'CharField',
+            'bussiness_name': 'CharField',
+            'country': country.id,
+            'state': 100
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'Invalid pk 100 - object does not exist'
+        )
