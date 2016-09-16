@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import Country, State
 
 
-class CountriesSerilizer(serializers.ModelSerializer):
+class CountriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = ('id', 'name', 'code')
