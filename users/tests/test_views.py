@@ -35,7 +35,8 @@ class TestUserAuth:
         req = self.factory.post('/', data=data)
         resp = views.UserAuth.as_view()(req)
         assert resp.status_code == 200, (
-            'Should return Success (200) with all valid parameters'
+            'Should return Success (200) with a json with: token ' +
+            'id, full_name, and email'
         )
 
     def test_post_incomplete_data_password(self):
@@ -81,8 +82,8 @@ class TestUserView:
         req = self.factory.get('/')
         resp = views.UserView.as_view()(req)
         assert resp.status_code == 403, (
-            'Should return Method Not Allowed (403) given ' +
-            'the method need auth'
+            'Should return Method Forbidden (403) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
         )
 
     def test_post_valid_data(self):
@@ -95,7 +96,8 @@ class TestUserView:
         req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)
         assert resp.status_code == 201, (
-            'Should return Created (201) with all valid parameters'
+            'Should return Created (201) and a json response with ' +
+            'username, token, ful_name, groups, id and email'
         )
 
     def test_post_invalid_data(self):
@@ -116,7 +118,9 @@ class TestUserView:
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.UserView.as_view()(req)
-        assert resp.status_code == 200, 'Should return OK (200)'
+        assert resp.status_code == 200, (
+            'Should return OK (200) and a json response ' +
+            'with a list of all users.')
 
 
 class TestUserDetailView:
@@ -144,13 +148,14 @@ class GroupsListView:
     def test_get_request(self):
         req = self.factory.get('/')
         resp = views.GroupsListView.as_view()(req)
-        assert resp.status_code == 200, 'Should return OK (200)'
+        assert resp.status_code == 200, (
+            'Should return OK (200), with the list of the groups')
 
     def test_post_request(self):
         req = self.factory.post('/')
         resp = views.GroupsListView.as_view()(req)
         assert resp.status_code == 405, (
-            '"detail": "Method \"POST\" not allowed."')
+            '"detail": "Method "POST" not allowed."')
 
 
 class TestBreederListCreateView:
@@ -161,7 +166,8 @@ class TestBreederListCreateView:
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.BreederListCreateView.as_view()(req)
-        assert resp.status_code == 200, 'Should return OK (200)'
+        assert resp.status_code == 200, (
+            'Should return OK (200) with the list of all breeders')
 
     def test_get_request_no_auth(self):
         req = self.factory.get('/')
@@ -208,7 +214,8 @@ class TestBreederListCreateView:
                 'Should return Created (201) with all valid parameters'
             )
         except ValueError, e:
-            assert e
+            assert e, (
+                'The state provided is not from the country provided')
 
     def test_post_request_empty(self):
         user = mixer.blend(models.User)
@@ -266,7 +273,8 @@ class TestVeterinarianListCreateView:
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.VeterinarianListCreateView.as_view()(req)
-        assert resp.status_code == 200, 'Should return OK (200)'
+        assert resp.status_code == 200, (
+            'Should return OK (200) with the list of all veterinarians')
 
     def test_get_request_no_auth(self):
         req = self.factory.get('/')
