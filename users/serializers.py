@@ -49,6 +49,10 @@ class UserSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'full_name', 'groups', 'id')
+        extra_kwargs = {
+            'username': {'read_only': True},
+            'id': {'read_only': True},
+        }
 
 
 class BreederSerializer(serializers.ModelSerializer):

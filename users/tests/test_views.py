@@ -213,8 +213,8 @@ class TestBreederListCreateView:
             assert resp.status_code == 201, (
                 'Should return Created (201) with all valid parameters'
             )
-        except ValueError, e:
-            assert e, (
+        except ValueError:
+            assert True, (
                 'The state provided is not from the country provided')
 
     def test_post_request_empty(self):

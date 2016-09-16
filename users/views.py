@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Group
+from django.db import IntegrityError
 
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -6,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework import generics, permissions
 from rest_framework import status
 
+from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
@@ -24,14 +26,18 @@ class UserAuth(ObtainAuthToken):
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except:
+            msg = {'detail': 'Unable to log in with provided credentials'}
+            return Response(msg, status=status.HTTP_401_UNAUTHORIZED)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         return Response(
             {
                 'token': token.key,
                 'id': user.id,
-                'full_name': user.full_name,
+                'ful_name': user.full_name,
                 'email': user.email
             }
         )
@@ -39,11 +45,12 @@ class UserAuth(ObtainAuthToken):
 
 class UserView(generics.ListCreateAPIView):
     """
-    Service to create new users. Need authentication to list user
+    Service to create new users.
+    Need authentication to list user
 
     :accepted methods:
-        GET
-        POST
+    GET
+    POST
     """
     serializer_class = CreateUserSerializer
     permission_classes = (permissions.AllowAny,)
@@ -70,6 +77,38 @@ class UserView(generics.ListCreateAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
         return self.list(request, *args, **kwargs)
+
+
+class UserGetUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    Service to update users.
+    PUT Method is used to update all required fields. Will responde in case
+    some is missing
+    PATCH Method is used to update any field, will not response in case
+    some required fill is missing
+
+    :accepted methods:
+    GET =  Dont need authentication
+    PUT = Need authentication
+    PATCH = Need authentication
+    """
+    serializer_class = UserSerializers
+    permission_classes = (IsOwnerOrReadOnly,)
+    allowed_methods = ('GET', 'PUT', 'PATCH')
+    queryset = User.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'user': request.user}
+        )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            dict(serializer.data, token=str(user.auth_token)),
+            status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 class GroupsListView(generics.ListAPIView):
@@ -104,7 +143,11 @@ class BreederListCreateView(generics.ListCreateAPIView):
             context={'user': request.user}
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            serializer.save()
+        except IntegrityError as e:
+            error = {'detail': str(e)}
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -129,7 +172,11 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
             context={'user': request.user}
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            serializer.save()
+        except IntegrityError as e:
+            error = {'detail': str(e)}
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)

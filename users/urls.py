@@ -2,11 +2,12 @@ from django.conf.urls import url
 
 from .views import (
     UserAuth, UserView, VeterinarianListCreateView,
-    BreederListCreateView, GroupsListView
+    BreederListCreateView, GroupsListView, UserGetUpdateView
 )
 
 urlpatterns = [
     url(r'^$', UserView.as_view()),
+    url(r'^user/(?P<pk>\d+)/$', UserGetUpdateView.as_view()),
     url(r'^login/$', UserAuth.as_view()),
     url(r'^groups/$', GroupsListView.as_view()),
     url(r'^breeder/$', BreederListCreateView.as_view()),
