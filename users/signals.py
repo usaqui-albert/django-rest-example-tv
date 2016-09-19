@@ -31,7 +31,7 @@ def new_vet_signal(sender, instance=None, created=False, **kwargs):
     if created:
         message_title = (getattr(
             settings, 'EMAIL_SUBJECT_PREFIX', None) +
-            getattr(settings, 'BREADER_MESSAGE_ADMIN_TITLE', None))
+            getattr(settings, 'VET_MESSAGE_ADMIN_TITLE', None))
         message_body = 'There is a need vet registration.'
         email_from = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
         admin_email = getattr(settings, 'ADMIN_EMAIL', None)
