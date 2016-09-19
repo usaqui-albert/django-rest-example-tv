@@ -129,13 +129,19 @@ class TestUserDetailView:
     def test_get_request(self):
         user = mixer.blend(models.User)
         req = self.factory.get('/')
-        resp = views.UserDetailView.as_view()(req, pk=user.pk)
+        force_authenticate(req, user=user)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, 'Should return OK (200)'
 
     def test_update_request(self):
         user = mixer.blend(models.User)
-        req = self.factory.put('/', data={'full_name': 'Albert Usaqui'})
-        resp = views.UserDetailView.as_view()(req, pk=user.pk)
+        data = {
+            "full_name": "Albert Usaqui",
+            "email": user.email,
+        }
+        req = self.factory.patch('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, (
             'Should return OK (200) given the data to update is valid')
         user.refresh_from_db()
