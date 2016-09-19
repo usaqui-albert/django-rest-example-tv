@@ -37,7 +37,7 @@ class UserAuth(ObtainAuthToken):
             {
                 'token': token.key,
                 'id': user.id,
-                'ful_name': user.full_name,
+                'full_name': user.full_name,
                 'email': user.email
             }
         )
