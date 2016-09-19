@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, UserManager, Group
 from django.db.models.signals import post_save
 
-from .signals import create_auth_token
+from .signals import create_auth_token, new_breeder_signal, new_vet_signal
 
 from .mixins import PermissionsMixin
 
@@ -68,6 +68,11 @@ class Breeder(models.Model):
         super(Breeder, self).save(self, *args, **kwargs)
 
 
+post_save.connect(
+    new_breeder_signal, sender=Breeder,
+    dispatch_uid="users.models.breeder_post_save")
+
+
 class Veterinarian(models.Model):
     area_interest = models.CharField(max_length=150)
     veterinary_school = models.CharField(max_length=50)
@@ -84,3 +89,8 @@ class Veterinarian(models.Model):
 
     def __unicode__(self):
         return u'%s %s' % (self.user.full_name, self.veterinarian_type)
+
+
+post_save.connect(
+    new_vet_signal, sender=Veterinarian,
+    dispatch_uid="users.models.veterinarian_post_save")
