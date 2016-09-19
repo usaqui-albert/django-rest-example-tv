@@ -180,17 +180,3 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-
-class UserDetailView(generics.RetrieveUpdateAPIView):
-    '''
-        Service to Retrive and Update user
-        :accepted methods:
-            GET
-            PUT
-            PATCH
-    '''
-    serializer_class = UserSerializers
-    permission_classes = (permissions.IsAuthenticated,)
-    queryset = User.objects.all()
-    allowed_methods = ('GET', 'PUT', 'PATCH')
