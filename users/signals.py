@@ -1,6 +1,7 @@
-from django.core.mail import EmailMessage
+from django.core.mail import mail_admins
 from rest_framework.authtoken.models import Token
 from django.conf import settings
+from django.template.loader import render_to_string
 
 
 def create_auth_token(sender, instance=None, created=False, **kwargs):
@@ -14,17 +15,11 @@ def new_breeder_signal(sender, instance=None, created=False, **kwargs):
             settings, 'EMAIL_SUBJECT_PREFIX', None) +
             getattr(settings, 'BREADER_MESSAGE_ADMIN_TITLE', None))
         message_body = 'There is a need breeder registration.'
-        email_from = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
-        admin_email = getattr(settings, 'ADMIN_EMAIL', None)
-        email = EmailMessage(
-            subject=message_title,
-            body=message_body,
-            from_email=email_from,
-            to=[admin_email],
-            reply_to=[email_from],
-        )
-        email.content_subtype = "html"
-        email.send()
+        msg_html = render_to_string(
+            'users/partials/email/breeder.html', {'breeder': instance})
+        mail_admins(
+            subject=message_title, message=message_body, fail_silently=True,
+            html_message=msg_html)
 
 
 def new_vet_signal(sender, instance=None, created=False, **kwargs):
@@ -33,14 +28,8 @@ def new_vet_signal(sender, instance=None, created=False, **kwargs):
             settings, 'EMAIL_SUBJECT_PREFIX', None) +
             getattr(settings, 'VET_MESSAGE_ADMIN_TITLE', None))
         message_body = 'There is a need vet registration.'
-        email_from = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
-        admin_email = getattr(settings, 'ADMIN_EMAIL', None)
-        email = EmailMessage(
-            subject=message_title,
-            body=message_body,
-            from_email=email_from,
-            to=[admin_email],
-            reply_to=[email_from],
-        )
-        email.content_subtype = "html"
-        email.send()
+        msg_html = render_to_string(
+            'users/partials/email/vet.html', {'vet': instance})
+        mail_admins(
+            subject=message_title, message=message_body, fail_silently=True,
+            html_message=msg_html)
