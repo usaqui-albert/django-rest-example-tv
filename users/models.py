@@ -48,7 +48,7 @@ post_save.connect(
 class Breeder(models.Model):
     breeder_type = models.CharField(max_length=100)
     bussiness_name = models.CharField(max_length=100)
-    bussiness_website = models.URLField(null=True)
+    bussiness_website = models.URLField(null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     country = models.ForeignKey('countries.Country')
     state = models.ForeignKey('countries.State')
@@ -61,11 +61,15 @@ class Breeder(models.Model):
     def __unicode__(self):
         return u'%s %s' % (self.user.full_name, self.breeder_type)
 
+    # def clean(self, *args, **kwargs):
+    #     super(Breeder, self).clean(*args, **kwargs)
+
     def save(self, *args, **kwargs):
+        # self.clean()
         if self.country != self.state.country:
             raise ValueError(
                 "The state provided is not from the country provided.")
-        super(Breeder, self).save(self, *args, **kwargs)
+        super(Breeder, self).save(*args, **kwargs)
 
 
 post_save.connect(

@@ -1,5 +1,7 @@
-from django.contrib.auth.models import Group
 from django.db import IntegrityError
+from django.forms import model_to_dict
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import Group
 
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -180,3 +182,29 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class AuthorizeBreederView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
+    serializer_class = BreederSerializer
+    allowed_methods = ('PATCH',)
+
+    def patch(self, request, *args, **kwargs):
+        breeder = get_object_or_404(Breeder, id=self.kwargs['pk'])
+        breeder.verified = True
+        breeder.save()
+        serializer = self.serializer_class(breeder)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+
+class AuthorizeVetView(generics.GenericAPIView):
+    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
+    serializer_class = VeterinarianSerializer
+    allowed_methods = ('PATCH',)
+
+    def patch(self, request, *args, **kwargs):
+        vet = get_object_or_404(Veterinarian, id=self.kwargs['pk'])
+        vet.verified = True
+        vet.save()
+        serializer = self.serializer_class(vet)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
