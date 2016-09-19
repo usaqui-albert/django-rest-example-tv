@@ -186,10 +186,11 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     '''
         Service to Retrive and Update user
         :accepted methods:
-            POST
             GET
+            PUT
+            PATCH
     '''
     serializer_class = UserSerializers
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = Veterinarian.objects.all()
-    allowed_methods = ('GET', 'POST')
+    queryset = User.objects.all()
+    allowed_methods = ('GET', 'PUT', 'PATCH')
