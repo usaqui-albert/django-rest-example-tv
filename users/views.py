@@ -30,7 +30,7 @@ class UserAuth(ObtainAuthToken):
             serializer.is_valid(raise_exception=True)
         except:
             msg = {'detail': 'Unable to log in with provided credentials'}
-            return Response(msg, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         return Response(
