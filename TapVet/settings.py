@@ -136,7 +136,7 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'users.User'
 
-
+# CORS to allow any connection from any host (or any mobile phone)
 CORS_ORIGIN_ALLOW_ALL = True
 
 
@@ -146,3 +146,20 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
+"""
+Email BACKEND, this is the default, im leaving here, because soon we need
+to change it
+"""
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# This will be change to more stable enviroment
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'blanclink.test@gmail.com'
+EMAIL_HOST_PASSWORD = 'blanclink.test123456'
+EMAIL_USE_TLS = True
+EMAIL_SUBJECT_PREFIX = "[TapVet]"
+DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
+ADMIN_EMAIL = "leofaster@gmail.com"
+BREADER_MESSAGE_ADMIN_TITLE = "New Breeeder Pending"
