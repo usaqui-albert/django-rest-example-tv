@@ -61,11 +61,7 @@ class Breeder(models.Model):
     def __unicode__(self):
         return u'%s %s' % (self.user.full_name, self.breeder_type)
 
-    # def clean(self, *args, **kwargs):
-    #     super(Breeder, self).clean(*args, **kwargs)
-
     def save(self, *args, **kwargs):
-        # self.clean()
         if self.country != self.state.country:
             raise ValueError(
                 "The state provided is not from the country provided.")
