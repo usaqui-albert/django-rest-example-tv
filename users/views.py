@@ -54,7 +54,6 @@ class UserView(generics.ListCreateAPIView):
     """
     serializer_class = CreateUserSerializer
     permission_classes = (permissions.AllowAny,)
-    allowed_methods = ('GET', 'POST',)
     queryset = User.objects.all()
 
     def create(self, request, *args, **kwargs):
@@ -135,7 +134,6 @@ class BreederListCreateView(generics.ListCreateAPIView):
     serializer_class = BreederSerializer
     permission_classes = (permissions.IsAuthenticated,)
     queryset = Breeder.objects.all()
-    allowed_methods = ('GET', 'POST')
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -164,7 +162,6 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
     serializer_class = VeterinarianSerializer
     permission_classes = (permissions.IsAuthenticated,)
     queryset = Veterinarian.objects.all()
-    allowed_methods = ('GET', 'POST')
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
