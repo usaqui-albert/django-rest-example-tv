@@ -190,7 +190,7 @@ class AuthorizeBreederView(generics.GenericAPIView):
     allowed_methods = ('PATCH',)
 
     def patch(self, request, *args, **kwargs):
-        breeder = get_object_or_404(Breeder, id=self.kwargs['pk'])
+        breeder = get_object_or_404(Breeder, id=kwargs['pk'])
         breeder.verified = request.POST.get('verified', False)
         breeder.save()
         serializer = self.serializer_class(breeder)
@@ -203,7 +203,7 @@ class AuthorizeVetView(generics.GenericAPIView):
     allowed_methods = ('PATCH',)
 
     def patch(self, request, *args, **kwargs):
-        vet = get_object_or_404(Veterinarian, id=self.kwargs['pk'])
+        vet = get_object_or_404(Veterinarian, id=kwargs['pk'])
         vet.verified = request.POST.get('verified', False)
         vet.save()
         serializer = self.serializer_class(vet)
