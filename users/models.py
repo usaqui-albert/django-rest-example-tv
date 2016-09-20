@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, Group
 from django.db.models.signals import post_save
 
 from .signals import create_auth_token, new_breeder_signal, new_vet_signal
-
 from .mixins import PermissionsMixin
 
 VETERINARIAN_TYPES = (
@@ -11,6 +10,26 @@ VETERINARIAN_TYPES = (
     ('vet', 'Veterinarian'),
     ('student', 'Student')
 )
+
+VETERINARIAN_AREA_INTEREST = (
+    ('small_animal', 'Small Animal'),
+    ('large_animal', 'Large Animal'),
+    ('academia', 'Academia'),
+    ('industry', 'Industry'),
+    ('government', 'Government'),
+    ('zoo', 'Zoo'),
+    ('other', 'Other')
+)
+
+
+class AreaInterest(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        ordering = ('id',)
+
+    def __unicode__(self):
+        return u'%s - %s' % (self.id, self.name)
 
 
 class Group(Group):
@@ -78,7 +97,7 @@ post_save.connect(
 
 
 class Veterinarian(models.Model):
-    area_interest = models.CharField(max_length=150)
+    area_interest = models.ManyToManyField(AreaInterest)
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
     verified = models.BooleanField(default=False)
