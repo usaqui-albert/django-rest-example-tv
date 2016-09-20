@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, UserManager
+from django.contrib.auth.models import AbstractBaseUser, UserManager, Group
 from django.db.models.signals import post_save
 
 from .signals import create_auth_token
@@ -11,6 +11,10 @@ VETERINARIAN_TYPES = (
     ('vet', 'Veterinarian'),
     ('student', 'Student')
 )
+
+
+class Group(Group):
+    description = models.CharField(max_length=50)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
