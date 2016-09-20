@@ -175,6 +175,7 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
         )
         serializer.is_valid(raise_exception=True)
         try:
+            print "----------------------------------------------------"
             serializer.save()
         except IntegrityError as e:
             error = {'detail': str(e)}

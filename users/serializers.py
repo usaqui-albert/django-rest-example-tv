@@ -80,10 +80,15 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         read_only_fields = ('user', 'id')
 
     def create(self, validated_data):
+        print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         veterinarian = Veterinarian(
             **dict(validated_data, user=self.context['user']))
         veterinarian.save()
         return veterinarian
+
+    def save(self, **kwargs):
+        print kwargs
+        super(VeterinarianSerializer, self).save(**kwargs)
 
 
 class GroupsSerializer(serializers.ModelSerializer):
