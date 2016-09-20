@@ -36,6 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.full_name
 
 
+# Func to connect the signal.
 post_save.connect(
     create_auth_token, sender=User, dispatch_uid="users.models.user_post_save")
 
@@ -43,11 +44,10 @@ post_save.connect(
 class Breeder(models.Model):
     breeder_type = models.CharField(max_length=100)
     bussiness_name = models.CharField(max_length=100)
-    business_website = models.URLField(null=True, blank=True)
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE)
-    country = models.ForeignKey('countries.country')
-    state = models.ForeignKey('countries.state')
+    bussiness_website = models.URLField(null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    country = models.ForeignKey('countries.Country')
+    state = models.ForeignKey('countries.State')
     verified = models.BooleanField(default=False)
 
     class Meta:
@@ -57,14 +57,11 @@ class Breeder(models.Model):
     def __unicode__(self):
         return u'%s %s' % (self.user.full_name, self.breeder_type)
 
-    def save(
-        self, force_insert=False, force_update=False, using=None,
-        update_fields=None
-    ):
+    def save(self, *args, **kwargs):
         if self.country != self.state.country:
-            raise ValueError("State missmatch country.")
-        super(self, Breeder).save(
-            force_insert, force_update, using, update_fields)
+            raise ValueError(
+                "The state provided is not from the country provided.")
+        super(Breeder, self).save(self, *args, **kwargs)
 
 
 class Veterinarian(models.Model):
