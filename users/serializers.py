@@ -80,15 +80,31 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         read_only_fields = ('user', 'id')
 
     def create(self, validated_data):
-        print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
         veterinarian = Veterinarian(
             **dict(validated_data, user=self.context['user']))
         veterinarian.save()
         return veterinarian
 
     def save(self, **kwargs):
-        print kwargs
-        super(VeterinarianSerializer, self).save(**kwargs)
+        validated_data = dict(
+            list(self.validated_data.items()) +
+            list(kwargs.items())
+        )
+        if self.instance is not None:
+            self.instance = self.update(self.instance, validated_data)
+            assert self.instance is not None, (
+                '`update()` did not return an object instance.'
+            )
+        else:
+            area_interest = validated_data.pop('area_interest')
+            self.instance = self.create(validated_data)
+            for area in area_interest:
+                self.instance.area_interest.add(area)
+
+            assert self.instance is not None, (
+                '`create()` did not return an object instance.'
+            )
+        return self.instance
 
 
 class GroupsSerializer(serializers.ModelSerializer):
