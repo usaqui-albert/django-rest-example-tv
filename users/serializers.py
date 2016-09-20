@@ -86,6 +86,9 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         return veterinarian
 
     def save(self, **kwargs):
+        '''
+        We need to overwrite this method, to allow m2m keys
+        '''
         validated_data = dict(
             list(self.validated_data.items()) +
             list(kwargs.items())
