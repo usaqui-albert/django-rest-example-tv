@@ -147,7 +147,7 @@ class BreederListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-        except IntegrityError as e:
+        except (IntegrityError, ValueError) as e:
             error = {'detail': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         headers = self.get_success_headers(serializer.data)
@@ -191,7 +191,7 @@ class AuthorizeBreederView(generics.GenericAPIView):
 
     def patch(self, request, *args, **kwargs):
         breeder = get_object_or_404(Breeder, id=self.kwargs['pk'])
-        breeder.verified = True
+        breeder.verified = request.POST.get('verified', False)
         breeder.save()
         serializer = self.serializer_class(breeder)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
@@ -204,7 +204,7 @@ class AuthorizeVetView(generics.GenericAPIView):
 
     def patch(self, request, *args, **kwargs):
         vet = get_object_or_404(Veterinarian, id=self.kwargs['pk'])
-        vet.verified = True
+        vet.verified = request.POST.get('verified', False)
         vet.save()
         serializer = self.serializer_class(vet)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
