@@ -36,6 +36,11 @@ After this you can get into the project folder.
 Remember to change to the right branch, then install the dependencies of the project:
 
     pip install -r requirements.txt
+    
+Here is an exception, to install pytest-ipdb (used for unit testing) just run:
+
+    pip install git+git://github.com/mverteuil/pytest-ipdb.git
+
 
 ### Running ###
 
