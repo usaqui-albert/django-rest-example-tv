@@ -11,9 +11,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 def new_breeder_signal(sender, instance=None, created=False, **kwargs):
     if created:
-        message_title = (getattr(
-            settings, 'EMAIL_SUBJECT_PREFIX', None) +
-            getattr(settings, 'BREADER_MESSAGE_ADMIN_TITLE', None))
+        message_title = getattr(settings, 'BREADER_MESSAGE_ADMIN_TITLE', None)
         message_body = 'There is a need breeder registration.'
         msg_html = render_to_string(
             'users/partials/email/breeder.html', {'breeder': instance})
@@ -24,9 +22,7 @@ def new_breeder_signal(sender, instance=None, created=False, **kwargs):
 
 def new_vet_signal(sender, instance=None, created=False, **kwargs):
     if created:
-        message_title = (getattr(
-            settings, 'EMAIL_SUBJECT_PREFIX', None) +
-            getattr(settings, 'VET_MESSAGE_ADMIN_TITLE', None))
+        message_title = getattr(settings, 'VET_MESSAGE_ADMIN_TITLE', None)
         message_body = 'There is a need vet registration.'
         msg_html = render_to_string(
             'users/partials/email/vet.html', {'vet': instance})
