@@ -94,7 +94,7 @@ class VeterinarianSerializer(serializers.ModelSerializer):
             list(self.validated_data.items()) +
             list(kwargs.items())
         )
-        if self.instance is not None:
+        if self.instance:
             self.instance = self.update(self.instance, validated_data)
             assert self.instance is not None, (
                 '`update()` did not return an object instance.'
