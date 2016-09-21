@@ -5,8 +5,22 @@ from django.contrib.auth.models import (
     Permission, _user_get_all_permissions, _user_has_perm,
     _user_has_module_perms
 )
+from django.contrib.auth.models import Group as Group_old
 
-from .models import Group
+if not hasattr(Group_old, 'description'):
+    description = models.CharField(max_length=50, null=True, blank=True)
+    description.contribute_to_class(Group_old, 'description')
+
+
+class Group(Group_old):
+
+    class Meta:
+        proxy = True
+        verbose_name = _('group')
+        verbose_name_plural = _('groups')
+
+    def __unicode__(self):
+        return self.name
 
 
 class PermissionsMixin(models.Model):

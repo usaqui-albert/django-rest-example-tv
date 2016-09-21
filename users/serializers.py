@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from .models import (
-    User, Breeder, Veterinarian, AreaInterest, Group)
+    User, Breeder, Veterinarian, AreaInterest)
+from .mixins import Group
 
 
 class CreateUserSerializer(serializers.ModelSerializer):

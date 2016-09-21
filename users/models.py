@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, UserManager, Group
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db.models.signals import post_save
 
 from .signals import create_auth_token, new_breeder_signal, new_vet_signal
@@ -30,10 +30,6 @@ class AreaInterest(models.Model):
 
     def __unicode__(self):
         return u'%s - %s' % (self.id, self.name)
-
-
-class Group(Group):
-    description = models.CharField(max_length=50)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
