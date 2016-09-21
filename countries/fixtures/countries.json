@@ -2848,14 +2848,6 @@
         }
     },
     {
-        "pk": 112,
-        "model": "countries.state",
-        "fields": {
-            "country": 2,
-            "name": "Other"
-        }
-    },
-    {
         "pk": 113,
         "model": "countries.state",
         "fields": {
@@ -4348,14 +4340,6 @@
         "model": "countries.state",
         "fields": {
             "country": 227,
-            "name": "Other"
-        }
-    },
-    {
-        "pk": 300,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
             "name": "Other"
         }
     },
