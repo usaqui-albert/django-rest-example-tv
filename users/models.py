@@ -1,9 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, UserManager, Group
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db.models.signals import post_save
 
 from .signals import create_auth_token, new_breeder_signal, new_vet_signal
-
 from .mixins import PermissionsMixin
 
 VETERINARIAN_TYPES = (
@@ -12,9 +11,25 @@ VETERINARIAN_TYPES = (
     ('student', 'Student')
 )
 
+VETERINARIAN_AREA_INTEREST = (
+    ('small_animal', 'Small Animal'),
+    ('large_animal', 'Large Animal'),
+    ('academia', 'Academia'),
+    ('industry', 'Industry'),
+    ('government', 'Government'),
+    ('zoo', 'Zoo'),
+    ('other', 'Other')
+)
 
-class Group(Group):
-    description = models.CharField(max_length=50)
+
+class AreaInterest(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        ordering = ('id',)
+
+    def __unicode__(self):
+        return u'%s - %s' % (self.id, self.name)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -40,7 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.full_name
 
 
-# Func to connect the signal.
+# Func to connect the signal on post save.
 post_save.connect(
     create_auth_token, sender=User, dispatch_uid="users.models.user_post_save")
 
@@ -68,13 +83,14 @@ class Breeder(models.Model):
         super(Breeder, self).save(*args, **kwargs)
 
 
+# Func to connect the signal on post save.
 post_save.connect(
     new_breeder_signal, sender=Breeder,
     dispatch_uid="users.models.breeder_post_save")
 
 
 class Veterinarian(models.Model):
-    area_interest = models.CharField(max_length=150)
+    area_interest = models.ManyToManyField(AreaInterest)
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
     verified = models.BooleanField(default=False)
@@ -91,6 +107,7 @@ class Veterinarian(models.Model):
         return u'%s %s' % (self.user.full_name, self.veterinarian_type)
 
 
+# Func to connect the signal on post save.
 post_save.connect(
     new_vet_signal, sender=Veterinarian,
     dispatch_uid="users.models.veterinarian_post_save")

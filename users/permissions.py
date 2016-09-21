@@ -17,5 +17,5 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        # Instance must have an attribute named `user`.
+        # request user must be equal to obj user or request user is staff.
         return obj.id == request.user.id or request.user.is_staff

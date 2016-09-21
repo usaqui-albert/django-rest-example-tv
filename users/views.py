@@ -10,10 +10,10 @@ from rest_framework import generics, permissions
 from rest_framework import status
 
 from .permissions import IsOwnerOrReadOnly
-from .models import User, Breeder, Veterinarian
+from .models import User, Breeder, Veterinarian, AreaInterest
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
-    BreederSerializer, GroupsSerializer
+    BreederSerializer, GroupsSerializer, AreaInterestSerializer
 )
 
 
@@ -117,7 +117,7 @@ class GroupsListView(generics.ListAPIView):
     Service to list users groups.
 
     :accepted methods:
-        GET
+    **GET
     """
     serializer_class = GroupsSerializer
     permission_classes = (permissions.AllowAny,)
@@ -130,8 +130,8 @@ class BreederListCreateView(generics.ListCreateAPIView):
     Service to create and list Breeder users. Need and authenticated user
 
     :accepted methods:
-        POST
-        GET
+    **POST
+    **GET
     """
     serializer_class = BreederSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -158,8 +158,8 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
     Service to create and list Veterinarians users. Need and authenticated user
 
     :accepted methods:
-        POST
-        GET
+    **POST
+    **GET
     """
     serializer_class = VeterinarianSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -205,3 +205,16 @@ class AuthorizeVetView(generics.GenericAPIView):
         vet.save()
         serializer = self.serializer_class(vet)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+
+class AreaInterestListView(generics.ListAPIView):
+    '''
+    List for Area of Interest.
+    Required:
+    **User Authenticated
+    Allowed Methods:
+    **GET = Only to list.
+    '''
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AreaInterestSerializer
+    queryset = AreaInterest.objects.all()

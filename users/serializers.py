@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from django.contrib.auth.models import Group
 
-from .models import User, Breeder, Veterinarian
+from .models import (
+    User, Breeder, Veterinarian, AreaInterest)
+from .mixins import Group
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -85,8 +86,43 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         veterinarian.save()
         return veterinarian
 
+    def save(self, **kwargs):
+        '''
+        We need to overwrite this method, to allow m2m keys on area of interest
+        '''
+        validated_data = dict(
+            list(self.validated_data.items()) +
+            list(kwargs.items())
+        )
+        if self.instance:
+            self.instance = self.update(self.instance, validated_data)
+            assert self.instance is not None, (
+                '`update()` did not return an object instance.'
+            )
+        else:
+            area_interest = validated_data.pop('area_interest')
+            self.instance = self.create(validated_data)
+            for area in area_interest:
+                self.instance.area_interest.add(area)
+
+            assert self.instance is not None, (
+                '`create()` did not return an object instance.'
+            )
+        return self.instance
+
 
 class GroupsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
+        fields = ('id', 'name', 'description')
+        read_only_fields = ('id', 'name', 'description')
+
+
+class AreaInterestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AreaInterest
         fields = ('id', 'name')
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'name': {'read_only': True}
+        }
