@@ -59,7 +59,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.full_name
 
 
-# Func to connect the signal.
+# Func to connect the signal on post save.
 post_save.connect(
     create_auth_token, sender=User, dispatch_uid="users.models.user_post_save")
 
@@ -87,6 +87,7 @@ class Breeder(models.Model):
         super(Breeder, self).save(*args, **kwargs)
 
 
+# Func to connect the signal on post save.
 post_save.connect(
     new_breeder_signal, sender=Breeder,
     dispatch_uid="users.models.breeder_post_save")
@@ -110,6 +111,7 @@ class Veterinarian(models.Model):
         return u'%s %s' % (self.user.full_name, self.veterinarian_type)
 
 
+# Func to connect the signal on post save.
 post_save.connect(
     new_vet_signal, sender=Veterinarian,
     dispatch_uid="users.models.veterinarian_post_save")
