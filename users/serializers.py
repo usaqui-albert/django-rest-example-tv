@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from django.contrib.auth.models import Group
 
-from .models import User, Breeder, Veterinarian
+
+from .models import (
+    User, Breeder, Veterinarian, AreaInterest, Group)
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -87,7 +88,7 @@ class VeterinarianSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         '''
-        We need to overwrite this method, to allow m2m keys
+        We need to overwrite this method, to allow m2m keys on area of interest
         '''
         validated_data = dict(
             list(self.validated_data.items()) +
@@ -113,4 +114,15 @@ class VeterinarianSerializer(serializers.ModelSerializer):
 class GroupsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
+        fields = ('id', 'name', 'description')
+        read_only_fields = ('id', 'name', 'description')
+
+
+class AreaInterestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AreaInterest
         fields = ('id', 'name')
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'name': {'read_only': True}
+        }
