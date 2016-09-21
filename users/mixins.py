@@ -7,6 +7,13 @@ from django.contrib.auth.models import (
 )
 from django.contrib.auth.models import Group as Group_old
 
+"""
+    Here, description field is added to the Group model. This is a dirty way to
+    add a field to a model But, in order to use Django built in group
+    funtionability, we have to use Python power and overight the model. As this
+    file is only readed at compilation time, this function will only be execute
+    only one time
+"""
 if not hasattr(Group_old, 'description'):
     description = models.CharField(max_length=50, null=True, blank=True)
     description.contribute_to_class(Group_old, 'description')
