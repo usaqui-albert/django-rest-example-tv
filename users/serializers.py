@@ -60,9 +60,9 @@ class BreederSerializer(serializers.ModelSerializer):
         model = Breeder
         fields = (
             'user', 'breeder_type', 'bussiness_name', 'bussiness_website',
-            'country', 'state', 'verified'
+            'country', 'state', 'verified', 'id'
         )
-        read_only_fields = ('user',)
+        read_only_fields = ('user', 'id')
 
     def create(self, validated_data):
         breeder = Breeder(**dict(validated_data, user=self.context['user']))
@@ -75,9 +75,9 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         model = Veterinarian
         fields = (
             'user', 'area_interest', 'veterinary_school', 'graduating_year',
-            'verified', 'veterinarian_type'
+            'verified', 'veterinarian_type', 'id'
         )
-        read_only_fields = ('user',)
+        read_only_fields = ('user', 'id')
 
     def create(self, validated_data):
         veterinarian = Veterinarian(
