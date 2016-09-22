@@ -161,6 +161,9 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 EMAIL_SUBJECT_PREFIX = "[TapVet]"
 DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
-ADMINS = [('Leopoldo Pimentel', 'leofaster@gmail.com'), ]
+ADMINS = [
+    ('Leopoldo Pimentel', 'leofaster@gmail.com'),
+    ('Paula Marcano', 'paula.marcano@blanclink.com'),
+]
 BREADER_MESSAGE_ADMIN_TITLE = "New Breeeder Pending"
 VET_MESSAGE_ADMIN_TITLE = "New Vet Pending"
