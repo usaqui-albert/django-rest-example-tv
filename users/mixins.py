@@ -15,7 +15,7 @@ from django.contrib.auth.models import Group as Group_old
     only one time
 """
 if not hasattr(Group_old, 'description'):
-    description = models.CharField(max_length=50, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
     description.contribute_to_class(Group_old, 'description')
 
 
