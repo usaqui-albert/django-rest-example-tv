@@ -7,7 +7,7 @@
         "description": "Pet owner",
         "permissions": []
     }
-}
+},
 {
     "model": "auth.group",
     "pk": 2,
@@ -43,5 +43,5 @@
         "description": "Vet Tech",
         "permissions": []
     }
-},
+}
 ]
