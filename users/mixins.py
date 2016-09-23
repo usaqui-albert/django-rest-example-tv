@@ -25,6 +25,7 @@ class Group(Group_old):
         proxy = True
         verbose_name = _('group')
         verbose_name_plural = _('groups')
+        ordering = ('id', )
 
     def __unicode__(self):
         return self.name
