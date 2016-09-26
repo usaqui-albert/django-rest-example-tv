@@ -43,5 +43,54 @@
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
         "permissions": []
     }
+},
+{
+    "model": "users.areainterest",
+    "pk": 1,
+    "fields": {
+        "name": "Small Animal"
+    }
+},
+{
+    "model": "users.areainterest",
+    "pk": 2,
+    "fields": {
+        "name": "Large Animal"
+    }
+},
+{
+    "model": "users.areainterest",
+    "pk": 3,
+    "fields": {
+        "name": "Academia"
+    }
+},
+{
+    "model": "users.areainterest",
+    "pk": 4,
+    "fields": {
+        "name": "Industry"
+    }
+},
+{
+    "model": "users.areainterest",
+    "pk": 5,
+    "fields": {
+        "name": "Government"
+    }
+},
+{
+    "model": "users.areainterest",
+    "pk": 6,
+    "fields": {
+        "name": "Zoo"
+    }
+},
+{
+    "model": "users.areainterest",
+    "pk": 7,
+    "fields": {
+        "name": "Other"
+    }
 }
 ]
