@@ -19,7 +19,7 @@ class PetSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         if Pet.objects.filter(user=self.context['user']).count() > 19:
-            raise ValidationError('Max three rounds allowed!')
+            raise ValidationError('Max 20 pets allowed!')
         pet = Pet(**dict(validated_data, user=self.context['user']))
         pet.save()
         return pet

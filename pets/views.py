@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -30,7 +31,7 @@ class PetsListCreateView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-        except (IntegrityError, ValueError) as e:
+        except (IntegrityError, ValueError, ValidationError) as e:
             error = {'detail': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         headers = self.get_success_headers(serializer.data)

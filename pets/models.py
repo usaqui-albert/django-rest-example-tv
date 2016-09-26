@@ -36,12 +36,7 @@ class Pet(models.Model):
     name = models.CharField(max_length=50)
     fixed = models.BooleanField(default=False)
     image = models.ImageField(null=True, blank=True, upload_to=uploads_path)
-    age = models.IntegerField(
-        validators=[
-            MinValueValidator(get_current_year),
-            MaxValueValidator(get_limit_year)
-        ]
-    )  # We just need the year, int is better optimized
+    age = models.IntegerField()  # We just need the year
     pet_type = models.CharField(max_length=150)  # Need the list to complete
     breed = models.CharField(max_length=150)  # Need the list to complete
     gender = models.CharField(choices=PET_GENDER, max_length=50)
@@ -53,3 +48,12 @@ class Pet(models.Model):
 
     def __unicode__(self):
         return u"%s - %s" % (self.id, self.name)
+
+    def save(self, *args, **kwargs):
+        if self.age > get_current_year():
+            raise ValueError(
+                'The pet age cannot be higher than the current year')
+        if self.age < get_limit_year():
+            raise ValueError(
+                'The pet age cannot be lower than ' + str(get_limit_year()))
+        return super(Pet, self).save(*args, **kwargs)
