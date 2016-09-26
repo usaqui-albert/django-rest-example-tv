@@ -1,5 +1,4 @@
 from django.db import IntegrityError
-from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
 
@@ -173,7 +172,7 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-        except IntegrityError as e:
+        except (IntegrityError, ValueError) as e:
             error = {'detail': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         headers = self.get_success_headers(serializer.data)

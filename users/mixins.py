@@ -5,7 +5,7 @@ from django.contrib.auth.models import (
     Permission, _user_get_all_permissions, _user_has_perm,
     _user_has_module_perms
 )
-from django.contrib.auth.models import Group as Group_old
+from django.contrib.auth.models import Group
 
 """
     Here, description field is added to the Group model. This is a dirty way to
@@ -14,21 +14,9 @@ from django.contrib.auth.models import Group as Group_old
     file is only readed at compilation time, this function will only be execute
     only one time
 """
-if not hasattr(Group_old, 'description'):
+if not hasattr(Group, 'description'):
     description = models.TextField(null=True, blank=True)
-    description.contribute_to_class(Group_old, 'description')
-
-
-class Group(Group_old):
-
-    class Meta:
-        proxy = True
-        verbose_name = _('group')
-        verbose_name_plural = _('groups')
-        ordering = ('id', )
-
-    def __unicode__(self):
-        return self.name
+    description.contribute_to_class(Group, 'description')
 
 
 class PermissionsMixin(models.Model):
