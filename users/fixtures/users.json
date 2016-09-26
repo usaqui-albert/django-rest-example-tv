@@ -1,0 +1,47 @@
+[
+{
+    "model": "auth.group",
+    "pk": 1,
+    "fields": {
+        "name": "Pet owner",
+        "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
+        "permissions": []
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 2,
+    "fields": {
+        "name": "Breeder",
+        "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
+        "permissions": []
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 3,
+    "fields": {
+        "name": "Veterinarian",
+        "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
+        "permissions": []
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 4,
+    "fields": {
+        "name": "Vet Student",
+        "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
+        "permissions": []
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 5,
+    "fields": {
+        "name": "Vet Tech",
+        "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
+        "permissions": []
+    }
+}
+]
