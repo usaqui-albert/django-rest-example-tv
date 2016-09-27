@@ -11,16 +11,6 @@ VETERINARIAN_TYPES = (
     ('student', 'Student')
 )
 
-VETERINARIAN_AREA_INTEREST = (
-    ('small_animal', 'Small Animal'),
-    ('large_animal', 'Large Animal'),
-    ('academia', 'Academia'),
-    ('industry', 'Industry'),
-    ('government', 'Government'),
-    ('zoo', 'Zoo'),
-    ('other', 'Other')
-)
-
 
 class AreaInterest(models.Model):
     name = models.CharField(max_length=50)
