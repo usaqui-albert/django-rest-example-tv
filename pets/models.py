@@ -53,11 +53,15 @@ class Pet(models.Model):
     def __unicode__(self):
         return u"%s - %s" % (self.id, self.name)
 
-    def save(self, *args, **kwargs):
+    def age_verify(self):
         if self.age > get_current_year():
             raise ValueError(
                 'The pet age cannot be higher than the current year')
         if self.age < get_limit_year():
             raise ValueError(
                 'The pet age cannot be lower than ' + str(get_limit_year()))
+
+    def save(self, *args, **kwargs):
+        self.age_verify()
+
         return super(Pet, self).save(*args, **kwargs)
