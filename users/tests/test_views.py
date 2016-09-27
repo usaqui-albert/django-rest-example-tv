@@ -131,6 +131,21 @@ class TestUserView:
             'already exists.'
         )
 
+    def test_post_username_duplicate(self):
+        user = mixer.blend(models.User)
+        data = {
+            'email': 'asdas@asdas.com',
+            'password': 'a1234567',
+            'full_name': 'John Doe',
+            'username': user.username
+        }
+        req = self.factory.post('/', data=data)
+        resp = views.UserView.as_view()(req)
+        assert resp.status_code == 400, (
+            'Should return Bad Request (400) user with this username ' +
+            'already exists.'
+        )
+
     def test_get_request(self):
         user = mixer.blend(models.User)
         req = self.factory.get('/')
