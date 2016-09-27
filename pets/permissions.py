@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from rest_framework import permissions
 
 
 class IsOwnerReadOnly(BasePermission):
@@ -13,8 +14,8 @@ class IsOwnerReadOnly(BasePermission):
         # so we'll always allow GET, HEAD or OPTIONS requests.
         if not request.user.is_authenticated():
             return False
-        if request.method == 'GET':
-            return request.user.is_staff
+        if request.method in permissions.SAFE_METHODS:
+            return True
 
         # request user must be equal to obj user or request user is staff.
         return obj.user.id == request.user.id or request.user.is_staff
