@@ -3,7 +3,8 @@ from django.core.exceptions import ValidationError
 
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import (
+    ListCreateAPIView, RetrieveUpdateDestroyAPIView)
 from rest_framework import permissions
 
 from .models import Pet
@@ -57,3 +58,9 @@ class PetsListCreateView(ListCreateAPIView):
             )
 
         return self.list(request, *args, **kwargs)
+
+
+class PetRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    serializer_class = PetSerializer
+    permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
+    queryset = Pet.objects.all()
