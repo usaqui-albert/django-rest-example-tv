@@ -42,7 +42,7 @@
     "model": "auth.group",
     "pk": 4,
     "fields": {
-        "name": "Vet Student",
+        "name": "Student",
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
         "permissions": []
     }
@@ -51,7 +51,7 @@
     "model": "auth.group",
     "pk": 5,
     "fields": {
-        "name": "Vet Tech",
+        "name": "Technician",
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
         "permissions": []
     }
