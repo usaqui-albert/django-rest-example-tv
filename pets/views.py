@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView
+from rest_framework import permissions
 
 from .models import Pet
 from .serializers import PetSerializer
@@ -20,7 +21,7 @@ class PetsListCreateView(ListCreateAPIView):
     POST = Create a Pet
     """
     serializer_class = PetSerializer
-    permission_classes = (IsOwnerReadOnly,)
+    permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly,)
     queryset = Pet.objects.all()
 
     def create(self, request, *args, **kwargs):
@@ -39,14 +40,6 @@ class PetsListCreateView(ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            message = {
-                "detail": "Authentication credentials were not provided."
-            }
-            return Response(
-                message,
-                status=status.HTTP_403_FORBIDDEN,
-            )
         if not request.user.is_staff:
             message = {
                 "detail": "Admin level is needed for this action."
