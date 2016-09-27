@@ -40,12 +40,20 @@ class PetsListCreateView(ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
-            if not request.user.is_staff:
-                message = {
-                    "detail": "Authentication credentials were not provided."
-                }
-                return Response(
-                    message,
-                    status=status.HTTP_403_FORBIDDEN,
-                )
+            message = {
+                "detail": "Authentication credentials were not provided."
+            }
+            return Response(
+                message,
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if not request.user.is_staff:
+            message = {
+                "detail": "Admin level is needed for this action."
+            }
+            return Response(
+                message,
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         return self.list(request, *args, **kwargs)
