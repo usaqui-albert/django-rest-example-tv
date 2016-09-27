@@ -25,6 +25,13 @@ class PetsListCreateView(ListCreateAPIView):
     queryset = Pet.objects.all()
 
     def create(self, request, *args, **kwargs):
+        if not request.user.has_perm('pets.add_pet'):
+            return Response(
+                {
+                    'detail': 'This user doesn\'t have pets'
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         serializer = self.serializer_class(
             data=request.data,
             context={'user': request.user}
