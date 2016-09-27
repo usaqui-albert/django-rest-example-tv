@@ -7,7 +7,7 @@ from rest_framework.generics import ListCreateAPIView
 
 from .models import Pet
 from .serializers import PetSerializer
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerReadOnly
 
 
 class PetsListCreateView(ListCreateAPIView):
@@ -20,7 +20,7 @@ class PetsListCreateView(ListCreateAPIView):
     POST = Create a Pet
     """
     serializer_class = PetSerializer
-    permission_classes = (IsOwnerOrReadOnly,)
+    permission_classes = (IsOwnerReadOnly,)
     queryset = Pet.objects.all()
 
     def create(self, request, *args, **kwargs):
@@ -37,3 +37,15 @@ class PetsListCreateView(ListCreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            if not request.user.is_staff:
+                message = {
+                    "detail": "Authentication credentials were not provided."
+                }
+                return Response(
+                    message,
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        return self.list(request, *args, **kwargs)
