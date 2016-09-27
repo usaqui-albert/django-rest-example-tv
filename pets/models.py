@@ -1,11 +1,15 @@
 from __future__ import unicode_literals
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.timezone import now
 
 PET_GENDER = (
     ('male', 'Male'),
     ('female', 'Female')
+)
+PET_TYPE = (
+    ('dog', 'Dog'),
+    ('cat', 'Cat'),
+    ('other', 'Other')
 )
 
 
@@ -37,8 +41,8 @@ class Pet(models.Model):
     fixed = models.BooleanField(default=False)
     image = models.ImageField(null=True, blank=True, upload_to=uploads_path)
     age = models.IntegerField()  # We just need the year
-    pet_type = models.CharField(max_length=150)  # Need the list to complete
-    breed = models.CharField(max_length=150)  # Need the list to complete
+    pet_type = models.CharField(max_length=150, choices=PET_TYPE)
+    breed = models.CharField(max_length=150, null=True, blank=True)
     gender = models.CharField(choices=PET_GENDER, max_length=50)
     user = models.ForeignKey('users.User')  # 20 limit per user
 
