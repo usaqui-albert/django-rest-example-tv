@@ -62,8 +62,8 @@ post_save.connect(
 
 class Breeder(models.Model):
     breeder_type = models.CharField(max_length=100)
-    bussiness_name = models.CharField(max_length=100)
-    bussiness_website = models.URLField(null=True, blank=True)
+    business_name = models.CharField(max_length=100)
+    business_website = models.URLField(null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     country = models.ForeignKey('countries.Country')
     state = models.ForeignKey('countries.State')
