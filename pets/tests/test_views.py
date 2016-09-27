@@ -1,5 +1,6 @@
 """Testing Views"""
 import pytest
+from django.core.management import call_command
 
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
@@ -21,7 +22,7 @@ class TestPetListCreateView:
         req = self.factory.get('/')
         resp = views.PetsListCreateView.as_view()(req)
         assert resp.status_code == 401, (
-            'Should return Method UNAUTHORIZED (401) with a json ' +
+            'Should return Method Unauthorized (401) with a json ' +
             '"detail": "Authentication credentials were not provided."'
         )
 
@@ -44,7 +45,9 @@ class TestPetListCreateView:
             'with a list of all pets.')
 
     def test_post_valid_data(self):
-        user = mixer.blend(User)
+        call_command(
+            'loaddata', '../../users/fixtures/users.json', verbosity=0)
+        user = mixer.blend(User, groups_id=1)
         data = {
             'name': 'john doe',
             'fixed': 'True',
@@ -61,7 +64,9 @@ class TestPetListCreateView:
             'name, fixed, age, pet_type, breed, gender')
 
     def test_post_invalid_data(self):
-        user = mixer.blend(User)
+        call_command(
+            'loaddata', '../../users/fixtures/users.json', verbosity=0)
+        user = mixer.blend(User, groups_id=1)
         data = {
             'name': 'john doe',
             'fixed': 'True',
@@ -77,3 +82,20 @@ class TestPetListCreateView:
             'Should return Bad Request (400) with an error:' +
             'The pet age cannot be lower than 1916'
         )
+
+    def test_post_valid_data_invalid_group(self):
+        user = mixer.blend(User, group_id=3)
+        data = {
+            'name': 'john doe',
+            'fixed': 'True',
+            'age': '2016',
+            'pet_type': 'dog',
+            'breed': 'Labrator',
+            'gender': 'male',
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.PetsListCreateView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Unauthorized (401) and a json response with ' +
+            'This user doesn\'t have pets')
