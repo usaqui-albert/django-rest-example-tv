@@ -190,7 +190,7 @@ class TestBreederListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country.id,
             'state': state.id
 
@@ -210,7 +210,7 @@ class TestBreederListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country2.id,
             'state': state.id
 
@@ -229,7 +229,7 @@ class TestBreederListCreateView:
         resp = views.BreederListCreateView.as_view()(req)
 
         assert resp.status_code == 400, (
-            'This field <country, state, bussiness_name, breeder_type>' +
+            'This field <country, state, business_name, breeder_type>' +
             ' is required'
         )
 
@@ -239,7 +239,7 @@ class TestBreederListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': 100,
             'state': state.id
 
@@ -257,7 +257,7 @@ class TestBreederListCreateView:
         country = mixer.blend(models_c.Country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country.id,
             'state': 100
         }
@@ -358,7 +358,7 @@ class TestVeterinarianListCreateView:
         country = mixer.blend(models_c.Country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country.id,
             'state': 100
         }
