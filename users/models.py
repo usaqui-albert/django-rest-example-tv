@@ -52,8 +52,8 @@ post_save.connect(
 
 class Breeder(models.Model):
     breeder_type = models.CharField(max_length=100)
-    bussiness_name = models.CharField(max_length=100)
-    bussiness_website = models.URLField(null=True, blank=True)
+    business_name = models.CharField(max_length=100)
+    business_website = models.URLField(null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     country = models.ForeignKey('countries.Country')
     state = models.ForeignKey('countries.State')
@@ -88,6 +88,8 @@ class Veterinarian(models.Model):
         User, on_delete=models.CASCADE)
     veterinarian_type = models.CharField(
         choices=VETERINARIAN_TYPES, max_length=50)
+    country = models.ForeignKey('countries.Country')
+    state = models.ForeignKey('countries.State')
 
     class Meta:
         verbose_name = "Veterinarian"
@@ -95,6 +97,12 @@ class Veterinarian(models.Model):
 
     def __unicode__(self):
         return u'%s %s' % (self.user.full_name, self.veterinarian_type)
+
+    def save(self, *args, **kwargs):
+        if self.country != self.state.country:
+            raise ValueError(
+                "The state provided is not from the country provided.")
+        super(Veterinarian, self).save(*args, **kwargs)
 
 
 # Func to connect the signal on post save.

@@ -60,7 +60,7 @@ class BreederSerializer(serializers.ModelSerializer):
     class Meta:
         model = Breeder
         fields = (
-            'user', 'breeder_type', 'bussiness_name', 'bussiness_website',
+            'user', 'breeder_type', 'business_name', 'business_website',
             'country', 'state', 'verified', 'id'
         )
         read_only_fields = ('user', 'id')
@@ -76,7 +76,7 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         model = Veterinarian
         fields = (
             'user', 'area_interest', 'veterinary_school', 'graduating_year',
-            'verified', 'veterinarian_type', 'id'
+            'verified', 'veterinarian_type', 'id', 'country', 'state'
         )
         read_only_fields = ('user', 'id')
 

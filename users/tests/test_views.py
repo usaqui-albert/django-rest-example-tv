@@ -189,7 +189,7 @@ class TestBreederListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country.id,
             'state': state.id
 
@@ -209,7 +209,7 @@ class TestBreederListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country2.id,
             'state': state.id
 
@@ -228,7 +228,7 @@ class TestBreederListCreateView:
         resp = views.BreederListCreateView.as_view()(req)
 
         assert resp.status_code == 400, (
-            'This field <country, state, bussiness_name, breeder_type>' +
+            'This field <country, state, business_name, breeder_type>' +
             ' is required'
         )
 
@@ -238,7 +238,7 @@ class TestBreederListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': 100,
             'state': state.id
 
@@ -256,7 +256,7 @@ class TestBreederListCreateView:
         country = mixer.blend(models_c.Country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country.id,
             'state': 100
         }
@@ -306,11 +306,15 @@ class TestVeterinarianListCreateView:
     def test_post_request(self):
         user = mixer.blend(models.User)
         area_interest = mixer.blend(models.AreaInterest)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': 1989,
             'veterinarian_type': 'tech',
             'area_interest': area_interest.pk,
+            'country': country.id,
+            'state': state.id
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
@@ -353,7 +357,7 @@ class TestVeterinarianListCreateView:
         country = mixer.blend(models_c.Country)
         data = {
             'breeder_type': 'CharField',
-            'bussiness_name': 'CharField',
+            'business_name': 'CharField',
             'country': country.id,
             'state': 100
         }
@@ -445,7 +449,9 @@ class TestAuthorizeVetView:
 
     def test_patch_request(self):
         user = mixer.blend(models.User, is_staff=True)
-        vet = mixer.blend(models.Veterinarian)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        vet = mixer.blend(models.Veterinarian, country=country, state=state)
         req = self.factory.patch('/', data={'verified': "True"})
         force_authenticate(req, user=user)
         resp = views.AuthorizeVetView.as_view()(req, pk=vet.pk)
@@ -454,7 +460,9 @@ class TestAuthorizeVetView:
 
     def test_patch_request_no_admin(self):
         user = mixer.blend(models.User)
-        vet = mixer.blend(models.Veterinarian)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        vet = mixer.blend(models.Veterinarian, country=country, state=state)
         req = self.factory.patch('/', data={'verified': "True"})
         force_authenticate(req, user=user)
         resp = views.AuthorizeVetView.as_view()(req, pk=vet.pk)
