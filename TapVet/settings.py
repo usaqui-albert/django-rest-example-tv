@@ -41,6 +41,7 @@ DJANGO_APPS = (
 INTERNAL_APPS = (
     'users',
     'countries',
+    'pets',
 )
 
 THIRD_PARTY_APPS = (
