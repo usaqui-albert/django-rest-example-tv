@@ -5,10 +5,12 @@ from django.db.models.signals import post_save
 from .signals import create_auth_token, new_breeder_signal, new_vet_signal
 from .mixins import PermissionsMixin
 
+
+#  The Vet type code is now the same id of the group it represents
 VETERINARIAN_TYPES = (
-    ('tech', 'Technician'),
-    ('vet', 'Veterinarian'),
-    ('student', 'Student')
+    ('3', 'Veterinarian'),
+    ('4', 'Student'),
+    ('5', 'Technician')
 )
 
 VETERINARIAN_AREA_INTEREST = (
@@ -67,7 +69,6 @@ class Breeder(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     country = models.ForeignKey('countries.Country')
     state = models.ForeignKey('countries.State')
-    verified = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Breeder"
