@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from .views import (
     UserAuth, UserView, VeterinarianListCreateView,
-    BreederListCreateView, GroupsListView, UserGetUpdateView,
+    BreederListCreateView, GroupsListView,
     AuthorizeBreederView, AuthorizeVetView, AreaInterestListView,
     UserRetriveUpdateView
 )
