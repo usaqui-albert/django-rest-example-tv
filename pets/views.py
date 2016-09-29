@@ -72,12 +72,11 @@ class PetRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 class PetListByUser(ListAPIView):
     serializer_class = PetSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = Pet.objects.all()
 
     def get_queryset(self):
         """
         Get the list of pets for the user pk
         """
         user = get_object_or_404(User, pk=self.kwargs['pk'])
-        queryset = self.queryset.filter(user=user)
+        queryset = Pet.objects.filter(user=user)
         return queryset
