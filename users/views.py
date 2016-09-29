@@ -80,7 +80,7 @@ class UserView(generics.ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class UserGetUpdateView(generics.RetrieveUpdateAPIView):
+class UserGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
     """
     Service to update users.
     PUT Method is used to update all required fields. Will responde in case
@@ -95,21 +95,17 @@ class UserGetUpdateView(generics.RetrieveUpdateAPIView):
     """
     serializer_class = UserSerializers
     permission_classes = (IsOwnerOrReadOnly,)
-    allowed_methods = ('GET', 'PUT', 'PATCH')
+    allowed_methods = ('GET', 'PUT', 'PATCH', 'DELETE')
     queryset = User.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data,
-            context={'user': request.user}
-        )
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            dict(serializer.data, token=str(user.auth_token)),
-            status=status.HTTP_201_CREATED, headers=headers
-        )
+    def delete(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response(
+                {
+                    'detail': 'You need admin status to delete'
+                },
+                status.HTTP_401_UNAUTHORIZED)
+        return self.destroy(request, *args, **kwargs)
 
 
 class GroupsListView(generics.ListAPIView):
