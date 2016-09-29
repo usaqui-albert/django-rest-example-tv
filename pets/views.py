@@ -1,11 +1,14 @@
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import (
-    ListCreateAPIView, RetrieveUpdateDestroyAPIView)
+    ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView)
 from rest_framework import permissions
+
+from users.models import User
 
 from .models import Pet
 from .serializers import PetSerializer
@@ -64,3 +67,17 @@ class PetRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = PetSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
     queryset = Pet.objects.all()
+
+
+class PetListByUser(ListAPIView):
+    serializer_class = PetSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = Pet.objects.all()
+
+    def get_queryset(self):
+        """
+        Get the list of pets for the user pk
+        """
+        user = get_object_or_404(User, pk=self.kwargs['pk'])
+        queryset = self.queryset.filter(user=user)
+        return queryset
