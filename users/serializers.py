@@ -61,7 +61,7 @@ class BreederSerializer(serializers.ModelSerializer):
         model = Breeder
         fields = (
             'user', 'breeder_type', 'business_name', 'business_website',
-            'country', 'state', 'verified', 'id'
+            'country', 'state', 'id'
         )
         read_only_fields = ('user', 'id')
 

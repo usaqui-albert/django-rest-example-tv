@@ -227,7 +227,7 @@ class TestBreederListCreateView:
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.BreederListCreateView.as_view()(req)
-
+        user.refresh_from_db()
         assert resp.status_code == 201, (
             'Should return Created (201) with all valid parameters'
         )
@@ -321,7 +321,7 @@ class TestVeterinarianListCreateView:
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': 1989,
-            'veterinarian_type': 'tech',
+            'veterinarian_type': 5,
             'area_interest': 'dogs'
 
         }
@@ -341,7 +341,7 @@ class TestVeterinarianListCreateView:
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': 1989,
-            'veterinarian_type': 'tech',
+            'veterinarian_type': 5,
             'area_interest': area_interest.pk,
             'country': country.id,
             'state': state.id

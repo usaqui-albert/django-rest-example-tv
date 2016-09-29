@@ -22,6 +22,9 @@ def new_breeder_signal(sender, instance=None, created=False, **kwargs):
 
 def new_vet_signal(sender, instance=None, created=False, **kwargs):
     if created:
+        if instance.veterinarian_type == '4':
+            instance.verified = True
+            instance.save()
         message_title = getattr(settings, 'VET_MESSAGE_ADMIN_TITLE', None)
         message_body = 'There is a need vet registration.'
         msg_html = render_to_string(
