@@ -7,7 +7,6 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
 
 from mixer.backend.django import mixer
-
 from countries import models as models_c
 from .. import views
 from .. import models
@@ -165,6 +164,14 @@ class TestUserDetailView:
         resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, 'Should return OK (200)'
 
+    def test_post_request(self):
+        user = mixer.blend(models.User)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 405, (
+            'Should HTTP 405 Method Not Allowed')
+
     def test_update_request(self):
         user = mixer.blend(models.User)
         data = {
@@ -178,6 +185,45 @@ class TestUserDetailView:
             'Should return OK (200) given the data to update is valid')
         user.refresh_from_db()
         assert user.full_name == 'Albert Usaqui', 'Should update the user'
+
+    def test_update_no_auth(self):
+        user = mixer.blend(models.User)
+        data = {
+            "full_name": "Albert Usaqui",
+            "email": user.email,
+        }
+        req = self.factory.patch('/', data=data)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 401, (
+            'Should return Http 401 Unauthorized')
+
+    def test_put_request(self):
+        user = mixer.blend(models.User)
+        data = {
+            "full_name": "Albert Usaqui",
+            "email": user.email,
+        }
+        req = self.factory.put('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 200, (
+            'Should return HTTP 200 OK')
+
+    def test_delete_request(self):
+        user = mixer.blend(models.User)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 401, (
+            'Should return HTTP 401 Unauthorized')
+
+    def test_delete_request_admin(self):
+        user = mixer.blend(models.User, is_staff=True)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 204, (
+            'Should return HTTP 204 No Content')
 
 
 class GroupsListView:
