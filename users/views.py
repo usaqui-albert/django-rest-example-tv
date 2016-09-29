@@ -30,7 +30,7 @@ class UserAuth(ObtainAuthToken):
         try:
             serializer.is_valid(raise_exception=True)
         except:
-            msg = {'detail': 'Unable to log in with provided credentials'}
+            msg = {'detail': 'Your username and password do not match.'}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
