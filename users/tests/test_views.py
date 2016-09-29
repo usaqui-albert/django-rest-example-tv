@@ -8,8 +8,11 @@ from rest_framework.test import force_authenticate
 
 from mixer.backend.django import mixer
 from countries import models as models_c
+from pets.models import get_current_year, get_limit_year
+
 from .. import views
 from .. import models
+
 
 pytestmark = pytest.mark.django_db
 
@@ -386,7 +389,7 @@ class TestVeterinarianListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1989,
+            'graduating_year': get_current_year() - 5,
             'veterinarian_type': 5,
             'area_interest': area_interest.pk,
             'country': country.id,
@@ -407,8 +410,8 @@ class TestVeterinarianListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1900,
-            'veterinarian_type': 'tech',
+            'graduating_year': get_limit_year() - 10,
+            'veterinarian_type': '5',
             'area_interest': area_interest.pk,
             'country': country.id,
             'state': state.id
@@ -428,8 +431,8 @@ class TestVeterinarianListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 2017,
-            'veterinarian_type': 'tech',
+            'graduating_year': get_current_year() + 20,
+            'veterinarian_type': '5',
             'area_interest': area_interest.pk,
             'country': country.id,
             'state': state.id
@@ -447,14 +450,13 @@ class TestVeterinarianListCreateView:
         area_interest = mixer.blend(models.AreaInterest)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1989,
-            'veterinarian_type': 'student',
+            'graduating_year': get_current_year() - 10,
+            'veterinarian_type': '4',
             'area_interest': area_interest.pk,
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.VeterinarianListCreateView.as_view()(req)
-
         assert resp.status_code == 201, (
             'Should return object created (201)'
         )
@@ -464,8 +466,8 @@ class TestVeterinarianListCreateView:
         area_interest = mixer.blend(models.AreaInterest)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1989,
-            'veterinarian_type': 'vet',
+            'graduating_year': get_current_year() - 10,
+            'veterinarian_type': '3',
             'area_interest': area_interest.pk,
         }
         req = self.factory.post('/', data=data)
@@ -491,7 +493,7 @@ class TestVeterinarianListCreateView:
         user = mixer.blend(models.User)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1989,
+            'graduating_year': get_current_year() - 10,
             'veterinarian_type': 'other',
             'area_interest': 'dogs'
 
@@ -510,7 +512,7 @@ class TestVeterinarianListCreateView:
         country = mixer.blend(models_c.Country)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1999,
+            'graduating_year': get_current_year() - 11,
             'veterinarian_type': 'vet',
             'area_interest': area_interest.id,
             'country': country.id,
@@ -531,7 +533,7 @@ class TestVeterinarianListCreateView:
         state = mixer.blend(models_c.State)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1999,
+            'graduating_year': get_current_year() - 5,
             'veterinarian_type': 'vet',
             'area_interest': area_interest.id,
             'country': country.id,
