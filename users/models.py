@@ -103,7 +103,7 @@ class Veterinarian(models.Model):
         return u'%s %s' % (self.user.full_name, self.veterinarian_type)
 
     def save(self, *args, **kwargs):
-        if self.veterinarian_type != 'student':
+        if self.veterinarian_type != '4':
             if self.graduating_year > get_current_year():
                 raise ValueError(
                     'The graduating year cannot be higher than ' +
