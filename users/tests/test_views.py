@@ -225,6 +225,19 @@ class TestUserDetailView:
         assert resp.status_code == 204, (
             'Should return HTTP 204 No Content')
 
+    def test_different_user(self):
+        user = mixer.blend(models.User)
+        user2 = mixer.blend(models.User)
+        data = {
+            "full_name": "Albert Usaqui",
+            "email": user.email,
+        }
+        req = self.factory.patch('/', data=data)
+        force_authenticate(req, user=user2)
+        resp = views.UserRetriveUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 403, (
+            'Should return HTTP 403 Forbidden')
+
 
 class GroupsListView:
     factory = RequestFactory()
