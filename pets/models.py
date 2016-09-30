@@ -40,7 +40,7 @@ class Pet(models.Model):
     name = models.CharField(max_length=50)
     fixed = models.BooleanField(default=False)
     image = models.ImageField(null=True, blank=True, upload_to=uploads_path)
-    age = models.IntegerField()  # We just need the year
+    birth_year = models.IntegerField()  # We just need the year
     pet_type = models.CharField(max_length=150, choices=PET_TYPE)
     breed = models.CharField(max_length=150, null=True, blank=True)
     gender = models.CharField(choices=PET_GENDER, max_length=50)
@@ -54,12 +54,13 @@ class Pet(models.Model):
         return u"%s - %s" % (self.id, self.name)
 
     def age_verify(self):
-        if self.age > get_current_year():
+        if self.birth_year > get_current_year():
             raise ValueError(
-                'The pet age cannot be higher than the current year')
-        if self.age < get_limit_year():
+                'The pet year of birth cannot be higher than the current year')
+        if self.birth_year < get_limit_year():
             raise ValueError(
-                'The pet age cannot be lower than ' + str(get_limit_year()))
+                'The pet year of birth cannot be ' +
+                'lower than' + str(get_limit_year()))
 
     def save(self, *args, **kwargs):
         self.age_verify()

@@ -126,3 +126,37 @@ class AreaInterestSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
             'name': {'read_only': True}
         }
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    breeder = BreederSerializer(required=False)
+    veterinarian = VeterinarianSerializer(required=False)
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'full_name', 'groups', 'id',
+            'breeder', 'veterinarian')
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'id': {'read_only': True},
+            'username': {'read_only': True},
+            'user': {'read_only': True},
+            'groups': {'read_only': True},
+            'verified': {'read_only': True}
+        }
+
+    def update(self, instance, validated_data):
+        breeder_data = validated_data.pop('breeder', None)
+        veterinarian_data = validated_data.pop('veterinarian', None)
+
+        if instance.groups == 2:
+            instance.breeder.save(update_fields=breeder_data)
+        elif instance.groups in [3, 4, 5]:
+            instance.veterinarian.save(update_fields=veterinarian_data)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        return instance
