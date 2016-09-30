@@ -51,7 +51,7 @@ class TestPetListCreateView:
         data = {
             'name': 'john doe',
             'fixed': 'True',
-            'age': '2016',
+            'birth_year': '2016',
             'pet_type': 'dog',
             'breed': 'Labrator',
             'gender': 'male',
@@ -61,7 +61,7 @@ class TestPetListCreateView:
         resp = views.PetsListCreateView.as_view()(req)
         assert resp.status_code == 201, (
             'Should return Created (201) and a json response with ' +
-            'name, fixed, age, pet_type, breed, gender')
+            'name, fixed, birth_year, pet_type, breed, gender')
 
     def test_post_invalid_data(self):
         call_command(
@@ -70,7 +70,7 @@ class TestPetListCreateView:
         data = {
             'name': 'john doe',
             'fixed': 'True',
-            'age': '16',
+            'birth_year': '16',
             'pet_type': 'dog',
             'breed': 'Labrator',
             'gender': 'male',
@@ -80,7 +80,7 @@ class TestPetListCreateView:
         resp = views.PetsListCreateView.as_view()(req)
         assert resp.status_code == 400, (
             'Should return Bad Request (400) with an error:' +
-            'The pet age cannot be lower than 1916'
+            'The pet birth_year cannot be lower than 1916'
         )
 
     def test_post_valid_data_invalid_group(self):
@@ -88,7 +88,7 @@ class TestPetListCreateView:
         data = {
             'name': 'john doe',
             'fixed': 'True',
-            'age': '2016',
+            'birth_year': '2016',
             'pet_type': 'dog',
             'breed': 'Labrator',
             'gender': 'male',

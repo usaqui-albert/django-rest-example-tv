@@ -8,7 +8,8 @@ class PetAdmin(admin.ModelAdmin):
         Admin View for Pet
     '''
     list_display = (
-        'user', 'id', 'name', 'fixed', 'age', 'pet_type', 'breed', 'gender')
+        'user', 'id', 'name', 'fixed', 'birth_year', 'pet_type', 'breed',
+        'gender')
     list_filter = ('fixed',)
     search_fields = ('user',)
 

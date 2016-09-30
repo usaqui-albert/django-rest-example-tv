@@ -12,7 +12,8 @@ from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
-    BreederSerializer, GroupsSerializer, AreaInterestSerializer
+    BreederSerializer, GroupsSerializer, AreaInterestSerializer,
+    UserUpdateSerializer
 )
 
 
@@ -213,3 +214,26 @@ class AreaInterestListView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = AreaInterestSerializer
     queryset = AreaInterest.objects.all()
+
+
+class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+    '''
+    One view to rule them all, one view to edit them.
+
+    Retrive and Update:
+    1) Users
+    2) Pets Owners
+    3) Breeders
+    4) Veterinarians
+    5) Students
+    6) Technicians
+
+    Accepted Methods:
+
+    GET = Retrive the object
+    PUT = Modify the entire object, need the full instace
+    PATCH = Modify only the needed fields
+    '''
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
+    serializer_class = UserUpdateSerializer
+    queryset = User.objects.all()

@@ -161,7 +161,7 @@ class TestUserDetailView:
         user = mixer.blend(models.User)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, 'Should return OK (200)'
 
     def test_post_request(self):
@@ -180,7 +180,7 @@ class TestUserDetailView:
         }
         req = self.factory.patch('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, (
             'Should return OK (200) given the data to update is valid')
         user.refresh_from_db()
@@ -224,6 +224,19 @@ class TestUserDetailView:
         resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 204, (
             'Should return HTTP 204 No Content')
+
+    def test_different_user(self):
+        user = mixer.blend(models.User)
+        user2 = mixer.blend(models.User)
+        data = {
+            "full_name": "Albert Usaqui",
+            "email": user.email,
+        }
+        req = self.factory.patch('/', data=data)
+        force_authenticate(req, user=user2)
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 403, (
+            'Should return HTTP 403 Forbidden')
 
 
 class GroupsListView:
