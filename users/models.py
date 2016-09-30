@@ -1,6 +1,9 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db.models.signals import post_save
+
+from pets.models import get_current_year, get_limit_year
 
 from .signals import create_auth_token, new_breeder_signal, new_vet_signal
 from .mixins import PermissionsMixin
@@ -89,8 +92,8 @@ class Veterinarian(models.Model):
         User, on_delete=models.CASCADE)
     veterinarian_type = models.CharField(
         choices=VETERINARIAN_TYPES, max_length=50)
-    country = models.ForeignKey('countries.Country')
-    state = models.ForeignKey('countries.State')
+    country = models.ForeignKey('countries.Country', blank=True, null=True)
+    state = models.ForeignKey('countries.State', blank=True, null=True)
 
     class Meta:
         verbose_name = "Veterinarian"
@@ -100,9 +103,31 @@ class Veterinarian(models.Model):
         return u'%s %s' % (self.user.full_name, self.veterinarian_type)
 
     def save(self, *args, **kwargs):
-        if self.country != self.state.country:
-            raise ValueError(
-                "The state provided is not from the country provided.")
+        if self.veterinarian_type != '4':
+            if self.graduating_year > get_current_year():
+                raise ValueError(
+                    'The graduating year cannot be higher than ' +
+                    'the current year')
+            if self.graduating_year < get_limit_year():
+                raise ValueError(
+                    'The graduating year cannot be lower than ' +
+                    str(get_limit_year()))
+            if self.country is None or self.state is None:
+                raise ValidationError(
+                    "Country and state are required"
+                )
+            if self.country != self.state.country:
+                raise ValueError(
+                    "The state provided is not from the country provided.")
+        else:
+            if self.graduating_year < get_limit_year():
+                raise ValueError(
+                    'The graduating year cannot be lower than ' +
+                    str(get_limit_year()))
+            if self.graduating_year > get_current_year() + 20:
+                raise ValueError(
+                    'The graduating year cannot be higher than ' +
+                    'the year ' + str(get_current_year() + 20))
         super(Veterinarian, self).save(*args, **kwargs)
 
 
