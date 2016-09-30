@@ -9,6 +9,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework import generics, permissions
 from rest_framework import status
 
+from TapVet import messages
+
 from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
 from .serializers import (
@@ -32,7 +34,7 @@ class UserAuth(ObtainAuthToken):
         try:
             serializer.is_valid(raise_exception=True)
         except:
-            msg = {'detail': 'Your username and password do not match.'}
+            msg = {'detail': messages.bad_login}
             return Response(msg, status=status.HTTP_400_BAD_REQUEST)
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
@@ -72,7 +74,7 @@ class UserView(generics.ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             message = {
-                "detail": "Authentication credentials were not provided."
+                "detail": messages.user_login
             }
             return Response(
                 message,
@@ -103,7 +105,7 @@ class UserGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
         if not request.user.is_staff:
             return Response(
                 {
-                    'detail': 'You need admin status to delete'
+                    'detail': messages.admin_delete
                 },
                 status.HTTP_401_UNAUTHORIZED)
         return self.destroy(request, *args, **kwargs)
