@@ -143,6 +143,9 @@ AUTH_USER_MODEL = 'users.User'
 # CORS to allow any connection from any host (or any mobile phone)
 CORS_ORIGIN_ALLOW_ALL = True
 
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
+
+MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
