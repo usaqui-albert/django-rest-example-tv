@@ -234,6 +234,6 @@ class UserRetriveUpdateView(generics.RetrieveUpdateAPIView):
     PUT = Modify the entire object, need the full instace
     PATCH = Modify only the needed fields
     '''
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
