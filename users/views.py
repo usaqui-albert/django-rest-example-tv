@@ -216,7 +216,7 @@ class AreaInterestListView(generics.ListAPIView):
     queryset = AreaInterest.objects.all()
 
 
-class UserRetriveUpdateView(generics.RetrieveUpdateAPIView):
+class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     '''
     One view to rule them all, one view to edit them.
 
