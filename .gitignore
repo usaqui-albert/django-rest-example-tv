@@ -20,4 +20,4 @@ htmlcov/
 # Ignore cache
 .cache/
 # Ignore Upload folder
-uploads/*
+media/uploads/*
