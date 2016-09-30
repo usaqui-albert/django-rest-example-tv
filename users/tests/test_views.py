@@ -8,8 +8,11 @@ from rest_framework.test import force_authenticate
 
 from mixer.backend.django import mixer
 from countries import models as models_c
+from pets.models import get_current_year, get_limit_year
+
 from .. import views
 from .. import models
+
 
 pytestmark = pytest.mark.django_db
 
@@ -399,7 +402,7 @@ class TestVeterinarianListCreateView:
         state = mixer.blend(models_c.State, country=country)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1989,
+            'graduating_year': get_current_year() - 5,
             'veterinarian_type': 5,
             'area_interest': area_interest.pk,
             'country': country.id,
@@ -411,6 +414,81 @@ class TestVeterinarianListCreateView:
 
         assert resp.status_code == 201, (
             'Should return object created (201)'
+        )
+
+    def test_post_request_bad_year(self):
+        user = mixer.blend(models.User)
+        area_interest = mixer.blend(models.AreaInterest)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'veterinary_school': 'CharField',
+            'graduating_year': get_limit_year() - 10,
+            'veterinarian_type': '5',
+            'area_interest': area_interest.pk,
+            'country': country.id,
+            'state': state.id
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'Should return HTTP 400 Bad Request, bad year'
+        )
+
+    def test_post_request_bad_year_high(self):
+        user = mixer.blend(models.User)
+        area_interest = mixer.blend(models.AreaInterest)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'veterinary_school': 'CharField',
+            'graduating_year': get_current_year() + 20,
+            'veterinarian_type': '5',
+            'area_interest': area_interest.pk,
+            'country': country.id,
+            'state': state.id
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'Should return HTTP 400 Bad Request, bad year'
+        )
+
+    def test_post_request_no_country_student(self):
+        user = mixer.blend(models.User)
+        area_interest = mixer.blend(models.AreaInterest)
+        data = {
+            'veterinary_school': 'CharField',
+            'graduating_year': get_current_year() - 10,
+            'veterinarian_type': '4',
+            'area_interest': area_interest.pk,
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+        assert resp.status_code == 201, (
+            'Should return object created (201)'
+        )
+
+    def test_post_request_no_country_vet(self):
+        user = mixer.blend(models.User)
+        area_interest = mixer.blend(models.AreaInterest)
+        data = {
+            'veterinary_school': 'CharField',
+            'graduating_year': get_current_year() - 10,
+            'veterinarian_type': '3',
+            'area_interest': area_interest.pk,
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+
+        assert resp.status_code == 400, (
+            'Should return HTTP 400 Bad Request'
         )
 
     def test_post_request_empty(self):
@@ -428,7 +506,7 @@ class TestVeterinarianListCreateView:
         user = mixer.blend(models.User)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': 1989,
+            'graduating_year': get_current_year() - 10,
             'veterinarian_type': 'other',
             'area_interest': 'dogs'
 
@@ -438,15 +516,18 @@ class TestVeterinarianListCreateView:
         resp = views.VeterinarianListCreateView.as_view()(req)
 
         assert resp.status_code == 400, (
-            'Invalid pk 100 - object does not exist'
+            'Should return HTTP 400 Bad Request'
         )
 
     def test_post_request_bad_state_no_exists(self):
         user = mixer.blend(models.User)
+        area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         data = {
-            'breeder_type': 'CharField',
-            'business_name': 'CharField',
+            'veterinary_school': 'CharField',
+            'graduating_year': get_current_year() - 11,
+            'veterinarian_type': 'vet',
+            'area_interest': area_interest.id,
             'country': country.id,
             'state': 100
         }
@@ -455,7 +536,27 @@ class TestVeterinarianListCreateView:
         resp = views.VeterinarianListCreateView.as_view()(req)
 
         assert resp.status_code == 400, (
-            'Invalid pk 100 - object does not exist'
+            'Should return HTTP 400 Bad Request'
+        )
+
+    def test_post_request_bad_state(self):
+        user = mixer.blend(models.User)
+        area_interest = mixer.blend(models.AreaInterest)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State)
+        data = {
+            'veterinary_school': 'CharField',
+            'graduating_year': get_current_year() - 5,
+            'veterinarian_type': 'vet',
+            'area_interest': area_interest.id,
+            'country': country.id,
+            'state': state.id
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.VeterinarianListCreateView.as_view()(req)
+        assert resp.status_code == 400, (
+            'Should return HTTP 400 Bad Request'
         )
 
 
@@ -540,7 +641,9 @@ class TestAuthorizeVetView:
         user = mixer.blend(models.User, is_staff=True)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
-        vet = mixer.blend(models.Veterinarian, country=country, state=state)
+        vet = mixer.blend(
+            models.Veterinarian, country=country, state=state,
+            graduating_year=2015)
         req = self.factory.patch('/', data={'verified': "True"})
         force_authenticate(req, user=user)
         resp = views.AuthorizeVetView.as_view()(req, pk=vet.pk)
@@ -551,7 +654,9 @@ class TestAuthorizeVetView:
         user = mixer.blend(models.User)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
-        vet = mixer.blend(models.Veterinarian, country=country, state=state)
+        vet = mixer.blend(
+            models.Veterinarian, country=country, state=state,
+            graduating_year=2015)
         req = self.factory.patch('/', data={'verified': "True"})
         force_authenticate(req, user=user)
         resp = views.AuthorizeVetView.as_view()(req, pk=vet.pk)
