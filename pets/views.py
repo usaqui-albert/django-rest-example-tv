@@ -42,7 +42,10 @@ class PetsListCreateView(ListCreateAPIView):
         )
         serializer.is_valid(raise_exception=True)
         try:
-            serializer.save()
+            if 'image' in request.data:
+                serializer.save(image=request.data['image'])
+            else:
+                serializer.save()
         except (IntegrityError, ValueError, ValidationError) as e:
             error = {'detail': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
