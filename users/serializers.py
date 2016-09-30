@@ -147,7 +147,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         }
 
     def update(self, instance, validated_data):
-        # import ipdb; ipdb.set_trace()
         breeder_data = validated_data.pop('breeder', None)
         veterinarian_data = validated_data.pop('veterinarian', None)
 
