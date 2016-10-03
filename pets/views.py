@@ -8,6 +8,7 @@ from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView)
 from rest_framework import permissions
 
+from TapVet import messages
 from users.models import User
 
 from .models import Pet
@@ -32,7 +33,7 @@ class PetsListCreateView(ListCreateAPIView):
         if not request.user.has_perm('pets.add_pet'):
             return Response(
                 {
-                    'detail': 'This user doesn\'t have pets'
+                    'detail': messages.pet_no_pets
                 },
                 status=status.HTTP_401_UNAUTHORIZED,
             )
@@ -56,7 +57,7 @@ class PetsListCreateView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         if not request.user.is_staff:
             message = {
-                "detail": "Admin level is needed for this action."
+                "detail": messages.admin_required
             }
             return Response(
                 message,
@@ -70,6 +71,21 @@ class PetRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = PetSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
     queryset = Pet.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer, request.data)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer, data):
+        if 'image' in data:
+            serializer.save(image=data['image'])
+        else:
+            serializer.save()
 
 
 class PetListByUser(ListAPIView):

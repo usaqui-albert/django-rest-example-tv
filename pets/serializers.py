@@ -21,7 +21,10 @@ class PetSerializer(serializers.ModelSerializer):
         }
 
     def get_image_url(self, obj):
-        return obj.image.url
+        if obj.image:
+            return obj.image.url
+        else:
+            return None
 
     def create(self, validated_data):
         if Pet.objects.filter(user=self.context['user']).count() > 19:
