@@ -48,11 +48,12 @@ class TestPetListCreateView:
         call_command(
             'loaddata', '../../users/fixtures/users.json', verbosity=0)
         user = mixer.blend(User, groups_id=1)
+        pet_type = mixer.blend(models.PetType)
         data = {
             'name': 'john doe',
             'fixed': 'True',
             'birth_year': '2016',
-            'pet_type': 'dog',
+            'pet_type': pet_type.id,
             'breed': 'Labrator',
             'gender': 'male',
         }
@@ -67,11 +68,12 @@ class TestPetListCreateView:
         call_command(
             'loaddata', '../../users/fixtures/users.json', verbosity=0)
         user = mixer.blend(User, groups_id=1)
+        pet_type = mixer.blend(models.PetType)
         data = {
             'name': 'john doe',
             'fixed': 'True',
             'birth_year': '16',
-            'pet_type': 'dog',
+            'pet_type': pet_type.id,
             'breed': 'Labrator',
             'gender': 'male',
         }
@@ -85,11 +87,12 @@ class TestPetListCreateView:
 
     def test_post_valid_data_invalid_group(self):
         user = mixer.blend(User, group_id=3)
+        pet_type = mixer.blend(models.PetType)
         data = {
             'name': 'john doe',
             'fixed': 'True',
             'birth_year': '2016',
-            'pet_type': 'dog',
+            'pet_type': pet_type.id,
             'breed': 'Labrator',
             'gender': 'male',
         }
