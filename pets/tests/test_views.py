@@ -102,3 +102,41 @@ class TestPetListCreateView:
         assert resp.status_code == 401, (
             'Should return Unauthorized (401) and a json response with ' +
             'This user doesn\'t have pets')
+
+
+class TestPetTypeListView:
+    factory = APIRequestFactory()
+
+    def test_get_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.PetTypeListView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_post_no_auth(self):
+        req = self.factory.post('/')
+        resp = views.PetTypeListView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_get(self):
+        user = mixer.blend(User)
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.PetTypeListView.as_view()(req)
+        assert resp.status_code == 200, (
+            'Should  return HTTP 200 OK, with a list of pet types')
+
+    def test_post(self):
+        user = mixer.blend(User)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.PetTypeListView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405) given the method ' +
+            'does not exists'
+        )

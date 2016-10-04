@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Pet
+from .models import Pet, PetType
 
 
 class PetSerializer(serializers.ModelSerializer):
@@ -32,3 +32,13 @@ class PetSerializer(serializers.ModelSerializer):
         pet = Pet(**dict(validated_data, user=self.context['user']))
         pet.save()
         return pet
+
+
+class PetTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PetType
+        fields = ('id', 'name')
+        extra_kwargs = {
+            'id': {'read_only': True}
+        }
