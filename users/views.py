@@ -240,3 +240,16 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_update(serializer)
+        except ValueError as e:
+            error = {'detail': str(e)}
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data)
