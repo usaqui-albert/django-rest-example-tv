@@ -11,8 +11,8 @@ from rest_framework import permissions
 from TapVet import messages
 from users.models import User
 
-from .models import Pet
-from .serializers import PetSerializer
+from .models import Pet, PetType
+from .serializers import PetSerializer, PetTypeSerializer
 from .permissions import IsOwnerReadOnly
 
 
@@ -99,3 +99,9 @@ class PetListByUser(ListAPIView):
         user = get_object_or_404(User, pk=self.kwargs['pk'])
         queryset = Pet.objects.filter(user=user)
         return queryset
+
+
+class PetTypeListView(ListAPIView):
+    serializer_class = PetTypeSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = PetType.objects.all()

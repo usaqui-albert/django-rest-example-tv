@@ -1,0 +1,23 @@
+[
+{
+    "model": "pets.pettype",
+    "pk": 1,
+    "fields": {
+        "name": "Dog"
+    }
+},
+{
+    "model": "pets.pettype",
+    "pk": 2,
+    "fields": {
+        "name": "Cat"
+    }
+},
+{
+    "model": "pets.pettype",
+    "pk": 3,
+    "fields": {
+        "name": "Other"
+    }
+}
+]

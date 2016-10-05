@@ -36,12 +36,23 @@ def uploads_path(instance, filename):
     return '/'.join(['uploads', instance.user.username, filename])
 
 
+class PetType(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "Pet Type"
+        verbose_name_plural = "Pet Types"
+
+    def __unicode__(self):
+        return u'%s' % (self.name)
+
+
 class Pet(models.Model):
     name = models.CharField(max_length=50)
     fixed = models.BooleanField(default=False)
     image = models.ImageField(null=True, blank=True, upload_to=uploads_path)
     birth_year = models.IntegerField()  # We just need the year
-    pet_type = models.CharField(max_length=150, choices=PET_TYPE)
+    pet_type = models.ForeignKey(PetType)
     breed = models.CharField(max_length=150, null=True, blank=True)
     gender = models.CharField(choices=PET_GENDER, max_length=50)
     user = models.ForeignKey('users.User')  # 20 limit per user
