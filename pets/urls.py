@@ -8,5 +8,5 @@ from .views import (
 urlpatterns = [
     url(r'^$', PetsListCreateView.as_view()),
     url(r'^(?P<pk>\d+)/$', PetRetriveUpdateDeleteView.as_view()),
-    url(r'^pet-type/$', PetTypeListView.as_view()),
+    url(r'^pet-types/$', PetTypeListView.as_view()),
 ]
