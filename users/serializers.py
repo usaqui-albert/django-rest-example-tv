@@ -158,8 +158,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         elif instance.groups.id in [3, 4, 5]:
             if veterinarian_data:
                 area_interest = veterinarian_data.pop('area_interest', [])
-                instance.veterinarian.area_interest.set(
-                    [area for area in area_interest])
+                instance.veterinarian.area_interest.set(area_interest)
                 for attr, value in veterinarian_data.items():
                     setattr(instance.veterinarian, attr, value)
                 instance.veterinarian.save()
