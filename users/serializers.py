@@ -150,13 +150,20 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         breeder_data = validated_data.pop('breeder', None)
         veterinarian_data = validated_data.pop('veterinarian', None)
 
-        if instance.groups == 2:
-            instance.breeder.save(update_fields=breeder_data)
-        elif instance.groups in [3, 4, 5]:
-            instance.veterinarian.save(update_fields=veterinarian_data)
+        if instance.groups.id == 2:
+            if breeder_data:
+                for attr, value in breeder_data.items():
+                    setattr(instance.breeder, attr, value)
+                instance.breeder.save()
+        elif instance.groups.id in [3, 4, 5]:
+            if veterinarian_data:
+                area_interest = veterinarian_data.pop('area_interest', [])
+                instance.veterinarian.area_interest.set(area_interest)
+                for attr, value in veterinarian_data.items():
+                    setattr(instance.veterinarian, attr, value)
+                instance.veterinarian.save()
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
         return instance

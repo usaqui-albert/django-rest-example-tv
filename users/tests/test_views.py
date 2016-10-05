@@ -2,6 +2,7 @@
 import pytest
 
 from django.test import RequestFactory
+from django.core.management import call_command
 
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
@@ -176,7 +177,9 @@ class TestUserDetailView:
             'Should HTTP 405 Method Not Allowed')
 
     def test_update_request(self):
-        user = mixer.blend(models.User)
+        call_command(
+            'loaddata', '../../users/fixtures/users.json', verbosity=0)
+        user = mixer.blend(models.User, groups_id=2)
         data = {
             "full_name": "Albert Usaqui",
             "email": user.email,
