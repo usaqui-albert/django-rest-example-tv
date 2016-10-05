@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 
 from .tasks import send_mail
 
+
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
