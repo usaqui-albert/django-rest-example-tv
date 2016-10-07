@@ -42,6 +42,7 @@ INTERNAL_APPS = (
     'users',
     'countries',
     'pets',
+    'posts',
 )
 
 THIRD_PARTY_APPS = (
@@ -144,7 +145,6 @@ AUTH_USER_MODEL = 'users.User'
 CORS_ORIGIN_ALLOW_ALL = True
 
 MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
-
 MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
@@ -168,9 +168,11 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 EMAIL_SUBJECT_PREFIX = "[TapVet]"
 DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
+
 ADMINS = [
     ('Leopoldo Pimentel', 'leofaster@gmail.com'),
     ('Paula Marcano', 'paula.marcano@blanclink.com'),
 ]
+
 BREADER_MESSAGE_ADMIN_TITLE = "New Breeeder Pending"
 VET_MESSAGE_ADMIN_TITLE = "New Vet Pending"
