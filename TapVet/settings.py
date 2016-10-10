@@ -43,6 +43,7 @@ INTERNAL_APPS = (
     'countries',
     'pets',
     'posts',
+    'comments',
 )
 
 THIRD_PARTY_APPS = (
