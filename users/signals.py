@@ -3,6 +3,8 @@ from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.template.loader import render_to_string
 
+from .tasks import send_mail
+
 
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
@@ -15,9 +17,8 @@ def new_breeder_signal(sender, instance=None, created=False, **kwargs):
         message_body = 'There is a need breeder registration.'
         msg_html = render_to_string(
             'users/partials/email/breeder.html', {'breeder': instance})
-        mail_admins(
-            subject=message_title, message=message_body, fail_silently=True,
-            html_message=msg_html)
+        send_mail.delay(
+            message_title, message_body, msg_html, True)
 
 
 def new_vet_signal(sender, instance=None, created=False, **kwargs):
@@ -29,6 +30,5 @@ def new_vet_signal(sender, instance=None, created=False, **kwargs):
         message_body = 'There is a need vet registration.'
         msg_html = render_to_string(
             'users/partials/email/vet.html', {'vet': instance})
-        mail_admins(
-            subject=message_title, message=message_body, fail_silently=True,
-            html_message=msg_html)
+        send_mail.delay(
+            message_title, message_body, msg_html, True)
