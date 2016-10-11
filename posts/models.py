@@ -9,7 +9,8 @@ class Post(models.Model):
 
     pet = models.ForeignKey('pets.Pet', related_name='posts', null=True)
     user = models.ForeignKey('users.User', related_name='posts')
-    likers = models.ManyToManyField('users.User', related_name='likes')
+    likers = models.ManyToManyField(
+        'users.User', related_name='likes', blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -24,6 +25,9 @@ class Post(models.Model):
 
     def is_paid(self):
         return self.visible_by_owner and self.visible_by_vet
+
+    def get_likes(self):
+        return self.likers.count()
 
 
 class ImagePost(models.Model):
