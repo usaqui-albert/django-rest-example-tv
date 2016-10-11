@@ -33,16 +33,7 @@ class PostPetOwnerSerializer(ModelSerializer):
         }
 
     def create(self, validated_data):
-        user = self.context['user']
-        vet = False
-        pet_owner = True
-
-        if user.groups in [3, 4, 5]:
-            vet = True and user.veterinarian.verified
-            pet_owner = False
-
         post = Post(**dict(
-            validated_data, user=user, visible_by_vet=vet,
-            visible_by_owner=pet_owner))
+            validated_data, user=self.context['user']))
         post.save()
         return post

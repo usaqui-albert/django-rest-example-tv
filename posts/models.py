@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from pets.models import uploads_path
 
 
@@ -28,6 +29,15 @@ class Post(models.Model):
 
     def get_likes(self):
         return self.likers.count()
+
+    def save(self, *args, **kwargs):
+        if self.user.is_vet():
+            try:
+                self.visible_by_vet = True and self.user.veterinarian.verified
+            except ObjectDoesNotExist:
+                self.visible_by_vet = False
+            self.visible_by_owner = False
+        super(Post, self).save(*args, **kwargs)
 
 
 class ImagePost(models.Model):
