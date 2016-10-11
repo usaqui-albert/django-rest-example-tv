@@ -1,6 +1,14 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-from pets.models import uploads_path
+
+
+def uploads_path(instance, filename):
+    '''
+    Function to organize the upload directory
+    this way, every file is organized by username and management
+    is a lot faster
+    '''
+    return '/'.join(['uploads', 'posts', filename])
 
 
 class Post(models.Model):
