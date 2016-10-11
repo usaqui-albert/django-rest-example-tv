@@ -14,7 +14,7 @@ class ImagePostSerilizers(ModelSerializer):
         }
 
 
-class PostVetSerializer(ModelSerializer):
+class PostPetOwnerSerializer(ModelSerializer):
     likes_count = IntegerField(read_only=True)
     images = ImagePostSerilizers(many=True, read_only=True)
     image_1 = ImageField(write_only=True, required=False)

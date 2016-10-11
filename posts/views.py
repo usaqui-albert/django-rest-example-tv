@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView
 from rest_framework import permissions, status
 
-from .serializers import PostVetSerializer
+from .serializers import PostPetOwnerSerializer
 from .models import Post
 
 
@@ -16,7 +16,7 @@ class PostVetListCreateView(ListCreateAPIView):
     GET
     POST
     """
-    serializer_class = PostVetSerializer
+    serializer_class = PostPetOwnerSerializer
     permission_classes = (permissions.AllowAny,)
     queryset = Post.objects.annotate(likes_count=Count('likers'))
 
