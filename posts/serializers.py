@@ -1,3 +1,7 @@
+import StringIO
+from copy import deepcopy
+from PIL import Image as Img
+from django.core.files import uploadedfile  #InMemoryUploadedFile
 from rest_framework.serializers import (
     ModelSerializer, IntegerField, ImageField)
 
@@ -33,7 +37,37 @@ class PostPetOwnerSerializer(ModelSerializer):
         }
 
     def create(self, validated_data):
+        image_1 = validated_data.pop('image_1', None)
+        # image_2 = validated_data.pop('image_2', None)
+        # image_3 = validated_data.pop('image_3', None)
         post = Post(**dict(
             validated_data, user=self.context['user']))
         post.save()
+        if image_1:
+            # image_t = deepcopy(image_1)
+            image_t = self.image_resize((612, 612), image_1)
+            image_1 = ImagePost(
+                standard=image_t,
+                post=post)
+            image_1.save()
         return post
+
+    def image_resize(self, size, image):
+        img = Img.open(StringIO.StringIO(image.read()))
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        img.thumbnail(size, Img.ANTIALIAS)
+        output = StringIO.StringIO()
+        # background = Img.new('RGB', size, (255, 255, 255))
+        # offset = (((size[0] - img.size[0]) / 2), ((size[1] - img.size[1]) / 2))
+        # background.paste(
+        #     im=image, box=offset
+        # )
+        # background.save(output, format='JPEG', quality=70)
+        img.save(output, format='JPEG', quality=70)
+        output.seek(0)
+        image = uploadedfile.InMemoryUploadedFile(
+            output, 'ImageField', "%s.jpg" % image.name.split('.')[0],
+            'image/jpeg', output.len, None)
+
+        return image
