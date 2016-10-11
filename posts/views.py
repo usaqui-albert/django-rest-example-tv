@@ -1,16 +1,30 @@
-from django.shortcuts import render
+from django.db.models import Count
 
+from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView
+from rest_framework import permissions, status
+
+from .serializers import PostVetSerializer
+from .models import Post
+
 
 class PostVetListCreateView(ListCreateAPIView):
     """
-    Service to create new users.
-    Need authentication to list user
+    Service to create list and create new vet post.
 
     :accepted methods:
     GET
     POST
     """
-    serializer_class = CreateUserSerializer
+    serializer_class = PostVetSerializer
     permission_classes = (permissions.AllowAny,)
-    queryset = User.objects.all()
+    queryset = Post.objects.annotate(likes_count=Count('likers'))
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data, context={'user': request.user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
