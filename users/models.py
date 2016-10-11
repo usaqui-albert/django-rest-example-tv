@@ -49,6 +49,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.full_name
 
+    def is_vet(self):
+        return self.groups.id in [3, 4, 5]
+
 
 # Func to connect the signal on post save.
 post_save.connect(
