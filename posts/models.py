@@ -20,7 +20,7 @@ class Post(models.Model):
     def set_paid(self):
         self.visible_by_vet = True
         self.visible_by_owner = True
-        self.save(update_fields=['visible_by_vet', 'visible_by_owner'])
+        return self
 
     def is_paid(self):
         return self.visible_by_owner and self.visible_by_vet
