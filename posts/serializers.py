@@ -1,4 +1,5 @@
-from rest_framework.serializers import ModelSerializer, IntegerField
+from rest_framework.serializers import (
+    ModelSerializer, IntegerField, ImageField)
 
 from .models import Post, ImagePost
 
@@ -14,16 +15,21 @@ class ImagePostSerilizers(ModelSerializer):
 
 
 class PostVetSerializer(ModelSerializer):
-    likes_count = IntegerField(required=False)
-    images = ImagePostSerilizers(many=True, required=False)
+    likes_count = IntegerField(read_only=True)
+    images = ImagePostSerilizers(many=True, read_only=True)
+    image_1 = ImageField(write_only=True, required=False)
+    image_2 = ImageField(write_only=True, required=False)
+    image_3 = ImageField(write_only=True, required=False)
 
     class Meta:
         model = Post
-        fields = ('description', 'pet', 'user', 'id', 'likes_count', 'images')
+        fields = (
+            'description', 'pet', 'user', 'id', 'likes_count', 'images',
+            'image_1', 'image_2', 'image_3'
+        )
         extra_kwargs = {
             'user': {'read_only': True},
             'id': {'read_only': True},
-            'likes_count': {'read_only': True}
         }
 
     def create(self, validated_data):
@@ -34,8 +40,6 @@ class PostVetSerializer(ModelSerializer):
         if user.groups in [3, 4, 5]:
             vet = True and user.veterinarian.verified
             pet_owner = False
-
-        images = validated_data.pop('images')
 
         post = Post(**dict(
             validated_data, user=user, visible_by_vet=vet,
