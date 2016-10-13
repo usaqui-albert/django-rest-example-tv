@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/v1/users/', include('users.urls', namespace='users')),
     url(r'^api/v1/pets/', include('pets.urls', namespace='pets')),
+    url(r'^api/v1/posts/', include('posts.urls', namespace='posts')),
     url(r'^api/v1/countries/',
         include('countries.urls', namespace='countries')),
     url(r'^docs/', include('rest_framework_docs.urls')),
