@@ -41,7 +41,7 @@ class Post(models.Model):
     def save(self, *args, **kwargs):
         if self.user.is_vet():
             try:
-                self.visible_by_vet = True and self.user.veterinarian.verified
+                self.visible_by_vet = bool(self.user.veterinarian.verified)
             except ObjectDoesNotExist:
                 self.visible_by_vet = False
             self.visible_by_owner = False
