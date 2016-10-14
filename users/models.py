@@ -58,7 +58,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 # Func to connect the signal on post save.
 post_save.connect(
-    create_auth_token, sender=User, dispatch_uid="users.models.user_post_save")
+    create_auth_token,
+    sender=User,
+    dispatch_uid="users.models.user_post_save"
+)
 
 
 class Breeder(models.Model):
@@ -85,8 +88,10 @@ class Breeder(models.Model):
 
 # Func to connect the signal on post save.
 post_save.connect(
-    new_breeder_signal, sender=Breeder,
-    dispatch_uid="users.models.breeder_post_save")
+    new_breeder_signal,
+    sender=Breeder,
+    dispatch_uid="users.models.breeder_post_save"
+)
 
 
 class Veterinarian(models.Model):
