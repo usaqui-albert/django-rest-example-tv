@@ -18,7 +18,7 @@ class PostPetOwnerListCreateView(ListCreateAPIView):
     """
     serializer_class = PostPetOwnerSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = Post.objects.all()
+    queryset = Post.objects.annotate(likes_count=Count('likers'))
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
