@@ -1,4 +1,4 @@
-"""Testing models"""
+"""Testing views"""
 import pytest
 import tempfile
 from PIL import Image
