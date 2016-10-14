@@ -2,7 +2,7 @@ from StringIO import StringIO
 from PIL import Image as Img
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.serializers import (
-    ModelSerializer, IntegerField, ImageField)
+    ModelSerializer, IntegerField, ImageField, ValidationError)
 
 from .models import Post, ImagePost
 
@@ -39,6 +39,8 @@ class PostPetOwnerSerializer(ModelSerializer):
         image_1 = validated_data.pop('image_1', None)
         image_2 = validated_data.pop('image_2', None)
         image_3 = validated_data.pop('image_3', None)
+        if not (image_1 or image_2 or image_3):
+            raise ValidationError('At least 1 image is required')
         post = Post(**dict(
             validated_data, user=self.context['user']))
         post.save()
