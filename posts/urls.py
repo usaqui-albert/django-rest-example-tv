@@ -1,9 +1,9 @@
 from django.conf.urls import url
 
 from .views import (
-    PostPetOwnerListCreateView
+    PostListCreateView
 )
 
 urlpatterns = [
-    url(r'^$', PostPetOwnerListCreateView.as_view()),
+    url(r'^$', PostListCreateView.as_view()),
 ]

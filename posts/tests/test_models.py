@@ -57,13 +57,13 @@ class TestPost:
     def test_post_if_vet_verified(self):
         call_command(
             'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        call_command(
-            'loaddata', '../../countries/fixtures/countries.json', verbosity=0)
+        country = mixer.blend('countries.country')
+        state = mixer.blend('countries.state', country=country)
         user = mixer.blend('users.user', groups_id=3)
         mixer.blend(
             'users.veterinarian', user=user, verified=True,
             graduating_year=get_current_year() - 11,
-            country_id=1, state_id=2)
+            country=country, state=state)
         obj = mixer.blend('posts.post', user=user)
         assert obj.visible_by_vet
         assert not obj.visible_by_owner
