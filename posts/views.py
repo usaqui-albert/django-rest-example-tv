@@ -1,8 +1,6 @@
 import stripe
 from stripe.error import APIConnectionError, InvalidRequestError, CardError
 
-from django.db.models import Count
-
 from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView
 from rest_framework import permissions, status
@@ -10,9 +8,8 @@ from rest_framework.views import APIView
 
 from .serializers import PostPetOwnerSerializer
 from .models import Post
-from TapVet.settings import STRIPE_API_KEY
+from TapVet.settings import STRIPE_API_KEY, PAID_POST_AMOUNT
 from helpers.stripe_helpers import stripe_errors_handler
-from TapVet.settings import PAID_POST_AMOUNT
 
 
 class PostPetOwnerListCreateView(ListCreateAPIView):

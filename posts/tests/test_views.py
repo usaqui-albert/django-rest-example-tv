@@ -1,11 +1,9 @@
 """Testing views"""
 import pytest
 import tempfile
-import mock
 
 from PIL import Image
 from rest_framework.test import force_authenticate
-from stripe.error import CardError
 from mixer.backend.django import mixer
 
 from .. import views
