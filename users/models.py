@@ -52,10 +52,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.full_name
 
+    def is_vet(self):
+        return self.groups.id in [3, 4, 5]
+
 
 # Func to connect the signal on post save.
 post_save.connect(
-    create_auth_token, sender=User, dispatch_uid="users.models.user_post_save")
+    create_auth_token,
+    sender=User,
+    dispatch_uid="users.models.user_post_save"
+)
 
 
 class Breeder(models.Model):
@@ -82,8 +88,10 @@ class Breeder(models.Model):
 
 # Func to connect the signal on post save.
 post_save.connect(
-    new_breeder_signal, sender=Breeder,
-    dispatch_uid="users.models.breeder_post_save")
+    new_breeder_signal,
+    sender=Breeder,
+    dispatch_uid="users.models.breeder_post_save"
+)
 
 
 class Veterinarian(models.Model):

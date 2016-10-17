@@ -13,4 +13,4 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return u'cooment:%s - created: %s' % (self.id, self.created_at)
+        return u'comment: %s - created: %s' % (self.id, self.created_at)
