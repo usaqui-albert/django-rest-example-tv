@@ -42,6 +42,7 @@ requests==2.11.1
 simplegeneric==0.8.1
 simplejson==3.8.2
 six==1.10.0
+stripe==1.41.0
 traitlets==4.2.2
 uritemplate==3.0.0
 wcwidth==0.1.7
