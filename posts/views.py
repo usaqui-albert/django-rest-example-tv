@@ -8,7 +8,7 @@ from .serializers import PostPetOwnerSerializer
 from .models import Post
 
 
-class PostPetOwnerListCreateView(ListCreateAPIView):
+class PostListCreateView(ListCreateAPIView):
     """
     Service to create list and create new vet post.
 
