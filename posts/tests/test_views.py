@@ -24,7 +24,7 @@ class TestPostVetListCreateView:
 
     def test_request_get_no_auth(self):
         req = self.factory.get('/')
-        resp = views.PostPetOwnerListCreateView.as_view()(req)
+        resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 401, (
             'Should return Method Unauthorized (401) with a json ' +
             '"detail": "Authentication credentials were not provided."'
@@ -35,14 +35,14 @@ class TestPostVetListCreateView:
         user = mixer.blend('users.user', groups_id=1)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
-        resp = views.PostPetOwnerListCreateView.as_view()(req)
+        resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 200, (
             'Should return 200 OK and a list of post'
         )
 
     def test_request_post_no_auth(self):
         req = self.factory.post('/')
-        resp = views.PostPetOwnerListCreateView.as_view()(req)
+        resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 401, (
             'Should return Method Unauthorized (401) with a json ' +
             '"detail": "Authentication credentials were not provided."'
@@ -61,7 +61,7 @@ class TestPostVetListCreateView:
         tmp_file.seek(0)
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PostPetOwnerListCreateView.as_view()(req)
+        resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 201, (
             'Should return HTTP 201 CREATED'
         )
