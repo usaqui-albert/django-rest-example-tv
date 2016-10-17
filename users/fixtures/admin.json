@@ -1,0 +1,21 @@
+[
+    {
+        "model": "users.user",
+        "pk": null,
+        "fields": {
+            "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+            "is_superuser": true,
+            "groups": 1,
+            "username": "tapvet",
+            "email": "blanclink.test@gmail.com",
+            "full_name": "TapVet Administrator",
+            "is_active": true,
+            "is_staff": true,
+            "stripe_token": null,
+            "add_paid_post": true,
+            "created_at": "2016-10-04T22:06:07.660Z",
+            "updated_at": "2016-10-11T20:20:41.564Z",
+            "user_permissions": []
+        }
+    }
+]
