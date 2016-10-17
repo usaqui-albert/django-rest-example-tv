@@ -3,63 +3,54 @@
 import pytest
 
 from mixer.backend.django import mixer
-from django.core.management import call_command
+
 from pets.models import get_current_year
+from helpers.tests_helpers import CustomTestCase
 
 pytestmark = pytest.mark.django_db
 
 
-class TestPost:
-    @staticmethod
-    def loading_data():
-        return call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
+class TestPost(CustomTestCase):
 
-    def get_user(self):
-        self.loading_data()
-        return mixer.blend('users.User', groups_id=1)
-
-    def test_model(self):
-        obj = mixer.blend('posts.Post', user=self.get_user())
+    def test_create_post_instance(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        obj = mixer.blend('posts.Post', user=user)
         assert obj.pk == 1, 'Should create a Post instance'
 
     def test_is_paid_post_no_paid(self):
+        user = self.load_users_data().get_user(groups_id=1)
         obj = mixer.blend('posts.Post',
                           visible_by_owner=True,
                           visible_by_vet=False,
-                          user=self.get_user())
+                          user=user)
         assert not obj.is_paid(), 'Should return False'
 
     def test_is_paid_post_paid(self):
+        user = self.load_users_data().get_user(groups_id=1)
         obj = mixer.blend('posts.Post',
                           visible_by_owner=True,
                           visible_by_vet=True,
-                          user=self.get_user())
+                          user=user)
         assert obj.is_paid(), 'Should return True'
 
     def test_set_paid(self):
+        user = self.load_users_data().get_user(groups_id=1)
         obj = mixer.blend('posts.Post',
                           visible_by_owner=True,
                           visible_by_vet=False,
-                          user=self.get_user())
+                          user=user)
         assert not obj.is_paid(), 'Should return False'
         obj.set_paid()
         assert obj.is_paid(), 'Should return True'
 
     def test_post_if_vet_no_verified(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        user = mixer.blend('users.user', groups_id=3)
+        user = self.load_users_data().get_user(groups_id=3)
         obj = mixer.blend('posts.post', user=user)
         assert not obj.visible_by_vet
         assert not obj.visible_by_owner
 
     def test_post_if_vet_verified(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        call_command(
-            'loaddata', '../../countries/fixtures/countries.json', verbosity=0)
-        user = mixer.blend('users.user', groups_id=3)
+        user = self.load_users_data().load_countries_data().get_user(groups_id=3)
         mixer.blend(
             'users.veterinarian', user=user, verified=True,
             graduating_year=get_current_year() - 11,
@@ -69,11 +60,7 @@ class TestPost:
         assert not obj.visible_by_owner
 
     def test_post_if_student(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        call_command(
-            'loaddata', '../../countries/fixtures/countries.json', verbosity=0)
-        user = mixer.blend('users.user', groups_id=3)
+        user = self.load_users_data().load_countries_data().get_user(groups_id=3)
         mixer.blend(
             'users.veterinarian', user=user, verified=True,
             graduating_year=get_current_year() - 11,
@@ -83,17 +70,13 @@ class TestPost:
         assert not obj.visible_by_owner
 
     def test_post_if_pet_owner(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        user = mixer.blend('users.user', groups_id=1)
+        user = self.load_users_data().get_user(groups_id=1)
         obj = mixer.blend('posts.post', user=user)
         assert not obj.visible_by_vet
         assert obj.visible_by_owner
 
     def test_post_if_pet_owner_and_paid(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        user = mixer.blend('users.user', groups_id=1)
+        user = self.load_users_data().get_user(groups_id=1)
         obj = mixer.blend('posts.post', user=user)
         obj.set_paid()
         assert obj.visible_by_vet
