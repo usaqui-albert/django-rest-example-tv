@@ -1,26 +1,21 @@
 """Testing views"""
 import pytest
 import tempfile
+import mock
+
 from PIL import Image
-
-from django.core.management import call_command
-
+from rest_framework.test import force_authenticate
+from stripe.error import CardError
 from mixer.backend.django import mixer
-
-from rest_framework.test import APIRequestFactory, force_authenticate
 
 from .. import views
 from .. import models
+from helpers.tests_helpers import CustomTestCase
 
 pytestmark = pytest.mark.django_db
 
 
-class TestPostVetListCreateView:
-    factory = APIRequestFactory()
-
-    def load_data(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
+class TestPostVetListCreateView(CustomTestCase):
 
     def test_request_get_no_auth(self):
         req = self.factory.get('/')
@@ -31,8 +26,7 @@ class TestPostVetListCreateView:
         )
 
     def test_request_get(self):
-        self.load_data()
-        user = mixer.blend('users.user', groups_id=1)
+        user = self.load_users_data().get_user(groups_id=1)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.PostPetOwnerListCreateView.as_view()(req)
@@ -49,11 +43,10 @@ class TestPostVetListCreateView:
         )
 
     def test_request_post(self):
-        self.load_data()
         image = Image.new('RGB', (1000, 1000), 'white')
         tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
         image.save(tmp_file)
-        user = mixer.blend('users.user', groups_id=1)
+        user = self.load_users_data().get_user(groups_id=1)
         data = {
             'description': 'BLAh blah',
             'image_1': tmp_file
@@ -71,3 +64,57 @@ class TestPostVetListCreateView:
         img_t = Image.open(image.thumbnail)
         assert img_s.size == (612, 612)
         assert img_t.size == (150, 150)
+
+
+class TestPaidPostView(CustomTestCase):
+
+    def test_user_no_authenticated(self):
+        req = self.factory.post('/')
+        resp = views.PaidPostView.as_view()(req)
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+
+    def test_get_request_not_allow(self):
+        user = self.get_user()
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req)
+        assert resp.status_code == 405, 'Should return Method Not Allowed (405)'
+
+    def test_put_request_not_allow(self):
+        user = self.get_user()
+        req = self.factory.put('/')
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req)
+        assert resp.status_code == 405, 'Should return Method Not Allowed (405)'
+
+    def test_post_does_not_exists(self):
+        req = self.factory.post('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.PaidPostView.as_view()(req, pk=1)
+        assert resp.status_code == 404, 'Should return Not Found (404)' \
+                                        'post with pk=1 does not exist'
+
+    def test_user_isnt_post_owner(self):
+        user_owner = self.load_users_data().get_user(groups_id=1)
+        mixer.blend('posts.Post', user=user_owner, pk=1)
+
+        user_requesting = self.get_user()
+        req = self.factory.post('/')
+        force_authenticate(req, user=user_requesting)
+
+        resp = views.PaidPostView.as_view()(req, pk=1)
+        assert resp.status_code == 404, 'Should return Not Found (404)' \
+                                        'post with pk=1 exists but the' \
+                                        'user requesting is not the owner'
+
+    def test_user_has_no_stripe_customer(self):
+        user = self.load_users_data().get_user(groups_id=1,
+                                               stripe_token=None)
+        mixer.blend('posts.Post', user=user, pk=1)
+
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+
+        resp = views.PaidPostView.as_view()(req, pk=1)
+        assert resp.status_code == 402, 'Should return Payment Required (402)' \
+                                        'user has no a related stripe customer'

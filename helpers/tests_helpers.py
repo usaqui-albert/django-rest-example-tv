@@ -20,8 +20,4 @@ class CustomTestCase:
 
     @staticmethod
     def get_user(**kwargs):
-        if 'groups_id' in kwargs:
-            user = mixer.blend('users.User', groups_id=kwargs['groups_id'])
-        else:
-            user = mixer.blend('users.User')
-        return user
+        return mixer.blend('users.User', **kwargs)
