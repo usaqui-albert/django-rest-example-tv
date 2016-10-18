@@ -43,6 +43,7 @@ class PermissionsMixin(models.Model):
         ),
         related_name="user_set",
         related_query_name="user",
+        default=1
     )
     user_permissions = models.ManyToManyField(
         Permission,
