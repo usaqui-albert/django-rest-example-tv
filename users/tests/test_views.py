@@ -11,6 +11,8 @@ from mixer.backend.django import mixer
 from countries import models as models_c
 from pets.models import get_current_year, get_limit_year
 
+from helpers.tests_helpers import CustomTestCase
+
 from .. import views
 from .. import models
 
@@ -18,8 +20,7 @@ from .. import models
 pytestmark = pytest.mark.django_db
 
 
-class TestUserAuth:
-    factory = RequestFactory()
+class TestUserAuth(CustomTestCase):
 
     def test_get_request(self):
         req = self.factory.get('/')
@@ -30,7 +31,8 @@ class TestUserAuth:
         )
 
     def test_post_valid_data(self):
-        user = mixer.blend(models.User)
+        self.load_users_data()
+        user = mixer.blend(models.User, groups_id=1)
         user.set_password('pass')
         user.save()
         data = {
