@@ -33,7 +33,7 @@ class TestPostVetListCreateView(CustomTestCase):
         )
 
     def test_request_get_many_likes(self):
-        self.load_data()
+        self.load_users_data()
         users = [mixer.blend('users.user', groups_id=1) for _ in range(30)]
         user = mixer.blend('users.user', groups_id=1)
         [mixer.blend(
