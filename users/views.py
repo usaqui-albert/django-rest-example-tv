@@ -9,7 +9,8 @@ from django.contrib.auth.models import Group
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework import generics, permissions, views
+from rest_framework import generics, permissions
+from rest_framework.views import APIView
 from rest_framework import status
 
 from TapVet import messages
@@ -261,7 +262,7 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
 
-class StripeCustomerView(views.APIView):
+class StripeCustomerView(APIView):
     """Service to create a stripe customer for a TapVet user
 
     :accepted methods:
