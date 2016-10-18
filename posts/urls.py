@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from .views import (
-    PostPetOwnerListCreateView, PaidPostView
+    PostListCreateView, PaidPostView
 )
 
 urlpatterns = [
