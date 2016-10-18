@@ -31,8 +31,8 @@ class TestUserAuth(CustomTestCase):
         )
 
     def test_post_valid_data(self):
-        self.load_users_data()
-        user = mixer.blend(models.User, groups_id=1)
+
+        user = self.load_users_data().get_user(groups_id=1)
         user.set_password('pass')
         user.save()
         data = {
