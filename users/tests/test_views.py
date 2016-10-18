@@ -10,6 +10,7 @@ from rest_framework.test import force_authenticate
 from mixer.backend.django import mixer
 from countries import models as models_c
 from pets.models import get_current_year, get_limit_year
+from helpers.tests_helpers import CustomTestCase
 
 from .. import views
 from .. import models
@@ -691,3 +692,65 @@ class TestAreaInterestListView:
         resp = views.AreaInterestListView.as_view()(req)
         assert resp.status_code == 405, (
             '"detail": "Method "POST" not allowed."')
+
+
+class TestStripeCustomerView(CustomTestCase):
+
+    def test_user_no_authenticated(self):
+        req = self.factory.post('/')
+        resp = views.StripeCustomerView.as_view()(req)
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+
+    def test_get_request_not_allow(self):
+        user = self.get_user()
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.StripeCustomerView.as_view()(req)
+        assert resp.status_code == 405, 'Should return Method Not Allowed (405)'
+
+    def test_put_request_not_allow(self):
+        user = self.get_user()
+        req = self.factory.put('/')
+        force_authenticate(req, user=user)
+        resp = views.StripeCustomerView.as_view()(req)
+        assert resp.status_code == 405, 'Should return Method Not Allowed (405)'
+
+    def test_user_not_owner(self):
+        user = self.get_user(pk=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+
+        resp = views.StripeCustomerView.as_view()(req, pk=2)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'You are not allow to do this action'
+        assert resp.status_code == 403, 'Should return Forbidden (403)'
+
+    def test_post_request_no_data(self):
+        user = self.get_user()
+        req = self.factory.post('/', {})
+        force_authenticate(req, user=user)
+
+        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Token field is required'
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_empty_token(self):
+        user = self.get_user()
+        req = self.factory.post('/', {'token': ''})
+        force_authenticate(req, user=user)
+
+        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Token field can not be empty'
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_user_has_already_stripe_customer(self):
+        user = self.get_user(stripe_token='tok_test')
+        req = self.factory.post('/', {'token': 'tok_123'})
+        force_authenticate(req, user=user)
+
+        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'You already have a customer in stripe'
+        assert resp.status_code == 400, 'Should return Bad Request (400)'

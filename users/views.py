@@ -1,3 +1,6 @@
+import stripe
+from stripe.error import CardError, InvalidRequestError, APIConnectionError
+
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -6,13 +9,15 @@ from django.contrib.auth.models import Group
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, views
 from rest_framework import status
 
 from TapVet import messages
+from TapVet.settings import STRIPE_API_KEY
 
 from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
+from helpers.stripe_helpers import stripe_errors_handler
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
@@ -253,3 +258,54 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
             error = {'detail': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data)
+
+
+class StripeCustomerView(views.APIView):
+    """Service to create a stripe customer for a TapVet user
+
+    :accepted methods:
+        POST
+        GET
+    """
+
+    def __init__(self, **kwargs):
+        super(StripeCustomerView, self).__init__(**kwargs)
+        stripe.api_key = STRIPE_API_KEY
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    @staticmethod
+    def post(request, **kwargs):
+        """
+
+        :param request:
+        :param kwargs:
+        :return:
+        """
+        user = request.user
+        if user.id == int(kwargs['pk']):
+            if 'token' in request.data:
+                token = request.data.get('token')
+                if token:
+                    if not user.stripe_token:
+                        try:
+                            customer = stripe.Customer.create(
+                                source=token,
+                                description='Customer for %s' % user.__str__()
+                            )
+                        except (APIConnectionError, InvalidRequestError, CardError) as err:
+                            response_msg = {'detail': stripe_errors_handler(err)}
+                        else:
+                            cus_token = customer.id
+                            user.stripe_token = cus_token
+                            user.save()
+                            return Response('Customer successfully created')
+                    else:
+                        response_msg = {'detail': 'You already have a customer in stripe'}
+                else:
+                    response_msg = {'detail': 'Token field can not be empty'}
+            else:
+                response_msg = {'detail': 'Token field is required'}
+            return Response(response_msg, status=status.HTTP_400_BAD_REQUEST)
+        response_msg = {'detail': 'You are not allow to do this action'}
+        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
