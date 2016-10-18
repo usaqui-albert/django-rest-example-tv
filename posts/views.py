@@ -5,14 +5,15 @@ from rest_framework.response import Response
 from rest_framework.generics import ListCreateAPIView
 from rest_framework import permissions, status
 from rest_framework.views import APIView
+from django.db.models import Count
 
-from .serializers import PostPetOwnerSerializer
+from .serializers import PostSerializer
 from .models import Post
 from TapVet.settings import STRIPE_API_KEY, PAID_POST_AMOUNT
 from helpers.stripe_helpers import stripe_errors_handler
 
 
-class PostPetOwnerListCreateView(ListCreateAPIView):
+class PostListCreateView(ListCreateAPIView):
     """
     Service to create list and create new vet post.
 
@@ -20,9 +21,9 @@ class PostPetOwnerListCreateView(ListCreateAPIView):
     GET
     POST
     """
-    serializer_class = PostPetOwnerSerializer
+    serializer_class = PostSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = Post.objects.all()
+    queryset = Post.objects.annotate(likes_count=Count('likers'))
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(

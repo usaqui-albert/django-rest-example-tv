@@ -14,6 +14,7 @@ djangorestframework==3.4.6
 drfdocs==0.0.11
 fake-factory==0.5.7
 funcsigs==1.0.2
+gunicorn==19.6.0
 ipaddress==1.0.16
 ipdb==0.10.1
 ipython==5.1.0
@@ -44,7 +45,7 @@ requests==2.11.1
 simplegeneric==0.8.1
 simplejson==3.8.2
 six==1.10.0
-stripe==1.40.1
+stripe==1.41.0
 traitlets==4.2.2
 uritemplate==3.0.0
 wcwidth==0.1.7
