@@ -151,7 +151,7 @@
     "model": "users.user",
     "pk": null,
     "fields": {
-        "username": "veterinarian",
+        "username": "vet",
         "email": "veterinarian@gmail.com",
         "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
         "full_name": "veterinarian Doe",
