@@ -107,7 +107,7 @@
 },
 {
     "model": "users.user",
-    "pk": 2,
+    "pk": null,
     "fields": {
         "username": "jdoe",
         "email": "johndoe@gmail.com",
@@ -118,5 +118,93 @@
         "created_at": "2016-10-13T16:16:27.627Z",
         "updated_at": "2016-10-13T16:16:27.627Z"
     }
-}
+},
+{
+    "model": "users.user",
+    "pk": null,
+    "fields": {
+        "username": "owner",
+        "email": "owner@gmail.com",
+        "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+        "full_name": "owner Doe",
+        "stripe_token": null,
+        "groups": 1,
+        "created_at": "2016-10-13T16:16:27.627Z",
+        "updated_at": "2016-10-13T16:16:27.627Z"
+    }
+},
+{
+    "model": "users.user",
+    "pk": null,
+    "fields": {
+        "username": "breeder",
+        "email": "breeder@gmail.com",
+        "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+        "full_name": "breeder Doe",
+        "stripe_token": null,
+        "groups": 2,
+        "created_at": "2016-10-13T16:16:27.627Z",
+        "updated_at": "2016-10-13T16:16:27.627Z"
+    }
+},
+{
+    "model": "users.user",
+    "pk": null,
+    "fields": {
+        "username": "vet",
+        "email": "veterinarian@gmail.com",
+        "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+        "full_name": "veterinarian Doe",
+        "stripe_token": null,
+        "groups": 3,
+        "created_at": "2016-10-13T16:16:27.627Z",
+        "updated_at": "2016-10-13T16:16:27.627Z"
+    }
+},
+{
+    "model": "users.user",
+    "pk": null,
+    "fields": {
+        "username": "student",
+        "email": "studen@gmail.com",
+        "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+        "full_name": "student Doe",
+        "stripe_token": null,
+        "groups": 4,
+        "created_at": "2016-10-13T16:16:27.627Z",
+        "updated_at": "2016-10-13T16:16:27.627Z"
+    }
+},
+{
+    "model": "users.user",
+    "pk": null,
+    "fields": {
+        "username": "tech",
+        "email": "tech@gmail.com",
+        "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+        "full_name": "tech Doe",
+        "stripe_token": null,
+        "groups": 5,
+        "created_at": "2016-10-13T16:16:27.627Z",
+        "updated_at": "2016-10-13T16:16:27.627Z"
+    }
+},
+{
+        "model": "users.user",
+        "pk": null,
+        "fields": {
+            "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+            "is_superuser": true,
+            "groups": 1,
+            "username": "tapvet",
+            "email": "blanclink.test@gmail.com",
+            "full_name": "TapVet Administrator",
+            "is_active": true,
+            "is_staff": true,
+            "stripe_token": null,
+            "add_paid_post": true,
+            "created_at": "2016-10-04T22:06:07.660Z",
+            "updated_at": "2016-10-11T20:20:41.564Z"
+        }
+    }
 ]
