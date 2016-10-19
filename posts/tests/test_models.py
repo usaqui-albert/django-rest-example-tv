@@ -50,21 +50,25 @@ class TestPost(CustomTestCase):
         assert not obj.visible_by_owner
 
     def test_post_if_vet_verified(self):
-        user = self.load_users_data().load_countries_data().get_user(groups_id=3)
+        user = self.load_users_data().get_user(groups_id=3)
+        country = mixer.blend('countries.country')
+        state = mixer.blend('countries.state', country=country)
         mixer.blend(
             'users.veterinarian', user=user, verified=True,
             graduating_year=get_current_year() - 11,
-            country_id=1, state_id=2)
+            country=country, state=state)
         obj = mixer.blend('posts.post', user=user)
         assert obj.visible_by_vet
         assert not obj.visible_by_owner
 
     def test_post_if_student(self):
-        user = self.load_users_data().load_countries_data().get_user(groups_id=3)
+        user = self.load_users_data().get_user(groups_id=3)
+        country = mixer.blend('countries.country')
+        state = mixer.blend('countries.state', country=country)
         mixer.blend(
             'users.veterinarian', user=user, verified=True,
             graduating_year=get_current_year() - 11,
-            country_id=1, state_id=2)
+            country=country, state=state)
         obj = mixer.blend('posts.post', user=user)
         assert obj.visible_by_vet
         assert not obj.visible_by_owner

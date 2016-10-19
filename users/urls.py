@@ -19,5 +19,5 @@ urlpatterns = [
     url(r'^breeders/(?P<pk>\d+)/verify/$', AuthorizeBreederView.as_view()),
     url(r'^veterinarians/$', VeterinarianListCreateView.as_view()),
     url(r'^veterinarians/(?P<pk>\d+)/verify/$', AuthorizeVetView.as_view()),
-    url(r'^veterinarians/area-interests/$', AreaInterestListView.as_view()),
+    url(r'^veterinarians/areas-of-interest/$', AreaInterestListView.as_view()),
 ]
