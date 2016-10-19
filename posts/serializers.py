@@ -4,10 +4,10 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.serializers import (
     ModelSerializer, IntegerField, ImageField, ValidationError)
 
-from .models import Post, ImagePost
+from .models import Post, ImagePost, PaymentAmount
 
 
-class ImagePostSerilizers(ModelSerializer):
+class ImagePostSerializer(ModelSerializer):
 
     class Meta:
         model = ImagePost
@@ -19,7 +19,7 @@ class ImagePostSerilizers(ModelSerializer):
 
 class PostSerializer(ModelSerializer):
     likes_count = IntegerField(read_only=True)
-    images = ImagePostSerilizers(many=True, read_only=True)
+    images = ImagePostSerializer(many=True, read_only=True)
     image_1 = ImageField(write_only=True, required=False)
     image_2 = ImageField(write_only=True, required=False)
     image_3 = ImageField(write_only=True, required=False)
@@ -111,3 +111,9 @@ class PostSerializer(ModelSerializer):
             standard=standard, thumbnail=thumbnail,
             post=post)
         image_post.save()
+
+
+class PaymentAmountSerializer(ModelSerializer):
+    class Meta:
+        model = PaymentAmount
+        fields = '__all__'
