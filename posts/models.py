@@ -56,7 +56,7 @@ class ImagePost(models.Model):
 
 class PaymentAmount(models.Model):
     description = models.CharField(max_length=100)
-    value = models.PositiveIntegerField(default=100)
+    value = models.PositiveIntegerField(default=599)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
