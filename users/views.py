@@ -18,7 +18,9 @@ from TapVet.settings import STRIPE_API_KEY
 
 from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
-from helpers.stripe_helpers import stripe_errors_handler
+from helpers.stripe_helpers import (
+    stripe_errors_handler, get_customer_in_stripe, card_list
+)
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
@@ -309,5 +311,24 @@ class StripeCustomerView(APIView):
             else:
                 response_msg = {'detail': 'Token field is required'}
             return Response(response_msg, status=status.HTTP_400_BAD_REQUEST)
-        response_msg = {'detail': 'You are not allow to do this action'}
+        response_msg = {'detail': 'You are not allowed to do this action'}
+        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+
+    @staticmethod
+    def get(request, **kwargs):
+        """
+
+        :param request:
+        :param kwargs:
+        :return:
+        """
+        user = request.user
+        if user.id == int(kwargs['pk']):
+            if user.stripe_token:
+                customer = get_customer_in_stripe(user)
+                cards = customer.sources.data
+                return Response(card_list(cards))
+            no_customer_response = {'detail': 'There is no customer for this user'}
+            return Response(no_customer_response, status=status.HTTP_404_NOT_FOUND)
+        response_msg = {'detail': 'You are not allowed to do this action'}
         return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
