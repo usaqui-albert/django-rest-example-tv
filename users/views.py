@@ -311,7 +311,7 @@ class StripeCustomerView(APIView):
             else:
                 response_msg = {'detail': 'Token field is required'}
             return Response(response_msg, status=status.HTTP_400_BAD_REQUEST)
-        response_msg = {'detail': 'You are not allow to do this action'}
+        response_msg = {'detail': 'You are not allowed to do this action'}
         return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
 
     @staticmethod
@@ -330,5 +330,5 @@ class StripeCustomerView(APIView):
                 return Response(card_list(cards))
             no_customer_response = {'detail': 'There is no customer for this user'}
             return Response(no_customer_response, status=status.HTTP_404_NOT_FOUND)
-        response_msg = {'detail': 'You are not allow to do this action'}
+        response_msg = {'detail': 'You are not allowed to do this action'}
         return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
