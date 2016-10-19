@@ -291,7 +291,9 @@ class StripeCustomerView(APIView):
             if 'token' in request.data:
                 token = request.data.get('token')
                 if token:
-                    if not user.stripe_token:
+                    if user.stripe_token:
+                        response_msg = {'detail': 'You already have a customer in stripe'}
+                    else:
                         try:
                             customer = stripe.Customer.create(
                                 source=token,
@@ -304,8 +306,6 @@ class StripeCustomerView(APIView):
                             user.stripe_token = cus_token
                             user.save()
                             return Response('Customer successfully created')
-                    else:
-                        response_msg = {'detail': 'You already have a customer in stripe'}
                 else:
                     response_msg = {'detail': 'Token field can not be empty'}
             else:

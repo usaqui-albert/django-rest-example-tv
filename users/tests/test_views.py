@@ -717,7 +717,7 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=2)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You are not allow to do this action'
+        assert resp.data['detail'] == 'You are not allowed to do this action'
         assert resp.status_code == 403, 'Should return Forbidden (403)'
 
     def test_post_request_no_data(self):
