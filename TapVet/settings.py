@@ -178,7 +178,7 @@ ADMINS = [
 
 BREADER_MESSAGE_ADMIN_TITLE = "New Breeeder Pending"
 VET_MESSAGE_ADMIN_TITLE = "New Vet Pending"
-PAID_POST_AMOUNT = '599'
+PAID_POST_AMOUNT = '100'
 
 # Stripe data
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
