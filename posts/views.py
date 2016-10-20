@@ -104,7 +104,7 @@ class PaymentAmountDetail(RetrieveUpdateAPIView):
         :param kwargs:
         :return:
         """
-        if not request.user.is_staff:
-            response = {'detail': 'You are not an admin user'}
-            return Response(response, status=status.HTTP_403_FORBIDDEN)
-        return super(PaymentAmountDetail, self).update(request, **kwargs)
+        if request.user.is_staff:
+            return super(PaymentAmountDetail, self).update(request, **kwargs)
+        response = {'detail': 'You are not an admin user'}
+        return Response(response, status=status.HTTP_403_FORBIDDEN)
