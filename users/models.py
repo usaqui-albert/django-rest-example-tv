@@ -53,7 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.full_name
 
     def is_vet(self):
-        return self.groups.id in [3, 4, 5]
+        return self.groups.id in [3, 4, 5] if self.groups else False
 
 
 # Func to connect the signal on post save.
