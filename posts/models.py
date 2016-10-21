@@ -38,6 +38,9 @@ class Post(models.Model):
     def get_likes(self):
         return self.likers.count()
 
+    def get_images(self):
+        return self.images.count()
+
     def save(self, *args, **kwargs):
         if self.user.is_vet():
             try:
@@ -52,3 +55,7 @@ class ImagePost(models.Model):
     post = models.ForeignKey(Post, related_name='images')
     standard = models.ImageField(upload_to=uploads_path)
     thumbnail = models.ImageField(upload_to=uploads_path)
+
+    def __unicode__(self):
+        return u'Post %s - created at: %s' % (
+            self.post.id, self.post.created_at)
