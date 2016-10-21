@@ -86,7 +86,7 @@ class TestPaidPostView(CustomTestCase):
         resp = views.PaidPostView.as_view()(req)
         assert resp.status_code == 401, 'Should return Unauthorized (401)'
 
-    def test_get_request_not_allow(self):
+    def test_get_request_not_allowed(self):
         user = self.get_user()
         req = self.factory.get('/')
         force_authenticate(req, user=user)
@@ -94,7 +94,7 @@ class TestPaidPostView(CustomTestCase):
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405)')
 
-    def test_put_request_not_allow(self):
+    def test_put_request_not_allowed(self):
         user = self.get_user()
         req = self.factory.put('/')
         force_authenticate(req, user=user)
@@ -136,3 +136,76 @@ class TestPaidPostView(CustomTestCase):
             'Should return Payment Required (402) user has no a related '
             'stripe customer'
         )
+
+
+class TestPaymentAmountDetail(CustomTestCase):
+
+    def test_post_request_not_allowed(self):
+        req = self.factory.post('/')
+        force_authenticate(req, user=self.get_user())
+
+        resp = views.PaymentAmountDetail.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_delete_request_not_allowed(self):
+        req = self.factory.delete('/')
+        force_authenticate(req, user=self.get_user())
+
+        resp = views.PaymentAmountDetail.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_get_request_no_authenticated_user(self):
+        req = self.factory.get('/')
+
+        resp = views.PaymentAmountDetail.as_view()(req)
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+
+    def test_get_request_any_authenticated_user(self):
+        payment_amount = mixer.blend('posts.PaymentAmount')
+        req = self.factory.get('/')
+        force_authenticate(req, user=self.get_user())
+
+        resp = views.PaymentAmountDetail.as_view()(req, pk=payment_amount.pk)
+        assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_put_request_no_authenticated_user(self):
+        req = self.factory.put('/')
+
+        resp = views.PaymentAmountDetail.as_view()(req)
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+
+    def test_put_request_any_authenticated_user(self):
+        req = self.factory.put('/')
+        force_authenticate(req, user=self.get_user())
+
+        resp = views.PaymentAmountDetail.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'You are not an admin user'
+        assert resp.status_code == 403, 'Should return Forbidden (403)'
+
+    def test_put_request_with_no_data_admin_user(self):
+        payment_amount = mixer.blend('posts.PaymentAmount')
+        req = self.factory.put('/', {})
+        force_authenticate(req, user=self.get_user(is_staff=True))
+
+        resp = views.PaymentAmountDetail.as_view()(req, pk=payment_amount.pk)
+        assert 'description' in resp.data, (
+            'Given description is a required field the updating data should '
+            'contain a description field'
+        )
+        assert 'This field is required.' in resp.data['description']
+        assert resp.status_code == 400, (
+            'Should return Bad Request (400)')
+
+    def test_put_request_with_empty_data_admin_user(self):
+        payment_amount = mixer.blend('posts.PaymentAmount')
+        req = self.factory.put('/', {'description': ''})
+        force_authenticate(req, user=self.get_user(is_staff=True))
+
+        resp = views.PaymentAmountDetail.as_view()(req, pk=payment_amount.pk)
+        assert 'description' in resp.data
+        assert 'This field may not be blank.' in resp.data['description']
+        assert resp.status_code == 400, (
+            'Shour return Bad Request (400)')

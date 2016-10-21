@@ -2,13 +2,13 @@ import stripe
 from stripe.error import APIConnectionError, InvalidRequestError, CardError
 
 from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 from django.db.models import Count
 
-from .serializers import PostSerializer
-from .models import Post
+from .serializers import PostSerializer, PaymentAmountSerializer
+from .models import Post, PaymentAmount
 from TapVet.settings import STRIPE_API_KEY, PAID_POST_AMOUNT
 from helpers.stripe_helpers import stripe_errors_handler
 
@@ -84,3 +84,27 @@ class PaidPostView(APIView):
         post = Post.objects.filter(pk=self.kwargs['pk'],
                                    user=self.request.user.id).select_related('user')
         return post
+
+
+class PaymentAmountDetail(RetrieveUpdateAPIView):
+    """Service to retrieve and update the price and description of a payment amount
+
+    :accepted methods:
+        GET
+        PUT
+    """
+    queryset = PaymentAmount.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = PaymentAmountSerializer
+
+    def update(self, request, **kwargs):
+        """
+
+        :param request:
+        :param kwargs:
+        :return:
+        """
+        if request.user.is_staff:
+            return super(PaymentAmountDetail, self).update(request, **kwargs)
+        response = {'detail': 'You are not an admin user'}
+        return Response(response, status=status.HTTP_403_FORBIDDEN)

@@ -59,3 +59,11 @@ class ImagePost(models.Model):
     def __unicode__(self):
         return u'Post %s - created at: %s' % (
             self.post.id, self.post.created_at)
+
+
+class PaymentAmount(models.Model):
+    description = models.CharField(max_length=100)
+    value = models.PositiveIntegerField(default=100)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
