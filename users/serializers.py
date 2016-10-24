@@ -34,7 +34,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         :param value:
         :return:
         """
-        if len(value) < 8:
+        if len(value) < 1:
             raise serializers.ValidationError(
                 'Invalid password, should be longer than 8 characters')
         return value
