@@ -22,4 +22,5 @@ htmlcov/
 
 # Ignore Upload folder
 media/uploads/*
+media/*
 uploads/*
