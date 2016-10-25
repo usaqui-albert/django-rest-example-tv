@@ -209,3 +209,38 @@ class TestPaymentAmountDetail(CustomTestCase):
         assert 'This field may not be blank.' in resp.data['description']
         assert resp.status_code == 400, (
             'Shour return Bad Request (400)')
+
+
+class TestPostByuserListView(CustomTestCase):
+
+    def test_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.PostByUserListView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_post(self):
+        user = self.get_user()
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.PostByUserListView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_get_only_post_by_user(self):
+        self.load_users_data()
+        pet_owners = [self.get_user(groups_id=1) for _ in range(5)]
+        map(
+            lambda user: [
+                mixer.blend('posts.post', user=user) for _ in range(20)
+            ],
+            pet_owners
+        )
+        req = self.factory.get('/')
+        force_authenticate(req, user=pet_owners[0])
+        resp = views.PostByUserListView.as_view()(req, pk=pet_owners[0].pk)
+        assert len(resp.data) == 20
+        for x in map(lambda x: x['user'] == pet_owners[0].id, resp.data):
+            assert x
