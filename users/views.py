@@ -82,7 +82,18 @@ class UserView(generics.ListCreateAPIView):
         )
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated():
+        if request.user.is_authenticated():
+            return self.list(request, *args, **kwargs)
+        elif 'username' in request.GET or 'email' in request.GET:
+            dic = {
+                key: value
+                for key, value in request.GET.iteritems()
+                if key in ['username', 'email']
+            }
+            users = User.objects.filter(**dic)
+            serializer = UserSerializers(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
             message = {
                 "detail": messages.user_login
             }
@@ -90,7 +101,6 @@ class UserView(generics.ListCreateAPIView):
                 message,
                 status=status.HTTP_403_FORBIDDEN,
             )
-        return self.list(request, *args, **kwargs)
 
 
 class UserGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
