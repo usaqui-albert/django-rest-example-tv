@@ -292,15 +292,20 @@ class StripeCustomerView(APIView):
                 token = request.data.get('token')
                 if token:
                     if user.stripe_token:
-                        response_msg = {'detail': 'You already have a customer in stripe'}
+                        response_msg = {
+                            'detail': 'You already have a customer in stripe'}
                     else:
                         try:
                             customer = stripe.Customer.create(
                                 source=token,
                                 description='Customer for %s' % user.__str__()
                             )
-                        except (APIConnectionError, InvalidRequestError, CardError) as err:
-                            response_msg = {'detail': stripe_errors_handler(err)}
+                        except (
+                            APIConnectionError, InvalidRequestError,
+                            CardError
+                        ) as err:
+                            response_msg = {
+                                'detail': stripe_errors_handler(err)}
                         else:
                             cus_token = customer.id
                             user.stripe_token = cus_token
@@ -328,7 +333,9 @@ class StripeCustomerView(APIView):
                 customer = get_customer_in_stripe(user)
                 cards = customer.sources.data
                 return Response(card_list(cards))
-            no_customer_response = {'detail': 'There is no customer for this user'}
-            return Response(no_customer_response, status=status.HTTP_404_NOT_FOUND)
+            no_customer_response = {
+                'detail': 'There is no customer for this user'}
+            return Response(
+                no_customer_response, status=status.HTTP_404_NOT_FOUND)
         response_msg = {'detail': 'You are not allowed to do this action'}
         return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
