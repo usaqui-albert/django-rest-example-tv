@@ -67,23 +67,31 @@ class PaidPostView(APIView):
                         customer=str(user.stripe_token),
                         description='Charge for %s' % user.__str__()
                     )
-                except (APIConnectionError, InvalidRequestError, CardError) as err:
+                except (
+                    APIConnectionError, InvalidRequestError, CardError
+                ) as err:
                     error = stripe_errors_handler(err)
-                    return Response({'detail': error}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {'detail': error}, status=status.HTTP_400_BAD_REQUEST)
                 else:
                     post.set_paid().save()
-                    return Response('Payment successful', status=status.HTTP_200_OK)
-            no_customer_response = {'detail': 'There is no customer for this user'}
-            return Response(no_customer_response, status=status.HTTP_402_PAYMENT_REQUIRED)
-        return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+                    return Response(
+                        'Payment successful', status=status.HTTP_200_OK)
+            no_customer_response = {
+                'detail': 'There is no customer for this user'}
+            return Response(
+                no_customer_response, status=status.HTTP_402_PAYMENT_REQUIRED)
+        return Response(
+            {'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     def get_object(self):
         """Method to get a Post instance and prefetch the owner of the post
 
         :return: queryset with Post instance in it
         """
-        post = Post.objects.filter(pk=self.kwargs['pk'],
-                                   user=self.request.user.id).select_related('user')
+        post = Post.objects.filter(
+            pk=self.kwargs['pk'],
+            user=self.request.user.id).select_related('user')
         return post
 
 
