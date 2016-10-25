@@ -108,3 +108,19 @@ class PaymentAmountDetail(RetrieveUpdateAPIView):
             return super(PaymentAmountDetail, self).update(request, **kwargs)
         response = {'detail': 'You are not an admin user'}
         return Response(response, status=status.HTTP_403_FORBIDDEN)
+
+
+class PostByUserListView(ListAPIView):
+    """Service to list a post by user
+
+    :accepted methods:
+        GET
+    """
+    queryset = Post.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        qs = self.queryset
+        qs = qs.filter(user_id=self.kwargs['pk'])
+        return qs
