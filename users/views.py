@@ -24,7 +24,7 @@ from helpers.stripe_helpers import (
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
-    UserUpdateSerializer, CheckUserExistsSerializer
+    UserUpdateSerializer
 )
 
 
@@ -85,12 +85,14 @@ class UserView(generics.ListCreateAPIView):
         if request.user.is_authenticated():
             return self.list(request, *args, **kwargs)
         elif 'username' in request.GET or 'email' in request.GET:
-            serializer = CheckUserExistsSerializer(data=request.GET)
-            if serializer.is_valid():
-                return Response(status=status.HTTP_200_OK)
-            message_error = serializer.errors.itervalues().next()[0]
-            return Response({'detail': message_error},
-                            status=status.HTTP_400_BAD_REQUEST)
+            dic = {
+                key: value
+                for key, value in request.GET.iteritems()
+                if key in ['username', 'email']
+            }
+            users = User.objects.filter(**dic)
+            serializer = UserSerializers(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             message = {
                 "detail": messages.user_login

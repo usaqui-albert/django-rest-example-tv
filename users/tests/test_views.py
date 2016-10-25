@@ -180,39 +180,29 @@ class TestUserView(CustomTestCase):
         self.get_user(username='jdoe')
         req = self.factory.get('/?username=jdoe')
         resp = views.UserView.as_view()(req)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'user with this username already exists.'
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400)')
+        assert isinstance(resp.data, list) and len(resp.data) > 0
+        assert resp.status_code == 200, 'Should return OK (200)'
 
     def test_check_username_is_available(self):
         self.get_user(username='jdoe')
         req = self.factory.get('/?username=anotherjdoe')
         resp = views.UserView.as_view()(req)
+        assert isinstance(resp.data, list) and len(resp.data) == 0
         assert resp.status_code == 200, 'Should return OK (200)'
 
     def test_check_email_already_exists(self):
         self.get_user(email='jdoe@gmail.com')
         req = self.factory.get('/?email=jdoe@gmail.com')
         resp = views.UserView.as_view()(req)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'user with this email already exists.'
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400)')
+        assert isinstance(resp.data, list) and len(resp.data) > 0
+        assert resp.status_code == 200, 'Should return OK (200)'
 
     def test_check_email_is_available(self):
         self.get_user(email='jdoe@gmail.com')
         req = self.factory.get('/?email=anotherjdoe@gmail.com')
         resp = views.UserView.as_view()(req)
+        assert isinstance(resp.data, list) and len(resp.data) == 0
         assert resp.status_code == 200, 'Should return OK (200)'
-
-    def test_check_wrong_format_email(self):
-        req = self.factory.get('/?email=jdoe')
-        resp = views.UserView.as_view()(req)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Enter a valid email address.'
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400)')
 
 
 class TestUserDetailView:

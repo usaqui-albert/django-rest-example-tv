@@ -167,19 +167,3 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
-
-
-class CheckUserExistsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'email')
-        extra_kwargs = {
-            'username': {
-                'required': False,
-                'write_only': True
-            },
-            'email': {
-                'required': False,
-                'write_only': True
-            }
-        }
