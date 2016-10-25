@@ -52,7 +52,7 @@ class UserAuth(ObtainAuthToken):
                 'id': user.id,
                 'full_name': user.full_name,
                 'email': user.email,
-                'groups' : user.groups.id
+                'groups': user.groups.id
             }
         )
 
