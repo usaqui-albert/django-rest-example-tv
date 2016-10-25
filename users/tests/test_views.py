@@ -12,8 +12,6 @@ from countries import models as models_c
 from pets.models import get_current_year, get_limit_year
 from helpers.tests_helpers import CustomTestCase
 
-from helpers.tests_helpers import CustomTestCase
-
 from .. import views
 from .. import models
 
