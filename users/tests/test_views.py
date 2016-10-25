@@ -83,8 +83,25 @@ class TestUserAuth(CustomTestCase):
         )
 
 
-class TestUserView:
-    factory = RequestFactory()
+class TestUserView(CustomTestCase):
+
+    def test_put_request_not_allowed(self):
+        data = {
+            'email': 'john_doe@test.com',
+            'password': 'a1234567',
+            'full_name': 'John Doe',
+            'username': 'JDoe'
+        }
+        req = self.factory.put('/', data=data)
+        resp = views.UserView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_delete_request_not_allowed(self):
+        req = self.factory.delete('/')
+        resp = views.UserView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
 
     def test_get_request_no_auth(self):
         req = self.factory.get('/')
@@ -122,7 +139,7 @@ class TestUserView:
         )
 
     def test_post_data_duplicate(self):
-        user = mixer.blend(models.User)
+        user = self.get_user()
         data = {
             'email': user.email,
             'password': 'a1234567',
@@ -137,7 +154,7 @@ class TestUserView:
         )
 
     def test_post_username_duplicate(self):
-        user = mixer.blend(models.User)
+        user = self.get_user()
         data = {
             'email': 'asdas@asdas.com',
             'password': 'a1234567',
@@ -152,13 +169,40 @@ class TestUserView:
         )
 
     def test_get_request(self):
-        user = mixer.blend(models.User)
         req = self.factory.get('/')
-        force_authenticate(req, user=user)
+        force_authenticate(req, user=self.get_user())
         resp = views.UserView.as_view()(req)
         assert resp.status_code == 200, (
             'Should return OK (200) and a json response ' +
             'with a list of all users.')
+
+    def test_check_username_already_exists(self):
+        self.get_user(username='jdoe')
+        req = self.factory.get('/?username=jdoe')
+        resp = views.UserView.as_view()(req)
+        assert isinstance(resp.data, list) and len(resp.data) > 0
+        assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_check_username_is_available(self):
+        self.get_user(username='jdoe')
+        req = self.factory.get('/?username=anotherjdoe')
+        resp = views.UserView.as_view()(req)
+        assert isinstance(resp.data, list) and len(resp.data) == 0
+        assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_check_email_already_exists(self):
+        self.get_user(email='jdoe@gmail.com')
+        req = self.factory.get('/?email=jdoe@gmail.com')
+        resp = views.UserView.as_view()(req)
+        assert isinstance(resp.data, list) and len(resp.data) > 0
+        assert resp.status_code == 200, 'Should return OK (200)'
+
+    def test_check_email_is_available(self):
+        self.get_user(email='jdoe@gmail.com')
+        req = self.factory.get('/?email=anotherjdoe@gmail.com')
+        resp = views.UserView.as_view()(req)
+        assert isinstance(resp.data, list) and len(resp.data) == 0
+        assert resp.status_code == 200, 'Should return OK (200)'
 
 
 class TestUserDetailView:
