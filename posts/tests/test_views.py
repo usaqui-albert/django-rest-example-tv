@@ -242,4 +242,5 @@ class TestPostByuserListView(CustomTestCase):
         force_authenticate(req, user=pet_owners[0])
         resp = views.PostByUserListView.as_view()(req, pk=pet_owners[0].pk)
         assert len(resp.data) == 20
-        assert map(lambda x: x['user'] == pet_owners[0].id, resp.data)
+        for x in map(lambda x: x['user'] == pet_owners[0].id, resp.data):
+            assert x
