@@ -24,7 +24,7 @@ from helpers.stripe_helpers import (
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
-    UserUpdateSerializer
+    UserUpdateSerializer, CheckUserExistsSerializer
 )
 
 
@@ -81,7 +81,16 @@ class UserView(generics.ListCreateAPIView):
         )
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated():
+        if request.user.is_authenticated():
+            return self.list(request, *args, **kwargs)
+        elif 'username' in request.GET or 'email' in request.GET:
+            serializer = CheckUserExistsSerializer(data=request.GET)
+            if serializer.is_valid():
+                return Response(status=status.HTTP_200_OK)
+            message_error = serializer.errors.itervalues().next()[0]
+            return Response({'detail': message_error},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
             message = {
                 "detail": messages.user_login
             }
@@ -89,7 +98,6 @@ class UserView(generics.ListCreateAPIView):
                 message,
                 status=status.HTTP_403_FORBIDDEN,
             )
-        return self.list(request, *args, **kwargs)
 
 
 class UserGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
