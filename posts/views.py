@@ -47,10 +47,11 @@ class PaidPostView(APIView):
 
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request):
+    def post(self, request, **kwargs):
         """
 
         :param request:
+        :param kwargs:
         :return:
         """
         post = self.get_object()
