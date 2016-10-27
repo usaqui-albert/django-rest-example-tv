@@ -20,7 +20,7 @@ class ImagePostSerializer(ModelSerializer):
 class PostSerializer(ModelSerializer):
     likes_count = IntegerField(read_only=True)
     images = ImagePostSerializer(many=True, read_only=True)
-    image_1 = ImageField(write_only=True, required=False)
+    image_1 = ImageField(write_only=True, required=True)
     image_2 = ImageField(write_only=True, required=False)
     image_3 = ImageField(write_only=True, required=False)
 
