@@ -97,7 +97,7 @@ class PostSerializer(ModelSerializer):
             'image/jpeg', output.len, None)
         return image
 
-    def create_image_post(self, image_stream, post):
+    def create_image_post(self, image_stream, post, index):
         '''
             This definition receive the image stream, make two image
             off the same steam, then create an imagePost instance and
@@ -109,7 +109,7 @@ class PostSerializer(ModelSerializer):
         thumbnail = self.image_resize((150, 150), img_copy, image_stream)
         image_post = ImagePost(
             standard=standard, thumbnail=thumbnail,
-            post=post)
+            post=post, image_number=index)
         image_post.save()
 
 
