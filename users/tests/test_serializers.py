@@ -1,12 +1,14 @@
 """Testing serializers"""
 
 import pytest
+from helpers.tests_helpers import CustomTestCase
+
 from .. import serializers
 
 pytestmark = pytest.mark.django_db
 
 
-class TestCreateUserSerializer:
+class TestCreateUserSerializer(CustomTestCase):
     def test_serializer_no_data_given(self):
         serializer = serializers.CreateUserSerializer(data={})
         assert serializer.is_valid() is False, (
@@ -38,11 +40,13 @@ class TestCreateUserSerializer:
         ), 'Should be invalid if the format email is wrong'
 
     def test_serializer_right_format_email(self):
+        self.load_users_data()
         data = {
             'email': 'john_doe@test.com',
             'password': 'a1234567',
             'full_name': 'John Doe',
-            'username': 'JDoe'
+            'username': 'JDoe',
+            'groups': 1
         }
         serializer = serializers.CreateUserSerializer(data=data)
         assert serializer.is_valid() is True, (
@@ -61,22 +65,26 @@ class TestCreateUserSerializer:
         ), 'Should be invalid if fullname is not long enough'
 
     def test_serializer_full_name_long_enough(self):
+        self.load_users_data()
         data = {
             'email': 'john_doe@test.com',
             'password': 'a1234567',
             'full_name': 'John Doe',
-            'username': 'JDoe'
+            'username': 'JDoe',
+            'groups': 1
         }
         serializer = serializers.CreateUserSerializer(data=data)
         assert serializer.is_valid() is True, (
             'Should be valid if fullname is long enough')
 
     def test_serializer_password_long_enough(self):
+        self.load_users_data()
         data = {
             'email': 'john_doe@test.com',
             'password': '12345678',
             'full_name': 'John Doe',
-            'username': 'JDoe'
+            'username': 'JDoe',
+            'groups': 1
         }
         serializer = serializers.CreateUserSerializer(data=data)
         assert serializer.is_valid() is True, (
