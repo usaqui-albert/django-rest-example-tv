@@ -37,6 +37,19 @@ class PostListCreateView(ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
+class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    serializer_class = PostSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = Post.objects.annotate(likes_count=Count('likers'))
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        images = instance.images.all()
+        map(lambda x: x.delete(), images)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class PaidPostView(APIView):
     """Service to set a post as paid
 
