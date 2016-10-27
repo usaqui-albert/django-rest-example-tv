@@ -82,7 +82,7 @@ class TestPostListCreateView(CustomTestCase):
         force_authenticate(req, self.get_user())
 
         resp = views.PostListCreateView.as_view()(req)
-        assert 'No file was submitted.' in resp.data['image_1']
+        assert resp.data[0] == 'At least 1 image is required'
         assert resp.status_code == 400, (
             'Should return Bad Request (400)')
 
