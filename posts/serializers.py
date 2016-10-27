@@ -39,15 +39,29 @@ class PostSerializer(ModelSerializer):
         image_1 = validated_data.pop('image_1', None)
         image_2 = validated_data.pop('image_2', None)
         image_3 = validated_data.pop('image_3', None)
-        if not (image_1 or image_2 or image_3):
-            raise ValidationError('At least 1 image is required')
         post = Post(**dict(
             validated_data, user=self.context['user']))
         post.save()
-        for image in [image_1, image_2, image_3]:
+        for index, image in enumerate([image_1, image_2, image_3]):
             if image:
-                self.create_image_post(image, post)
+                self.create_image_post(image, post, index)
         return post
+
+    def update(self, instance, validated_data):
+        image_1 = validated_data.pop('image_1', None)
+        image_2 = validated_data.pop('image_2', None)
+        image_3 = validated_data.pop('image_3', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        for index, new_image in enumerate([image_1, image_2, image_3]):
+            if new_image:
+                image = instance.images.filter(image_number=index).first()
+                if image:
+                    image.delete()
+                self.create_image_post(image, instance, index)
+        return instance
 
     def image_with_background(self, img, size, output):
         '''
