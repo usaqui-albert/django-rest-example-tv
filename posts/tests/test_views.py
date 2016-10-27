@@ -299,3 +299,89 @@ class TestPostByuserListView(CustomTestCase):
         assert len(resp.data) == 20
         for x in map(lambda x: x['user'] == pet_owners[0].id, resp.data):
             assert x
+
+
+class TestPostRetriveUpdateDeleteView(CustomTestCase):
+
+    def test_get_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.PostByUserListView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_get_auth(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        assert resp.data['description'] == post.description
+
+    def test_delete(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        assert resp.data is None
+
+    def test_put(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        data = {
+            'description': 'New description'
+        }
+        req = self.factory.put('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(
+            req, pk=post.pk)
+        assert resp.data['description'] == 'New description'
+
+    def test_patch(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        data = {
+            'description': 'New description'
+        }
+        req = self.factory.patch('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(
+            req, pk=post.pk)
+        assert resp.data['description'] == 'New description'
+
+    def test_put_image(self):
+        tmp_file = get_test_image()
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        data = {
+            'description': 'BLAh blah',
+            'image_1': tmp_file
+        }
+        tmp_file.seek(0)
+        req = self.factory.put('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(
+            req, pk=post.pk)
+        assert resp.status_code == 200
+        p = models.Post.objects.last()
+        image = p.images.first()
+        img_s = Image.open(image.standard)
+        img_t = Image.open(image.thumbnail)
+        assert img_s.size == (612, 612)
+        assert img_t.size == (150, 150)
+
+    def test_put_no_owner(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        user2 = self.get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        data = {
+            'description': 'New description'
+        }
+        req = self.factory.put('/', data=data)
+        force_authenticate(req, user=user2)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(
+            req, pk=post.pk)
+        assert resp.status_code == 403
+        assert resp.data['detail'] == 'Error: You dont have permission to edit'
