@@ -13,7 +13,28 @@ from helpers.tests_helpers import CustomTestCase
 pytestmark = pytest.mark.django_db
 
 
-class TestPostVetListCreateView(CustomTestCase):
+def get_test_image():
+    image = Image.new('RGB', (1000, 1000), 'white')
+    tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
+    image.save(tmp_file)
+    return tmp_file
+
+
+class TestPostListCreateView(CustomTestCase):
+
+    def test_put_request_not_allowed(self):
+        req = self.factory.put('/', {})
+        force_authenticate(req, user=self.get_user())
+        resp = views.PostListCreateView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_delete_request_not_allowed(self):
+        req = self.factory.delete('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.PostListCreateView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
 
     def test_request_get_no_auth(self):
         req = self.factory.get('/')
@@ -55,10 +76,43 @@ class TestPostVetListCreateView(CustomTestCase):
             '"detail": "Authentication credentials were not provided."'
         )
 
-    def test_request_post(self):
-        image = Image.new('RGB', (1000, 1000), 'white')
-        tmp_file = tempfile.NamedTemporaryFile(suffix='.jpg')
-        image.save(tmp_file)
+    def test_post_request_image_field_missing(self):
+        data = {'description': 'Test description'}
+        req = self.factory.post('/', data)
+        force_authenticate(req, self.get_user())
+
+        resp = views.PostListCreateView.as_view()(req)
+        assert 'At least 1 image is required' in resp.data
+        assert resp.status_code == 400, (
+            'Should return Bad Request (400)')
+
+    def test_post_request_invalid_image(self):
+        data = {
+            'description': 'Test description',
+            'image_1': 'My image'
+        }
+        req = self.factory.post('/', data)
+        force_authenticate(req, self.get_user())
+
+        resp = views.PostListCreateView.as_view()(req)
+        assert 'image_1' in resp.data
+        assert 'The submitted data was not a file. ' \
+               'Check the encoding type on the form.' in resp.data['image_1']
+        assert resp.status_code == 400, (
+            'Should return Bad Request (400)')
+
+    def test_post_request_description_field_missing(self):
+        req = self.factory.post('/', {})
+        force_authenticate(req, self.get_user())
+
+        resp = views.PostListCreateView.as_view()(req)
+        assert 'description' in resp.data
+        assert 'This field is required.' in resp.data['description']
+        assert resp.status_code == 400, (
+            'Should return Bad Request (400)')
+
+    def test_post_request_successful(self):
+        tmp_file = get_test_image()
         user = self.load_users_data().get_user(groups_id=1)
         data = {
             'description': 'BLAh blah',
@@ -67,6 +121,7 @@ class TestPostVetListCreateView(CustomTestCase):
         tmp_file.seek(0)
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
+
         resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 201, (
             'Should return HTTP 201 CREATED'
