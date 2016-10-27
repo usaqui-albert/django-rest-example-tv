@@ -1,5 +1,4 @@
 import stripe
-from stripe.error import APIConnectionError, InvalidRequestError, CardError
 
 from rest_framework.response import Response
 from rest_framework.generics import (
@@ -11,7 +10,7 @@ from django.db.models import Count
 from .serializers import PostSerializer, PaymentAmountSerializer
 from .models import Post, PaymentAmount
 from TapVet.settings import STRIPE_API_KEY, PAID_POST_AMOUNT
-from helpers.stripe_helpers import stripe_errors_handler
+from .utils import paid_post_handler
 
 
 class PostListCreateView(ListCreateAPIView):
@@ -60,23 +59,14 @@ class PaidPostView(APIView):
             post = post.get()
             user = post.user
             if user.stripe_token:
-                try:
-                    stripe.Charge.create(
-                        amount=PAID_POST_AMOUNT,
-                        currency='cad',
-                        customer=str(user.stripe_token),
-                        description='Charge for %s' % user.__str__()
-                    )
-                except (
-                    APIConnectionError, InvalidRequestError, CardError
-                ) as err:
-                    error = stripe_errors_handler(err)
-                    return Response(
-                        {'detail': error}, status=status.HTTP_400_BAD_REQUEST)
-                else:
+                response = paid_post_handler(user, PAID_POST_AMOUNT)
+                if response is True:
                     post.set_paid().save()
-                    return Response(
-                        'Payment successful', status=status.HTTP_200_OK)
+                    return Response({'detail': 'Payment successful'},
+                                    status=status.HTTP_200_OK)
+                else:
+                    return Response({'detail': response},
+                                    status=status.HTTP_400_BAD_REQUEST)
             no_customer_response = {
                 'detail': 'There is no customer for this user'}
             return Response(
