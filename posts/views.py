@@ -1,5 +1,6 @@
 import stripe
 
+from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView,
@@ -10,7 +11,6 @@ from django.db.models import Count
 
 from .serializers import PostSerializer, PaymentAmountSerializer
 from .models import Post, PaymentAmount
-from TapVet.settings import STRIPE_API_KEY, PAID_POST_AMOUNT
 from .utils import paid_post_handler
 
 
@@ -57,7 +57,7 @@ class PaidPostView(APIView):
     """
     def __init__(self, **kwargs):
         super(PaidPostView, self).__init__(**kwargs)
-        stripe.api_key = STRIPE_API_KEY
+        stripe.api_key = settings.STRIPE_API_KEY
 
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -73,7 +73,7 @@ class PaidPostView(APIView):
             post = post.get()
             user = post.user
             if user.stripe_token:
-                response = paid_post_handler(user, PAID_POST_AMOUNT)
+                response = paid_post_handler(user, settings.PAID_POST_AMOUNT)
                 if response is True:
                     post.set_paid().save()
                     return Response({'detail': 'Payment successful'},
