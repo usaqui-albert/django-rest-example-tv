@@ -20,7 +20,7 @@ class ImagePostSerializer(ModelSerializer):
 class PostSerializer(ModelSerializer):
     likes_count = IntegerField(read_only=True)
     images = ImagePostSerializer(many=True, read_only=True)
-    image_1 = ImageField(write_only=True, required=True)
+    image_1 = ImageField(write_only=True, required=False)
     image_2 = ImageField(write_only=True, required=False)
     image_3 = ImageField(write_only=True, required=False)
 
@@ -39,29 +39,15 @@ class PostSerializer(ModelSerializer):
         image_1 = validated_data.pop('image_1', None)
         image_2 = validated_data.pop('image_2', None)
         image_3 = validated_data.pop('image_3', None)
+        if not (image_1):
+            raise ValidationError('At least 1 image is required')
         post = Post(**dict(
             validated_data, user=self.context['user']))
         post.save()
-        for index, image in enumerate([image_1, image_2, image_3]):
+        for image in [image_1, image_2, image_3]:
             if image:
-                self.create_image_post(image, post, index)
+                self.create_image_post(image, post)
         return post
-
-    def update(self, instance, validated_data):
-        image_1 = validated_data.pop('image_1', None)
-        image_2 = validated_data.pop('image_2', None)
-        image_3 = validated_data.pop('image_3', None)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        for index, new_image in enumerate([image_1, image_2, image_3]):
-            if new_image:
-                image = instance.images.filter(image_number=index).first()
-                if image:
-                    image.delete()
-                self.create_image_post(image, instance, index)
-        return instance
 
     def image_with_background(self, img, size, output):
         '''
@@ -111,7 +97,7 @@ class PostSerializer(ModelSerializer):
             'image/jpeg', output.len, None)
         return image
 
-    def create_image_post(self, image_stream, post, index):
+    def create_image_post(self, image_stream, post):
         '''
             This definition receive the image stream, make two image
             off the same steam, then create an imagePost instance and
@@ -123,7 +109,7 @@ class PostSerializer(ModelSerializer):
         thumbnail = self.image_resize((150, 150), img_copy, image_stream)
         image_post = ImagePost(
             standard=standard, thumbnail=thumbnail,
-            post=post, image_number=index)
+            post=post)
         image_post.save()
 
 
