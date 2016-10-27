@@ -44,7 +44,7 @@ class PostSerializer(ModelSerializer):
         post = Post(**dict(
             validated_data, user=self.context['user']))
         post.save()
-        for index, image in enumerate([image_1, image_2, image_3]):
+        for index, image in enumerate([image_1, image_2, image_3], start=1):
             if image:
                 self.create_image_post(image, post, index)
         return post
@@ -57,12 +57,14 @@ class PostSerializer(ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        for index, new_image in enumerate([image_1, image_2, image_3]):
+        for index, new_image in enumerate(
+            [image_1, image_2, image_3], start=1
+        ):
             if new_image:
                 image = instance.images.filter(image_number=index).first()
                 if image:
                     image.delete()
-                self.create_image_post(image, instance, index)
+                self.create_image_post(new_image, instance, index)
         return instance
 
     def image_with_background(self, img, size, output):
