@@ -71,18 +71,6 @@ class TestCreateUserSerializer:
         assert serializer.is_valid() is True, (
             'Should be valid if fullname is long enough')
 
-    def test_serializer_password_too_short(self):
-        data = {
-            'email': 'john_doe@test.com',
-            'password': '123',
-            'full_name': 'John Doe',
-            'username': 'JDoe'
-        }
-        serializer = serializers.CreateUserSerializer(data=data)
-        assert serializer.is_valid() is False and (
-            'password' in serializer.errors
-        ), 'Should be invalid if password is not long enough'
-
     def test_serializer_password_long_enough(self):
         data = {
             'email': 'john_doe@test.com',
