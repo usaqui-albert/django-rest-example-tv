@@ -12,8 +12,6 @@ from countries import models as models_c
 from pets.models import get_current_year, get_limit_year
 from helpers.tests_helpers import CustomTestCase
 
-from helpers.tests_helpers import CustomTestCase
-
 from .. import views
 from .. import models
 
@@ -112,11 +110,13 @@ class TestUserView(CustomTestCase):
         )
 
     def test_post_valid_data(self):
+        self.load_users_data()
         data = {
             'email': 'john_doe@test.com',
             'password': 'a1234567',
             'full_name': 'John Doe',
-            'username': 'JDoe'
+            'username': 'JDoe',
+            'groups': 1
         }
         req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)

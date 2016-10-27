@@ -12,7 +12,8 @@ class CreateUserSerializer(serializers.ModelSerializer):
         fields = ('password', 'username', 'email', 'full_name', 'groups', 'id')
         extra_kwargs = {
             'password': {'write_only': True},
-            'id': {'read_only': True}
+            'id': {'read_only': True},
+            'groups': {'required': True}
         }
 
     @staticmethod
