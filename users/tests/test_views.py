@@ -110,11 +110,13 @@ class TestUserView(CustomTestCase):
         )
 
     def test_post_valid_data(self):
+        self.load_users_data()
         data = {
             'email': 'john_doe@test.com',
             'password': 'a1234567',
             'full_name': 'John Doe',
-            'username': 'JDoe'
+            'username': 'JDoe',
+            'groups': 1
         }
         req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)
