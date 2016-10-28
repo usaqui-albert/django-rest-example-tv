@@ -1,21 +1,28 @@
 import stripe
 
+from django.conf import settings
+from django.db.models import Count
+from django.shortcuts import get_object_or_404
+
 from rest_framework.response import Response
 from rest_framework.generics import (
-    ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView)
+    ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView, DestroyAPIView,
+    RetrieveUpdateDestroyAPIView)
 from rest_framework import permissions, status
 from rest_framework.views import APIView
-from django.db.models import Count
 
-from .serializers import PostSerializer, PaymentAmountSerializer
-from .models import Post, PaymentAmount
-from TapVet.settings import STRIPE_API_KEY, PAID_POST_AMOUNT
+from TapVet import messages
+from pets.permissions import IsOwnerReadOnly
+from .serializers import (
+    PostSerializer, PaymentAmountSerializer, ImagePostSerializer
+)
+from .models import Post, PaymentAmount, ImagePost
 from .utils import paid_post_handler
 
 
 class PostListCreateView(ListCreateAPIView):
     """
-    Service to create list and create new vet post.
+    Service to create list and create new post.
 
     :accepted methods:
     GET
@@ -35,6 +42,54 @@ class PostListCreateView(ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
+class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    """
+    Service to delete  posts.
+
+    :accepted methods:
+    GET
+    PUT
+    PATCH
+    DELETE
+    """
+    serializer_class = PostSerializer
+    permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
+    queryset = Post.objects.annotate(likes_count=Count('likers'))
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        images = instance.images.all()
+        map(lambda x: x.delete(), images)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ImagePostDeleteView(DestroyAPIView):
+    serializer_class = ImagePostSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = ImagePost.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        image = get_object_or_404(ImagePost, pk=kwargs['pk'])
+        post = image.post
+        images = post.images.count()
+        if post.user == request.user or request.user.is_staff:
+            if images >= 2:
+                image.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                response = {
+                    'detail': messages.one_image
+                }
+                return Response(
+                    response, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            response = {
+                'detail': messages.permission
+            }
+            return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+
+
 class PaidPostView(APIView):
     """Service to set a post as paid
 
@@ -43,7 +98,7 @@ class PaidPostView(APIView):
     """
     def __init__(self, **kwargs):
         super(PaidPostView, self).__init__(**kwargs)
-        stripe.api_key = STRIPE_API_KEY
+        stripe.api_key = settings.STRIPE_API_KEY
 
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -59,7 +114,7 @@ class PaidPostView(APIView):
             post = post.get()
             user = post.user
             if user.stripe_token:
-                response = paid_post_handler(user, PAID_POST_AMOUNT)
+                response = paid_post_handler(user, settings.PAID_POST_AMOUNT)
                 if response is True:
                     post.set_paid().save()
                     return Response({'detail': 'Payment successful'},

@@ -53,6 +53,8 @@ class Post(models.Model):
 
 class ImagePost(models.Model):
     post = models.ForeignKey(Post, related_name='images')
+    image_number = models.PositiveSmallIntegerField(
+        choices=((1, 1), (2, 2), (3, 3)), default=1)
     standard = models.ImageField(upload_to=uploads_path)
     thumbnail = models.ImageField(upload_to=uploads_path)
 
@@ -64,6 +66,5 @@ class ImagePost(models.Model):
 class PaymentAmount(models.Model):
     description = models.CharField(max_length=100)
     value = models.PositiveIntegerField(default=100)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

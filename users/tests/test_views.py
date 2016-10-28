@@ -30,7 +30,6 @@ class TestUserAuth(CustomTestCase):
         )
 
     def test_post_valid_data(self):
-
         user = self.load_users_data().get_user(groups_id=1)
         user.set_password('pass')
         user.save()
@@ -39,22 +38,22 @@ class TestUserAuth(CustomTestCase):
             'password': 'pass'
         }
         req = self.factory.post('/', data=data)
+
         resp = views.UserAuth.as_view()(req)
-        assert resp.status_code == 200, (
-            'Should return Success (200) with a json with: token ' +
-            'id, full_name, and email'
-        )
+        for key in ['full_name', 'email', 'token', 'stripe', 'groups', 'id']:
+            assert key in resp.data
+        assert resp.status_code == 200, 'Should return Success (200)'
 
     def test_post_incomplete_data_password(self):
         data = {
             'username': 'JDoe',
         }
         req = self.factory.post('/', data=data)
+
         resp = views.UserAuth.as_view()(req)
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400) with ' +
-            '{"password":["This field is required."]}'
-        )
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Your username and password do not match.'
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_post_invalid_data(self):
         data = {
@@ -62,35 +61,28 @@ class TestUserAuth(CustomTestCase):
             'password': 'xxxxxxx',
         }
         req = self.factory.post('/', data=data)
+
         resp = views.UserAuth.as_view()(req)
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400) with ' +
-            '{"non_field_errors":["Unable to log in with provided ' +
-            'credentials."]}'
-        )
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Your username and password do not match.'
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_post_incomplete_data_username(self):
         data = {
             'password': 'a1234567',
         }
         req = self.factory.post('/', data=data)
+
         resp = views.UserAuth.as_view()(req)
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400) with ' +
-            '{"username":["This field is required."]}'
-        )
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Your username and password do not match.'
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
 
 
 class TestUserView(CustomTestCase):
 
     def test_put_request_not_allowed(self):
-        data = {
-            'email': 'john_doe@test.com',
-            'password': 'a1234567',
-            'full_name': 'John Doe',
-            'username': 'JDoe'
-        }
-        req = self.factory.put('/', data=data)
+        req = self.factory.put('/', data={})
         resp = views.UserView.as_view()(req)
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405)')
@@ -103,13 +95,22 @@ class TestUserView(CustomTestCase):
 
     def test_get_request_no_auth(self):
         req = self.factory.get('/')
-        resp = views.UserView.as_view()(req)
-        assert resp.status_code == 403, (
-            'Should return Method Forbidden (403) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+        awaited_message = 'Authentication credentials were not provided.'
 
-    def test_post_valid_data(self):
+        resp = views.UserView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == awaited_message
+        assert resp.status_code == 403, 'Should return Forbidden (403)'
+
+    def test_get_request_with_authentication(self):
+        req = self.factory.get('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserView.as_view()(req)
+        assert resp.status_code == 200, (
+            'Should return OK (200) and a json response ' +
+            'with a list of all users.')
+
+    def test_post_request_valid_data(self):
         self.load_users_data()
         data = {
             'email': 'john_doe@test.com',
@@ -120,61 +121,132 @@ class TestUserView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)
-        assert resp.status_code == 201, (
-            'Should return Created (201) and a json response with ' +
-            'username, token, ful_name, groups, id and email'
-        )
+        for key in ['full_name', 'email', 'token', 'username', 'groups', 'id']:
+            assert key in resp.data
+        assert resp.status_code == 201, 'Should return Created (201)'
 
-    def test_post_invalid_data(self):
+    def test_post_request_wrong_format_email(self):
+        self.load_users_data()
         data = {
             'email': 'john_doe@com',
             'password': 'a1234567',
             'full_name': 'John Doe',
-            'username': 'JDoe'
+            'username': 'JDoe',
+            'groups': 1
         }
         req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)
+        assert 'email' in resp.data
+        assert 'Enter a valid email address.' in resp.data['email']
         assert resp.status_code == 400, (
             'Should return Bad Request (400) with an invalid email'
         )
 
-    def test_post_data_duplicate(self):
-        user = self.get_user()
+    def test_post_request_email_already_exists(self):
+        user = self.load_users_data().get_user()
         data = {
             'email': user.email,
+            'password': 'a1234567',
+            'full_name': 'John Doe',
+            'username': 'JDoe',
+            'groups': 1
+        }
+        req = self.factory.post('/', data=data)
+        resp = views.UserView.as_view()(req)
+        assert 'email' in resp.data
+        assert 'user with this email already exists.' in resp.data['email']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_username_already_exists(self):
+        user = self.load_users_data().get_user()
+        data = {
+            'email': 'asdas@asdas.com',
+            'password': 'a1234567',
+            'full_name': 'John Doe',
+            'username': user.username,
+            'groups': 1
+        }
+        req = self.factory.post('/', data=data)
+
+        resp = views.UserView.as_view()(req)
+        assert 'username' in resp.data
+        assert 'user with this username already ' \
+               'exists.'in resp.data['username']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_username_field_missing(self):
+        self.load_users_data()
+        data = {
+            'email': 'john_doe@gmail.com',
+            'password': 'a1234567',
+            'full_name': 'John Doe',
+            'groups': 1
+        }
+        req = self.factory.post('/', data=data)
+
+        resp = views.UserView.as_view()(req)
+        assert 'username' in resp.data
+        assert 'This field is required.' in resp.data['username']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_email_field_missing(self):
+        self.load_users_data()
+        data = {
+            'password': 'a1234567',
+            'full_name': 'John Doe',
+            'username': 'JDoe',
+            'groups': 1
+        }
+        req = self.factory.post('/', data=data)
+
+        resp = views.UserView.as_view()(req)
+        assert 'email' in resp.data
+        assert 'This field is required.' in resp.data['email']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_full_name_field_missing(self):
+        self.load_users_data()
+        data = {
+            'email': 'john_doe@gmail.com',
+            'password': 'a1234567',
+            'username': 'JDoe',
+            'groups': 1
+        }
+        req = self.factory.post('/', data=data)
+
+        resp = views.UserView.as_view()(req)
+        assert 'full_name' in resp.data
+        assert 'This field is required.' in resp.data['full_name']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_password_field_missing(self):
+        self.load_users_data()
+        data = {
+            'email': 'john_doe@gmail.com',
+            'full_name': 'John Doe',
+            'username': 'JDoe',
+            'groups': 1
+        }
+        req = self.factory.post('/', data=data)
+
+        resp = views.UserView.as_view()(req)
+        assert 'password' in resp.data
+        assert 'This field is required.' in resp.data['password']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_groups_field_missing(self):
+        data = {
+            'email': 'john_doe@gmail.com',
             'password': 'a1234567',
             'full_name': 'John Doe',
             'username': 'JDoe'
         }
         req = self.factory.post('/', data=data)
-        resp = views.UserView.as_view()(req)
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400) user with this email ' +
-            'already exists.'
-        )
 
-    def test_post_username_duplicate(self):
-        user = self.get_user()
-        data = {
-            'email': 'asdas@asdas.com',
-            'password': 'a1234567',
-            'full_name': 'John Doe',
-            'username': user.username
-        }
-        req = self.factory.post('/', data=data)
         resp = views.UserView.as_view()(req)
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400) user with this username ' +
-            'already exists.'
-        )
-
-    def test_get_request(self):
-        req = self.factory.get('/')
-        force_authenticate(req, user=self.get_user())
-        resp = views.UserView.as_view()(req)
-        assert resp.status_code == 200, (
-            'Should return OK (200) and a json response ' +
-            'with a list of all users.')
+        assert 'groups' in resp.data
+        assert 'This field is required.' in resp.data['groups']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_check_username_already_exists(self):
         self.get_user(username='jdoe')
@@ -205,28 +277,40 @@ class TestUserView(CustomTestCase):
         assert resp.status_code == 200, 'Should return OK (200)'
 
 
-class TestUserDetailView:
-    factory = APIRequestFactory()
+class TestUserDetailView(CustomTestCase):
 
-    def test_get_request(self):
-        user = mixer.blend(models.User)
+    def test_post_request_not_allowed(self):
+        req = self.factory.post('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserGetUpdateView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should HTTP 405 Method Not Allowed')
+
+    def test_get_request_no_authentication(self):
+        req = self.factory.get('/')
+        resp = views.UserRetrieveUpdateView.as_view()(req)
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+
+    def test_get_request_with_authentication(self):
+        user = self.get_user()
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, 'Should return OK (200)'
 
-    def test_post_request(self):
+    def test_put_request_no_authentication(self):
         user = mixer.blend(models.User)
-        req = self.factory.post('/')
-        force_authenticate(req, user=user)
+        data = {
+            "full_name": "Albert Usaqui",
+            "email": user.email,
+        }
+        req = self.factory.patch('/', data=data)
         resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 405, (
-            'Should HTTP 405 Method Not Allowed')
+        assert resp.status_code == 401, (
+            'Should return Http 401 Unauthorized')
 
-    def test_update_request(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        user = mixer.blend(models.User, groups_id=2)
+    def test_update_request_with_authentication(self):
+        user = self.load_users_data().get_user(groups_id=2)
         data = {
             "full_name": "Albert Usaqui",
             "email": user.email,
@@ -239,19 +323,8 @@ class TestUserDetailView:
         user.refresh_from_db()
         assert user.full_name == 'Albert Usaqui', 'Should update the user'
 
-    def test_update_no_auth(self):
-        user = mixer.blend(models.User)
-        data = {
-            "full_name": "Albert Usaqui",
-            "email": user.email,
-        }
-        req = self.factory.patch('/', data=data)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 401, (
-            'Should return Http 401 Unauthorized')
-
-    def test_put_request(self):
-        user = mixer.blend(models.User)
+    def test_put_request_with_authentication(self):
+        user = self.get_user()
         data = {
             "full_name": "Albert Usaqui",
             "email": user.email,
@@ -262,25 +335,9 @@ class TestUserDetailView:
         assert resp.status_code == 200, (
             'Should return HTTP 200 OK')
 
-    def test_delete_request(self):
-        user = mixer.blend(models.User)
-        req = self.factory.delete('/')
-        force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 401, (
-            'Should return HTTP 401 Unauthorized')
-
-    def test_delete_request_admin(self):
-        user = mixer.blend(models.User, is_staff=True)
-        req = self.factory.delete('/')
-        force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 204, (
-            'Should return HTTP 204 No Content')
-
-    def test_different_user(self):
-        user = mixer.blend(models.User)
-        user2 = mixer.blend(models.User)
+    def test_put_request_by_different_user(self):
+        user = self.get_user()
+        user2 = self.get_user()
         data = {
             "full_name": "Albert Usaqui",
             "email": user.email,
@@ -288,8 +345,26 @@ class TestUserDetailView:
         req = self.factory.patch('/', data=data)
         force_authenticate(req, user=user2)
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Error: You dont have permission to edit'
         assert resp.status_code == 403, (
             'Should return HTTP 403 Forbidden')
+
+    def test_delete_request_authenticated_but_no_admin(self):
+        req = self.factory.delete('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserGetUpdateView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'You need admin status to delete.'
+        assert resp.status_code == 401, (
+            'Should return HTTP 401 Unauthorized')
+
+    def test_delete_request_only_admin_allowed(self):
+        user = self.get_user(is_staff=True)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 204, 'Should return No Content (204)'
 
 
 class GroupsListView:
