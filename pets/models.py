@@ -44,7 +44,7 @@ class PetType(models.Model):
         verbose_name_plural = "Pet Types"
 
     def __unicode__(self):
-        return u'%s' % (self.name)
+        return u'%s' % self.name
 
 
 class Pet(models.Model):
@@ -71,7 +71,7 @@ class Pet(models.Model):
         if self.birth_year < get_limit_year():
             raise ValueError(
                 'The pet year of birth cannot be ' +
-                'lower than' + str(get_limit_year()))
+                'lower than ' + str(get_limit_year()))
 
     def save(self, *args, **kwargs):
         self.age_verify()
