@@ -1,8 +1,6 @@
 """Testing Views"""
 import pytest
-from django.core.management import call_command
 
-from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
 
 from mixer.backend.django import mixer
@@ -11,32 +9,33 @@ from .. import views
 from .. import models
 
 from users.models import User
+from helpers.tests_helpers import CustomTestCase
 
 pytestmark = pytest.mark.django_db
 
 
-class TestPetListCreateView:
-    factory = APIRequestFactory()
+class TestPetListCreateView(CustomTestCase):
 
     def test_get_request_no_auth(self):
         req = self.factory.get('/')
         resp = views.PetsListCreateView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Authentication credentials were ' \
+                                      'not provided.'
         assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+            'Should return Method Unauthorized (401)')
 
     def test_get_request_no_admin(self):
-        user = mixer.blend(User, is_staff=False)
         req = self.factory.get('/')
-        force_authenticate(req, user=user)
+        force_authenticate(req, user=self.get_user())
         resp = views.PetsListCreateView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Admin level is needed for this action.'
         assert resp.status_code == 403, (
-            'Should return Method Forbidden (403) with a json ' +
-            '"detail": "Admin level is needed for this action."')
+            'Should return Method Forbidden (403)')
 
     def test_get_request_admin(self):
-        user = mixer.blend(User, is_staff=True)
+        user = self.get_user(is_staff=True)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.PetsListCreateView.as_view()(req)
@@ -45,9 +44,7 @@ class TestPetListCreateView:
             'with a list of all pets.')
 
     def test_post_valid_data(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        user = mixer.blend(User, groups_id=1)
+        user = self.load_users_data().get_user(groups_id=1)
         pet_type = mixer.blend(models.PetType)
         data = {
             'name': 'john doe',
@@ -60,14 +57,14 @@ class TestPetListCreateView:
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.PetsListCreateView.as_view()(req)
-        assert resp.status_code == 201, (
-            'Should return Created (201) and a json response with ' +
-            'name, fixed, birth_year, pet_type, breed, gender')
+        awaited_keys = ['name', 'gender', 'image', 'breed', 'image_url',
+                        'user', 'pet_type', 'fixed', 'id', 'birth_year']
+        for key in awaited_keys:
+            assert key in resp.data
+        assert resp.status_code == 201, 'Should return Created (201)'
 
     def test_post_invalid_data(self):
-        call_command(
-            'loaddata', '../../users/fixtures/users.json', verbosity=0)
-        user = mixer.blend(User, groups_id=1)
+        user = self.load_users_data().get_user(groups_id=1)
         pet_type = mixer.blend(models.PetType)
         data = {
             'name': 'john doe',
@@ -80,10 +77,10 @@ class TestPetListCreateView:
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.PetsListCreateView.as_view()(req)
-        assert resp.status_code == 400, (
-            'Should return Bad Request (400) with an error:' +
-            'The pet birth_year cannot be lower than 1916'
-        )
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'The pet year of birth cannot be ' \
+                                      'lower than 1916'
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_post_valid_data_invalid_group(self):
         user = mixer.blend(User, group_id=3)
@@ -99,44 +96,63 @@ class TestPetListCreateView:
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.PetsListCreateView.as_view()(req)
-        assert resp.status_code == 401, (
-            'Should return Unauthorized (401) and a json response with ' +
-            'This user doesn\'t have pets')
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'This user doesn\'t have pets.'
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
 
 
-class TestPetTypeListView:
-    factory = APIRequestFactory()
+class TestPetTypeListView(CustomTestCase):
 
     def test_get_no_auth(self):
         req = self.factory.get('/')
         resp = views.PetTypeListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Authentication credentials ' \
+                                      'were not provided.'
         assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+            'Should return Method Unauthorized (401)')
 
     def test_post_no_auth(self):
         req = self.factory.post('/')
         resp = views.PetTypeListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Authentication credentials ' \
+                                      'were not provided.'
         assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+            'Should return Method Unauthorized (401)')
 
     def test_get(self):
-        user = mixer.blend(User)
         req = self.factory.get('/')
-        force_authenticate(req, user=user)
+        force_authenticate(req, user=self.get_user())
         resp = views.PetTypeListView.as_view()(req)
         assert resp.status_code == 200, (
             'Should  return HTTP 200 OK, with a list of pet types')
 
-    def test_post(self):
-        user = mixer.blend(User)
+    def test_post_request_not_allowed(self):
         req = self.factory.post('/')
-        force_authenticate(req, user=user)
+        force_authenticate(req, user=self.get_user())
         resp = views.PetTypeListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "POST" not allowed.'
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405) given the method ' +
             'does not exists'
         )
+
+    def test_put_request_not_allowed(self):
+        req = self.factory.put('/', {})
+        force_authenticate(req, user=self.get_user())
+        resp = views.PetTypeListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "PUT" not allowed.'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_delete_request_not_allowed(self):
+        req = self.factory.delete('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.PetTypeListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "DELETE" not allowed.'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
