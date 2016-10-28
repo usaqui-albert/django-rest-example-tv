@@ -53,7 +53,8 @@ class UserAuth(ObtainAuthToken):
                 'full_name': user.full_name,
                 'email': user.email,
                 'groups': user.groups.id,
-                'stripe': user.stripe_token
+                'stripe': user.stripe_token,
+                'created_at': user.created_at
             }
         )
 
