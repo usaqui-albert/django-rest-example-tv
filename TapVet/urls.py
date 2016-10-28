@@ -27,6 +27,9 @@ urlpatterns = [
     url(r'^api/v1/posts/', include('posts.urls', namespace='posts')),
     url(r'^api/v1/countries/',
         include('countries.urls', namespace='countries')),
-    url(r'^api/v1/configurations/prices/(?P<pk>[0-9]+)/$', PaymentAmountDetail.as_view()),
+    url(
+        r'^api/v1/configurations/prices/(?P<pk>[0-9]+)/$',
+        PaymentAmountDetail.as_view()
+    ),
     url(r'^docs/', include('rest_framework_docs.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
