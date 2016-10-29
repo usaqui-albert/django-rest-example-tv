@@ -19,6 +19,8 @@ class ImagePostSerializer(ModelSerializer):
 
 class PostSerializer(ModelSerializer):
     likes_count = IntegerField(read_only=True)
+    vet_comments = IntegerField(read_only=True)
+    owner_comments = IntegerField(read_only=True)
     images = ImagePostSerializer(many=True, read_only=True)
     image_1 = ImageField(write_only=True, required=False)
     image_2 = ImageField(write_only=True, required=False)
@@ -28,7 +30,7 @@ class PostSerializer(ModelSerializer):
         model = Post
         fields = (
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
-            'image_1', 'image_2', 'image_3'
+            'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments'
         )
         extra_kwargs = {
             'user': {'read_only': True},
