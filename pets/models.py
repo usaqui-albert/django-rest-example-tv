@@ -6,11 +6,6 @@ PET_GENDER = (
     ('male', 'Male'),
     ('female', 'Female')
 )
-PET_TYPE = (
-    ('dog', 'Dog'),
-    ('cat', 'Cat'),
-    ('other', 'Other')
-)
 
 
 def get_current_year():
