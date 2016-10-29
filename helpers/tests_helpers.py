@@ -1,4 +1,5 @@
 from django.core.management import call_command
+from django.utils import timezone
 from mixer.backend.django import mixer
 
 from rest_framework.test import APIRequestFactory
@@ -21,3 +22,7 @@ class CustomTestCase:
     @staticmethod
     def get_user(**kwargs):
         return mixer.blend('users.User', **kwargs)
+
+    @staticmethod
+    def get_current_year():
+        return timezone.now().year
