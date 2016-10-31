@@ -30,7 +30,8 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         return qs
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.serializer_class(
+            data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         post = get_object_or_404(Post, pk=kwargs['pk'])
         serializer.save(post=post)
@@ -39,7 +40,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class CommentsVetListCreateView(ListCreateAPIView):
+class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     """
     Service to create and list Vet comments for post.
     :Auth Required:
@@ -47,9 +48,6 @@ class CommentsVetListCreateView(ListCreateAPIView):
     GET
     POST
     """
-    serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-
     def get_queryset(self):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
