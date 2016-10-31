@@ -15,7 +15,7 @@ from .serializers import CommentSerializer
 class CommentsPetOwnerListCreateView(ListCreateAPIView):
     """
     Service to create and list Pet Owner comments for post.
-
+    :Auth Required:
     :accepted methods:
     GET
     POST
@@ -42,7 +42,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
 class CommentsVetListCreateView(ListCreateAPIView):
     """
     Service to create and list Vet comments for post.
-
+    :Auth Required:
     :accepted methods:
     GET
     POST
@@ -58,21 +58,22 @@ class CommentsVetListCreateView(ListCreateAPIView):
 
 
 class CommentVoteView(APIView):
+    """
+    Service to upvote and downvote a comment.
+    :Auth Required:
+    :accepted methods:
+    POST
+    DELETE
+    """
     allowed_methods = ('POST', 'DELETE')
     permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request, *args, **kwargs):
         comment = get_object_or_404(Comment, pk=kwargs['pk'])
         comment.upvoters.add(request.user.id)
-        response = {
-            'detail': 'vote added'
-        }
-        return Response(response, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
         comment = get_object_or_404(Comment, pk=kwargs['pk'])
         comment.upvoters.remove(request.user.id)
-        response = {
-            'detail': 'vote removed'
-        }
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
