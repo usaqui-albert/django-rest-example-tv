@@ -2,7 +2,6 @@ from django.db import models
 
 
 class Comment(models.Model):
-    upvotes = models.PositiveIntegerField(default=0)
     description = models.CharField(max_length=1200)
 
     user = models.ForeignKey('users.User', related_name='comments')
