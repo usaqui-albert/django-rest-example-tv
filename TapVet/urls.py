@@ -25,8 +25,11 @@ urlpatterns = [
     url(r'^api/v1/users/', include('users.urls', namespace='users')),
     url(r'^api/v1/pets/', include('pets.urls', namespace='pets')),
     url(r'^api/v1/posts/', include('posts.urls', namespace='posts')),
-    url(r'^api/v1/countries/',
-        include('countries.urls', namespace='countries')),
+    url(
+        r'^api/v1/countries/',
+        include('countries.urls', namespace='countries')
+    ),
+    url(r'^api/v1/comments/', include('comments.urls', namespace='comments')),
     url(
         r'^api/v1/configurations/prices/(?P<pk>[0-9]+)/$',
         PaymentAmountDetail.as_view()
