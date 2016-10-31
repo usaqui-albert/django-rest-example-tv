@@ -1,7 +1,7 @@
 import stripe
 
 from django.conf import settings
-from django.db.models import Count
+from django.db.models import Count, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
 
 from rest_framework.response import Response
@@ -12,6 +12,7 @@ from rest_framework import permissions, status
 from rest_framework.views import APIView
 
 from TapVet import messages
+from TapVet.pagination import StandardPagination
 from pets.permissions import IsOwnerReadOnly
 from .serializers import (
     PostSerializer, PaymentAmountSerializer, ImagePostSerializer
@@ -30,7 +31,28 @@ class PostListCreateView(ListCreateAPIView):
     """
     serializer_class = PostSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = Post.objects.annotate(likes_count=Count('likers'))
+    pagination_class = StandardPagination
+    queryset = Post.objects.annotate(
+        vet_comments=Count(
+            Case(
+                When(
+                    comments__post__user__groups_id__in=[3, 4, 5],
+                    then=1
+                ),
+                output_field=IntegerField()
+            )
+        ),
+        owner_comments=Count(
+            Case(
+                When(
+                    comments__post__user__groups_id__in=[1, 2],
+                    then=1
+                ),
+                output_field=IntegerField()
+            )
+        ),
+        likes_count=Count('likers')
+    )
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -54,7 +76,27 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     """
     serializer_class = PostSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
-    queryset = Post.objects.annotate(likes_count=Count('likers'))
+    queryset = Post.objects.annotate(
+        vet_comments=Count(
+            Case(
+                When(
+                    comments__post__user__groups_id__in=[3, 4, 5],
+                    then=1
+                ),
+                output_field=IntegerField()
+            )
+        ),
+        owner_comments=Count(
+            Case(
+                When(
+                    comments__post__user__groups_id__in=[1, 2],
+                    then=1
+                ),
+                output_field=IntegerField()
+            )
+        ),
+        likes_count=Count('likers')
+    )
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -170,9 +212,30 @@ class PostByUserListView(ListAPIView):
     :accepted methods:
         GET
     """
-    queryset = Post.objects.all()
+    pagination_class = StandardPagination
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = PostSerializer
+    queryset = Post.objects.annotate(
+        vet_comments=Count(
+            Case(
+                When(
+                    comments__post__user__groups_id__in=[3, 4, 5],
+                    then=1
+                ),
+                output_field=IntegerField()
+            )
+        ),
+        owner_comments=Count(
+            Case(
+                When(
+                    comments__post__user__groups_id__in=[1, 2],
+                    then=1
+                ),
+                output_field=IntegerField()
+            )
+        ),
+        likes_count=Count('likers')
+    )
 
     def get_queryset(self):
         qs = self.queryset
