@@ -22,12 +22,12 @@ class PetsListCreateView(ListCreateAPIView):
     Need authentication
 
     :accepted methods:
-    GET = Retrive pet list, need admin status
+    GET = Retrieve pet list, need admin status
     POST = Create a Pet
     """
     serializer_class = PetSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly,)
-    queryset = Pet.objects.all()
+    queryset = Pet.objects.all().select_related('user', 'pet_type')
 
     def create(self, request, *args, **kwargs):
         if not request.user.has_perm('pets.add_pet'):
@@ -67,7 +67,7 @@ class PetsListCreateView(ListCreateAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class PetRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+class PetRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = PetSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
     queryset = Pet.objects.all()
