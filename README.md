@@ -1,3 +1,5 @@
+[![Build Status](https://ci.nekso.io/buildStatus/icon?job=maxcar-dev-fe-website)](https://ci.nekso.io/job/maxcar-dev-fe-website/)
+
 # TapVet Backend
 
 ### Installation: ###
