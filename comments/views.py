@@ -8,7 +8,7 @@ from .serializers import CommentSerializer
 
 class CommentsPetOwnerListCreateView(ListCreateAPIView):
     """
-    Service to create list and create new comments for post.
+    Service to create and list Pet Owner comments for post.
 
     :accepted methods:
     GET
@@ -26,7 +26,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
 
 class CommentsVetListCreateView(ListCreateAPIView):
     """
-    Service to create list and create new comments for post.
+    Service to create and list Vet comments for post.
 
     :accepted methods:
     GET
