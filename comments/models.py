@@ -6,7 +6,8 @@ class Comment(models.Model):
 
     user = models.ForeignKey('users.User', related_name='comments')
     post = models.ForeignKey('posts.Post', related_name='comments')
-    upvoters = models.ManyToManyField('users.User', related_name='upvotes')
+    upvoters = models.ManyToManyField(
+        'users.User', related_name='upvotes', blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
