@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
 
+from TapVet.pagination import StandardPagination
 from posts.models import Post
 
 from .models import Comment
@@ -22,6 +23,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     """
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = StandardPagination
 
     def get_queryset(self):
         qs = Comment.objects.filter(
