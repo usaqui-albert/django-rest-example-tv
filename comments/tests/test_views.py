@@ -19,8 +19,7 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         req = self.factory.put('/', {})
         force_authenticate(req, user=self.get_user())
         resp = views.CommentsPetOwnerListCreateView.as_view()(req)
-        assert resp.status_code == 405, (
-            'Should return Method Not Allowed (405)')
+        assert resp.status_code == 403
 
     def test_request_get_no_auth(self):
         req = self.factory.get('/')
@@ -52,6 +51,17 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
         assert resp.data['description'] == data['description']
 
+    def test_get_list_no_pet_owner(self):
+        user = self.load_users_data().get_user(groups_id=4)
+        vet = self.get_user(groups_id=5)
+        post = mixer.blend('posts.Post', user=user)
+        mixer.blend(models.Comment, post=post, user=user)
+        mixer.blend(models.Comment, post=post, user=vet)
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 403
+
 
 class TestCommentsVetListCreateView(CustomTestCase):
 
@@ -59,8 +69,7 @@ class TestCommentsVetListCreateView(CustomTestCase):
         req = self.factory.put('/', {})
         force_authenticate(req, user=self.get_user())
         resp = views.CommentsVetListCreateView.as_view()(req)
-        assert resp.status_code == 405, (
-            'Should return Method Not Allowed (405)')
+        assert resp.status_code == 405
 
     def test_request_get_no_auth(self):
         req = self.factory.get('/')
@@ -81,8 +90,19 @@ class TestCommentsVetListCreateView(CustomTestCase):
         resp = views.CommentsVetListCreateView.as_view()(req, pk=post.pk)
         assert len(resp.data) == 1
 
-    def test_post_create(self):
+    def test_get_list_no_vet(self):
         user = self.load_users_data().get_user(groups_id=1)
+        vet = self.get_user(groups_id=5)
+        post = mixer.blend('posts.Post', user=user)
+        mixer.blend(models.Comment, post=post, user=user)
+        mixer.blend(models.Comment, post=post, user=vet)
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.CommentsVetListCreateView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 200
+
+    def test_post_create(self):
+        user = self.load_users_data().get_user(groups_id=5)
         post = mixer.blend('posts.Post', user=user)
         data = {
             'description': 'BLAH BLAH'
