@@ -66,7 +66,8 @@ class TestPostListCreateView(CustomTestCase):
         assert resp.status_code == 200, (
             'Should return 200 OK and a list of post'
         )
-        assert [post['likes_count'] == 30 for post in resp.data]
+        for post in resp.data['results']:
+            assert post['likes_count'] == 30
 
     def test_request_post_no_auth(self):
         req = self.factory.post('/')
@@ -296,8 +297,11 @@ class TestPostByuserListView(CustomTestCase):
         req = self.factory.get('/')
         force_authenticate(req, user=pet_owners[0])
         resp = views.PostByUserListView.as_view()(req, pk=pet_owners[0].pk)
-        assert len(resp.data) == 20
-        for x in map(lambda x: x['user'] == pet_owners[0].id, resp.data):
+        assert len(resp.data['results']) == 20
+        for x in map(
+            lambda x: x['user'] == pet_owners[0].id,
+            resp.data['results']
+        ):
             assert x
 
 
