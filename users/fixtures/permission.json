@@ -4,7 +4,10 @@
     "pk": 1,
     "fields": {
         "name": "Can add log entry",
-        "content_type": 1,
+        "content_type": [
+            "admin",
+            "logentry"
+        ],
         "codename": "add_logentry"
     }
 },
@@ -13,7 +16,10 @@
     "pk": 2,
     "fields": {
         "name": "Can change log entry",
-        "content_type": 1,
+        "content_type": [
+            "admin",
+            "logentry"
+        ],
         "codename": "change_logentry"
     }
 },
@@ -22,7 +28,10 @@
     "pk": 3,
     "fields": {
         "name": "Can delete log entry",
-        "content_type": 1,
+        "content_type": [
+            "admin",
+            "logentry"
+        ],
         "codename": "delete_logentry"
     }
 },
@@ -31,7 +40,10 @@
     "pk": 4,
     "fields": {
         "name": "Can add permission",
-        "content_type": 2,
+        "content_type": [
+            "auth",
+            "permission"
+        ],
         "codename": "add_permission"
     }
 },
@@ -40,7 +52,10 @@
     "pk": 5,
     "fields": {
         "name": "Can change permission",
-        "content_type": 2,
+        "content_type": [
+            "auth",
+            "permission"
+        ],
         "codename": "change_permission"
     }
 },
@@ -49,7 +64,10 @@
     "pk": 6,
     "fields": {
         "name": "Can delete permission",
-        "content_type": 2,
+        "content_type": [
+            "auth",
+            "permission"
+        ],
         "codename": "delete_permission"
     }
 },
@@ -58,7 +76,10 @@
     "pk": 7,
     "fields": {
         "name": "Can add group",
-        "content_type": 3,
+        "content_type": [
+            "auth",
+            "group"
+        ],
         "codename": "add_group"
     }
 },
@@ -67,7 +88,10 @@
     "pk": 8,
     "fields": {
         "name": "Can change group",
-        "content_type": 3,
+        "content_type": [
+            "auth",
+            "group"
+        ],
         "codename": "change_group"
     }
 },
@@ -76,7 +100,10 @@
     "pk": 9,
     "fields": {
         "name": "Can delete group",
-        "content_type": 3,
+        "content_type": [
+            "auth",
+            "group"
+        ],
         "codename": "delete_group"
     }
 },
@@ -85,7 +112,10 @@
     "pk": 10,
     "fields": {
         "name": "Can add content type",
-        "content_type": 4,
+        "content_type": [
+            "contenttypes",
+            "contenttype"
+        ],
         "codename": "add_contenttype"
     }
 },
@@ -94,7 +124,10 @@
     "pk": 11,
     "fields": {
         "name": "Can change content type",
-        "content_type": 4,
+        "content_type": [
+            "contenttypes",
+            "contenttype"
+        ],
         "codename": "change_contenttype"
     }
 },
@@ -103,7 +136,10 @@
     "pk": 12,
     "fields": {
         "name": "Can delete content type",
-        "content_type": 4,
+        "content_type": [
+            "contenttypes",
+            "contenttype"
+        ],
         "codename": "delete_contenttype"
     }
 },
@@ -112,7 +148,10 @@
     "pk": 13,
     "fields": {
         "name": "Can add session",
-        "content_type": 5,
+        "content_type": [
+            "sessions",
+            "session"
+        ],
         "codename": "add_session"
     }
 },
@@ -121,7 +160,10 @@
     "pk": 14,
     "fields": {
         "name": "Can change session",
-        "content_type": 5,
+        "content_type": [
+            "sessions",
+            "session"
+        ],
         "codename": "change_session"
     }
 },
@@ -130,7 +172,10 @@
     "pk": 15,
     "fields": {
         "name": "Can delete session",
-        "content_type": 5,
+        "content_type": [
+            "sessions",
+            "session"
+        ],
         "codename": "delete_session"
     }
 },
@@ -139,7 +184,10 @@
     "pk": 16,
     "fields": {
         "name": "Can add area interest",
-        "content_type": 6,
+        "content_type": [
+            "users",
+            "areainterest"
+        ],
         "codename": "add_areainterest"
     }
 },
@@ -148,7 +196,10 @@
     "pk": 17,
     "fields": {
         "name": "Can change area interest",
-        "content_type": 6,
+        "content_type": [
+            "users",
+            "areainterest"
+        ],
         "codename": "change_areainterest"
     }
 },
@@ -157,7 +208,10 @@
     "pk": 18,
     "fields": {
         "name": "Can delete area interest",
-        "content_type": 6,
+        "content_type": [
+            "users",
+            "areainterest"
+        ],
         "codename": "delete_areainterest"
     }
 },
@@ -166,7 +220,10 @@
     "pk": 19,
     "fields": {
         "name": "Can add user",
-        "content_type": 7,
+        "content_type": [
+            "users",
+            "user"
+        ],
         "codename": "add_user"
     }
 },
@@ -175,7 +232,10 @@
     "pk": 20,
     "fields": {
         "name": "Can change user",
-        "content_type": 7,
+        "content_type": [
+            "users",
+            "user"
+        ],
         "codename": "change_user"
     }
 },
@@ -184,7 +244,10 @@
     "pk": 21,
     "fields": {
         "name": "Can delete user",
-        "content_type": 7,
+        "content_type": [
+            "users",
+            "user"
+        ],
         "codename": "delete_user"
     }
 },
@@ -193,7 +256,10 @@
     "pk": 22,
     "fields": {
         "name": "Can add Breeder",
-        "content_type": 8,
+        "content_type": [
+            "users",
+            "breeder"
+        ],
         "codename": "add_breeder"
     }
 },
@@ -202,7 +268,10 @@
     "pk": 23,
     "fields": {
         "name": "Can change Breeder",
-        "content_type": 8,
+        "content_type": [
+            "users",
+            "breeder"
+        ],
         "codename": "change_breeder"
     }
 },
@@ -211,7 +280,10 @@
     "pk": 24,
     "fields": {
         "name": "Can delete Breeder",
-        "content_type": 8,
+        "content_type": [
+            "users",
+            "breeder"
+        ],
         "codename": "delete_breeder"
     }
 },
@@ -220,7 +292,10 @@
     "pk": 25,
     "fields": {
         "name": "Can add Veterinarian",
-        "content_type": 9,
+        "content_type": [
+            "users",
+            "veterinarian"
+        ],
         "codename": "add_veterinarian"
     }
 },
@@ -229,7 +304,10 @@
     "pk": 26,
     "fields": {
         "name": "Can change Veterinarian",
-        "content_type": 9,
+        "content_type": [
+            "users",
+            "veterinarian"
+        ],
         "codename": "change_veterinarian"
     }
 },
@@ -238,7 +316,10 @@
     "pk": 27,
     "fields": {
         "name": "Can delete Veterinarian",
-        "content_type": 9,
+        "content_type": [
+            "users",
+            "veterinarian"
+        ],
         "codename": "delete_veterinarian"
     }
 },
@@ -247,7 +328,10 @@
     "pk": 28,
     "fields": {
         "name": "Can add Country",
-        "content_type": 10,
+        "content_type": [
+            "countries",
+            "country"
+        ],
         "codename": "add_country"
     }
 },
@@ -256,7 +340,10 @@
     "pk": 29,
     "fields": {
         "name": "Can change Country",
-        "content_type": 10,
+        "content_type": [
+            "countries",
+            "country"
+        ],
         "codename": "change_country"
     }
 },
@@ -265,7 +352,10 @@
     "pk": 30,
     "fields": {
         "name": "Can delete Country",
-        "content_type": 10,
+        "content_type": [
+            "countries",
+            "country"
+        ],
         "codename": "delete_country"
     }
 },
@@ -274,7 +364,10 @@
     "pk": 31,
     "fields": {
         "name": "Can add State",
-        "content_type": 11,
+        "content_type": [
+            "countries",
+            "state"
+        ],
         "codename": "add_state"
     }
 },
@@ -283,7 +376,10 @@
     "pk": 32,
     "fields": {
         "name": "Can change State",
-        "content_type": 11,
+        "content_type": [
+            "countries",
+            "state"
+        ],
         "codename": "change_state"
     }
 },
@@ -292,7 +388,10 @@
     "pk": 33,
     "fields": {
         "name": "Can delete State",
-        "content_type": 11,
+        "content_type": [
+            "countries",
+            "state"
+        ],
         "codename": "delete_state"
     }
 },
@@ -301,7 +400,10 @@
     "pk": 34,
     "fields": {
         "name": "Can add Pet Type",
-        "content_type": 12,
+        "content_type": [
+            "pets",
+            "pettype"
+        ],
         "codename": "add_pettype"
     }
 },
@@ -310,7 +412,10 @@
     "pk": 35,
     "fields": {
         "name": "Can change Pet Type",
-        "content_type": 12,
+        "content_type": [
+            "pets",
+            "pettype"
+        ],
         "codename": "change_pettype"
     }
 },
@@ -319,7 +424,10 @@
     "pk": 36,
     "fields": {
         "name": "Can delete Pet Type",
-        "content_type": 12,
+        "content_type": [
+            "pets",
+            "pettype"
+        ],
         "codename": "delete_pettype"
     }
 },
@@ -328,7 +436,10 @@
     "pk": 37,
     "fields": {
         "name": "Can add Pet",
-        "content_type": 13,
+        "content_type": [
+            "pets",
+            "pet"
+        ],
         "codename": "add_pet"
     }
 },
@@ -337,7 +448,10 @@
     "pk": 38,
     "fields": {
         "name": "Can change Pet",
-        "content_type": 13,
+        "content_type": [
+            "pets",
+            "pet"
+        ],
         "codename": "change_pet"
     }
 },
@@ -346,7 +460,10 @@
     "pk": 39,
     "fields": {
         "name": "Can delete Pet",
-        "content_type": 13,
+        "content_type": [
+            "pets",
+            "pet"
+        ],
         "codename": "delete_pet"
     }
 },
@@ -355,7 +472,10 @@
     "pk": 40,
     "fields": {
         "name": "Can add post",
-        "content_type": 14,
+        "content_type": [
+            "posts",
+            "post"
+        ],
         "codename": "add_post"
     }
 },
@@ -364,7 +484,10 @@
     "pk": 41,
     "fields": {
         "name": "Can change post",
-        "content_type": 14,
+        "content_type": [
+            "posts",
+            "post"
+        ],
         "codename": "change_post"
     }
 },
@@ -373,7 +496,10 @@
     "pk": 42,
     "fields": {
         "name": "Can delete post",
-        "content_type": 14,
+        "content_type": [
+            "posts",
+            "post"
+        ],
         "codename": "delete_post"
     }
 },
@@ -382,7 +508,10 @@
     "pk": 43,
     "fields": {
         "name": "Can add image post",
-        "content_type": 15,
+        "content_type": [
+            "posts",
+            "imagepost"
+        ],
         "codename": "add_imagepost"
     }
 },
@@ -391,7 +520,10 @@
     "pk": 44,
     "fields": {
         "name": "Can change image post",
-        "content_type": 15,
+        "content_type": [
+            "posts",
+            "imagepost"
+        ],
         "codename": "change_imagepost"
     }
 },
@@ -400,7 +532,10 @@
     "pk": 45,
     "fields": {
         "name": "Can delete image post",
-        "content_type": 15,
+        "content_type": [
+            "posts",
+            "imagepost"
+        ],
         "codename": "delete_imagepost"
     }
 },
@@ -409,7 +544,10 @@
     "pk": 46,
     "fields": {
         "name": "Can add payment amount",
-        "content_type": 16,
+        "content_type": [
+            "posts",
+            "paymentamount"
+        ],
         "codename": "add_paymentamount"
     }
 },
@@ -418,7 +556,10 @@
     "pk": 47,
     "fields": {
         "name": "Can change payment amount",
-        "content_type": 16,
+        "content_type": [
+            "posts",
+            "paymentamount"
+        ],
         "codename": "change_paymentamount"
     }
 },
@@ -427,7 +568,10 @@
     "pk": 48,
     "fields": {
         "name": "Can delete payment amount",
-        "content_type": 16,
+        "content_type": [
+            "posts",
+            "paymentamount"
+        ],
         "codename": "delete_paymentamount"
     }
 },
@@ -436,7 +580,10 @@
     "pk": 49,
     "fields": {
         "name": "Can add comment",
-        "content_type": 17,
+        "content_type": [
+            "comments",
+            "comment"
+        ],
         "codename": "add_comment"
     }
 },
@@ -445,7 +592,10 @@
     "pk": 50,
     "fields": {
         "name": "Can change comment",
-        "content_type": 17,
+        "content_type": [
+            "comments",
+            "comment"
+        ],
         "codename": "change_comment"
     }
 },
@@ -454,7 +604,10 @@
     "pk": 51,
     "fields": {
         "name": "Can delete comment",
-        "content_type": 17,
+        "content_type": [
+            "comments",
+            "comment"
+        ],
         "codename": "delete_comment"
     }
 },
@@ -463,7 +616,10 @@
     "pk": 52,
     "fields": {
         "name": "Can add Token",
-        "content_type": 18,
+        "content_type": [
+            "authtoken",
+            "token"
+        ],
         "codename": "add_token"
     }
 },
@@ -472,7 +628,10 @@
     "pk": 53,
     "fields": {
         "name": "Can change Token",
-        "content_type": 18,
+        "content_type": [
+            "authtoken",
+            "token"
+        ],
         "codename": "change_token"
     }
 },
@@ -481,7 +640,10 @@
     "pk": 54,
     "fields": {
         "name": "Can delete Token",
-        "content_type": 18,
+        "content_type": [
+            "authtoken",
+            "token"
+        ],
         "codename": "delete_token"
     }
 },
@@ -490,7 +652,10 @@
     "pk": 55,
     "fields": {
         "name": "Can add cors model",
-        "content_type": 19,
+        "content_type": [
+            "corsheaders",
+            "corsmodel"
+        ],
         "codename": "add_corsmodel"
     }
 },
@@ -499,7 +664,10 @@
     "pk": 56,
     "fields": {
         "name": "Can change cors model",
-        "content_type": 19,
+        "content_type": [
+            "corsheaders",
+            "corsmodel"
+        ],
         "codename": "change_corsmodel"
     }
 },
@@ -508,26 +676,35 @@
     "pk": 57,
     "fields": {
         "name": "Can delete cors model",
-        "content_type": 19,
+        "content_type": [
+            "corsheaders",
+            "corsmodel"
+        ],
         "codename": "delete_corsmodel"
     }
 },
 {
     "model": "auth.permission",
-    "pk": 58,
+    "pk": 60,
     "fields": {
-        "name": "View Pet Owner Comments",
-        "content_type": 17,
-        "codename": "pet_owner"
+        "name": "Is Pet Owner Community",
+        "content_type": [
+            "users",
+            "user"
+        ],
+        "codename": "is_pet_owner"
     }
 },
 {
     "model": "auth.permission",
-    "pk": 59,
+    "pk": 61,
     "fields": {
-        "name": "View Vet Comments",
-        "content_type": 17,
-        "codename": "vet_comments"
+        "name": "Is Vet Community",
+        "content_type": [
+            "users",
+            "user"
+        ],
+        "codename": "is_vet"
     }
 }
 ]
