@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from posts.models import Post
 
 from .models import Comment
+from .permissions import IsPetOwner
 from .serializers import CommentSerializer
 
 
@@ -21,7 +22,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     POST
     """
     serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, IsPetOwner)
 
     def get_queryset(self):
         qs = Comment.objects.filter(
@@ -48,6 +49,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     GET
     POST
     """
+    permission_classes = (permissions.IsAuthenticated, )
+
     def get_queryset(self):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
