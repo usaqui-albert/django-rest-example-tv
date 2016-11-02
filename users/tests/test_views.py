@@ -2,7 +2,6 @@
 import pytest
 
 from django.test import RequestFactory
-from django.core.management import call_command
 
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
@@ -893,3 +892,4 @@ class TestStripeCustomerView(CustomTestCase):
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'There is no customer for this user'
         assert resp.status_code == 404, 'Should return Not Found (404)'
+

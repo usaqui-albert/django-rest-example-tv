@@ -10,6 +10,7 @@ from TapVet.pagination import StandardPagination
 from posts.models import Post
 
 from .models import Comment
+from .permissions import IsPetOwner
 from .serializers import CommentSerializer
 
 
@@ -22,7 +23,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     POST
     """
     serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, IsPetOwner)
     pagination_class = StandardPagination
 
     def get_queryset(self):
@@ -51,6 +52,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     GET
     POST
     """
+    permission_classes = (permissions.IsAuthenticated, )
+
     def get_queryset(self):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]

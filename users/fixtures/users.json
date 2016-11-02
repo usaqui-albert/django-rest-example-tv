@@ -1,11 +1,40 @@
 [
 {
+    "model": "auth.permission",
+    "pk": null,
+    "fields": {
+        "name": "Is Pet Owner Community",
+        "content_type": [
+            "users",
+            "user"
+        ],
+        "codename": "is_pet_owner"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": null,
+    "fields": {
+        "name": "Is Vet Community",
+        "content_type": [
+            "users",
+            "user"
+        ],
+        "codename": "is_vet"
+    }
+},
+{
     "model": "auth.group",
     "pk": 1,
     "fields": {
         "name": "Pet owner",
         "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
         "permissions": [
+            [
+                "is_pet_owner",
+                "users",
+                "user"
+            ],
             [
                 "add_pet",
                 "pets",
@@ -22,6 +51,11 @@
         "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
         "permissions": [
             [
+                "is_pet_owner",
+                "users",
+                "user"
+            ],
+            [
                 "add_pet",
                 "pets",
                 "pet"
@@ -35,7 +69,13 @@
     "fields": {
         "name": "&#128274 Veterinarian",
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
-        "permissions": []
+        "permissions": [
+            [
+                "is_vet",
+                "users",
+                "user"
+            ]
+        ]
     }
 },
 {
@@ -44,7 +84,13 @@
     "fields": {
         "name": "&#128274 Veterinarian Student",
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
-        "permissions": []
+        "permissions": [
+            [
+                "is_vet",
+                "users",
+                "user"
+            ]
+        ]
     }
 },
 {
@@ -53,7 +99,13 @@
     "fields": {
         "name": "&#128274 Veterinarian Technician",
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
-        "permissions": []
+        "permissions": [
+            [
+                "is_vet",
+                "users",
+                "user"
+            ]
+        ]
     }
 },
 {
