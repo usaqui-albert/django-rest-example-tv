@@ -28,7 +28,8 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     def get_queryset(self):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[1, 2]
-        ).annotate(upvoters_count=Count('upvoters'))
+        ).annotate(
+            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -53,7 +54,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     def get_queryset(self):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
-        ).annotate(upvoters_count=Count('upvoters'))
+        ).annotate(
+            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
         return qs
 
 
