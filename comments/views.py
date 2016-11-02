@@ -5,8 +5,10 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 
 from TapVet.pagination import StandardPagination
+from TapVet import messages
 from posts.models import Post
 
 from .models import Comment
@@ -38,6 +40,17 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
             data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         post = get_object_or_404(Post, pk=kwargs['pk'])
+        if not post.is_paid():
+            if post.user.is_vet():
+                if not request.user.has_perm('users.is_vet'):
+                    return Response(
+                        messages.comment_permission,
+                        status=status.HTTP_403_FORBIDDEN)
+            else:
+                if not request.user.has_perm('users.is_pet_owner'):
+                    return Response(
+                        messages.comment_permission,
+                        status=status.HTTP_403_FORBIDDEN)
         serializer.save(post=post)
         headers = self.get_success_headers(serializer.data)
         return Response(
