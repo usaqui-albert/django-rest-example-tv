@@ -142,6 +142,7 @@ class PaidPostView(APIView):
         super(PaidPostView, self).__init__(**kwargs)
         stripe.api_key = settings.STRIPE_API_KEY
 
+    allowed_methods = ('POST',)
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, **kwargs):
@@ -241,3 +242,25 @@ class PostByUserListView(ListAPIView):
         qs = self.queryset
         qs = qs.filter(user_id=self.kwargs['pk'])
         return qs
+
+
+class PostVoteView(APIView):
+    """
+    Service to upvote and downvote a comment.
+    :Auth Required:
+    :accepted methods:
+    POST
+    DELETE
+    """
+    allowed_methods = ('POST', 'DELETE')
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, pk=kwargs['pk'])
+        post.likers.add(request.user.id)
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        post = get_object_or_404(Post, pk=kwargs['pk'])
+        post.likers.remove(request.user.id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
