@@ -10,3 +10,4 @@ bad_login = 'Your username and password do not match.'
 
 permission = 'Error: You dont have permission to edit'
 one_image = 'Error: A post need at least one image'
+comment_permission = {'detail': 'Error: You dont have permission to comment'}
