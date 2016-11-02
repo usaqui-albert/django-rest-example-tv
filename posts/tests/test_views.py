@@ -486,3 +486,62 @@ class TestImagePostDeleteView(CustomTestCase):
         resp2 = views.ImagePostDeleteView.as_view()(
             req, pk=resp.data['images'][1]['id'])
         assert resp2.status_code == 401
+
+
+class TestPostLikeView(CustomTestCase):
+
+    def test_get_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.PostVoteView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_put_request_not_allowed(self):
+        req = self.factory.put('/', {})
+        force_authenticate(req, user=self.get_user())
+        resp = views.PostVoteView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_get_vote_count(self):
+        owner = self.load_users_data().get_user(groups_id=1)
+        liker = self.get_user(groups_id=1)
+        post = mixer.blend('posts.Post', user=owner)
+        req = self.factory.post('/')
+        force_authenticate(req, user=liker)
+        resp = views.PostVoteView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 201
+        # Now we test the counter
+        req = self.factory.get('/')
+        force_authenticate(req, user=owner)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        assert resp.data['likes_count'] == 1
+
+    def test_get_downvote_count(self):
+        owner = self.load_users_data().get_user(groups_id=1)
+        liker1 = self.get_user(groups_id=1)
+        liker2 = self.get_user(groups_id=1)
+        post = mixer.blend('posts.Post', user=owner)
+        req = self.factory.post('/')
+        force_authenticate(req, user=liker1)
+        resp = views.PostVoteView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 201
+        force_authenticate(req, user=liker2)
+        resp = views.PostVoteView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 201
+        # Now we test the counter
+        req = self.factory.get('/')
+        force_authenticate(req, user=owner)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        assert resp.data['likes_count'] == 2
+        # Now test the downvote
+        req = self.factory.delete('/')
+        force_authenticate(req, user=liker1)
+        resp = views.PostVoteView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 204
+        req = self.factory.get('/')
+        force_authenticate(req, user=owner)
+        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        assert resp.data['likes_count'] == 1
