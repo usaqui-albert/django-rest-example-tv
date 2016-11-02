@@ -322,7 +322,7 @@ class StripeCustomerView(APIView):
                             cus_token = customer.id
                             user.stripe_token = cus_token
                             user.save()
-                            return Response('Customer successfully created')
+                            return Response({'stripe': cus_token})
                 else:
                     response_msg = {'detail': 'Token field can not be empty'}
             else:
