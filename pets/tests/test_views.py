@@ -75,7 +75,7 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.PetsListCreateView.as_view()(req)
-        awaited_keys = ['name', 'gender', 'image', 'breed', 'image_url',
+        awaited_keys = ['name', 'gender', 'image', 'breed', 'pet_type_name',
                         'user', 'pet_type', 'fixed', 'id', 'birth_year']
         for key in awaited_keys:
             assert key in resp.data
