@@ -351,3 +351,25 @@ class StripeCustomerView(APIView):
                 no_customer_response, status=status.HTTP_404_NOT_FOUND)
         response_msg = {'detail': 'You are not allowed to do this action'}
         return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+
+
+class UserFollowView(APIView):
+    """
+    Service to follow and unfollow a user.
+    :Auth Required:
+    :accepted methods:
+    POST
+    DELETE
+    """
+    allowed_methods = ('POST', 'DELETE')
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        user.follows.add(request.user.id)
+        return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs['pk'])
+        user.follows.remove(request.user.id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
