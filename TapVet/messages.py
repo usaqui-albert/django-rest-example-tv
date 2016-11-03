@@ -9,5 +9,5 @@ user_login = "Authentication credentials were not provided."
 bad_login = "Your username and password do not match."
 
 permission = "Error: You don't have permission to edit."
-one_image = "Error: A post need at least one image."
+one_image = "Error: A post needs at least one image."
 comment_permission = {"detail": "Error: You don't have permission to comment."}
