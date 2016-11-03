@@ -51,7 +51,8 @@ class TestUserAuth(CustomTestCase):
 
         resp = views.UserAuth.as_view()(req)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Your username and password do not match.'
+        assert resp.data['detail'] == (
+            'Your username and password do not match.')
         assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_post_invalid_data(self):
@@ -63,7 +64,8 @@ class TestUserAuth(CustomTestCase):
 
         resp = views.UserAuth.as_view()(req)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Your username and password do not match.'
+        assert resp.data['detail'] == (
+            'Your username and password do not match.')
         assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_post_incomplete_data_username(self):
@@ -74,7 +76,8 @@ class TestUserAuth(CustomTestCase):
 
         resp = views.UserAuth.as_view()(req)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Your username and password do not match.'
+        assert resp.data['detail'] == (
+            'Your username and password do not match.')
         assert resp.status_code == 400, 'Should return Bad Request (400)'
 
 
@@ -826,7 +829,8 @@ class TestStripeCustomerView(CustomTestCase):
         req = self.factory.put('/')
         force_authenticate(req, user=user)
         resp = views.StripeCustomerView.as_view()(req)
-        assert resp.status_code == 405, 'Should return Method Not Allowed (405)'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
 
     def test_user_not_owner(self):
         user = self.get_user(pk=1)
@@ -892,4 +896,3 @@ class TestStripeCustomerView(CustomTestCase):
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'There is no customer for this user'
         assert resp.status_code == 404, 'Should return Not Found (404)'
-
