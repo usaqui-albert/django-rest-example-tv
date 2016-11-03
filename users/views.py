@@ -366,6 +366,18 @@ class UserFollowView(APIView):
 
     def post(self, request, *args, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
+        if request.user.has_perm('users.is_vet'):
+            if not user.is_vet():
+                Response(
+                    messages.follow_permission,
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        else:
+            if user.is_vet():
+                Response(
+                    messages.follow_permission,
+                    status=status.HTTP_403_FORBIDDEN
+                )
         user.follows.add(request.user.id)
         return Response(status=status.HTTP_201_CREATED)
 
