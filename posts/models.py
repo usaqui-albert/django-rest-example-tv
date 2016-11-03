@@ -16,7 +16,9 @@ class Post(models.Model):
     visible_by_vet = models.BooleanField(default=False)
     visible_by_owner = models.BooleanField(default=True)
 
-    pet = models.ForeignKey('pets.Pet', related_name='posts', null=True)
+    pet = models.ForeignKey(
+        'pets.Pet', related_name='posts', null=True,
+        on_delete=models.SET_NULL)
     user = models.ForeignKey('users.User', related_name='posts')
     likers = models.ManyToManyField(
         'users.User', related_name='likes', blank=True)
