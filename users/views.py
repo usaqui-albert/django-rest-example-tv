@@ -368,13 +368,13 @@ class UserFollowView(APIView):
         user = get_object_or_404(User, pk=kwargs['pk'])
         if request.user.has_perm('users.is_vet'):
             if not user.is_vet():
-                Response(
+                return Response(
                     messages.follow_permission,
                     status=status.HTTP_403_FORBIDDEN
                 )
         else:
             if user.is_vet():
-                Response(
+                return Response(
                     messages.follow_permission,
                     status=status.HTTP_403_FORBIDDEN
                 )
