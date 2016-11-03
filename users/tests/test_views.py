@@ -896,3 +896,65 @@ class TestStripeCustomerView(CustomTestCase):
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'There is no customer for this user'
         assert resp.status_code == 404, 'Should return Not Found (404)'
+
+
+class TestUserFollowView(CustomTestCase):
+
+    def test_request_no_auth(self):
+        req = self.factory.post('/')
+        resp = views.UserFollowView.as_view()(req)
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+
+    def test_request_no_allowed(self):
+        req = self.factory.put('/', {})
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserFollowView.as_view()(req)
+        assert resp.status_code == 405
+
+    def test_pet_owner_follow_vet(self):
+        pet_owner = self.load_users_data().get_user(groups_id=1)
+        vet = self.get_user(groups_id=4)
+        req = self.factory.post('/')
+        force_authenticate(req, user=pet_owner)
+        resp = views.UserFollowView.as_view()(req, pk=vet.pk)
+        assert resp.status_code == 403
+
+    def test_vet_follow_pet_owner(self):
+        pet_owner = self.load_users_data().get_user(groups_id=1)
+        vet = self.get_user(groups_id=4)
+        req = self.factory.post('/')
+        force_authenticate(req, user=vet)
+        resp = views.UserFollowView.as_view()(req, pk=pet_owner.pk)
+        assert resp.status_code == 403
+
+    def test_vet_follow_vet(self):
+        vet = self.load_users_data().get_user(groups_id=3)
+        vet1 = self.get_user(groups_id=4)
+        req = self.factory.post('/')
+        force_authenticate(req, user=vet)
+        resp = views.UserFollowView.as_view()(req, pk=vet1.pk)
+        assert resp.status_code == 201
+
+    def test_pet_owner_follow_pet_owner(self):
+        pet_owner = self.load_users_data().get_user(groups_id=3)
+        pet_owner1 = self.get_user(groups_id=4)
+        req = self.factory.post('/')
+        force_authenticate(req, user=pet_owner)
+        resp = views.UserFollowView.as_view()(req, pk=pet_owner1.pk)
+        assert resp.status_code == 201
+
+    def test_vet_unfollow_vet(self):
+        vet = self.load_users_data().get_user(groups_id=3)
+        vet1 = self.get_user(groups_id=4)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=vet)
+        resp = views.UserFollowView.as_view()(req, pk=vet1.pk)
+        assert resp.status_code == 204
+
+    def test_pet_owner_unfollow_pet_owner(self):
+        pet_owner = self.load_users_data().get_user(groups_id=3)
+        pet_owner1 = self.get_user(groups_id=4)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=pet_owner)
+        resp = views.UserFollowView.as_view()(req, pk=pet_owner1.pk)
+        assert resp.status_code == 204
