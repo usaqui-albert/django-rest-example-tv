@@ -5,7 +5,10 @@ from rest_framework.generics import ListCreateAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 
+from TapVet.pagination import StandardPagination
+from TapVet import messages
 from posts.models import Post
 
 from .models import Comment
@@ -23,11 +26,13 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     """
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticated, IsPetOwner)
+    pagination_class = StandardPagination
 
     def get_queryset(self):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[1, 2]
-        ).annotate(upvoters_count=Count('upvoters'))
+        ).annotate(
+            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -35,6 +40,17 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
             data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         post = get_object_or_404(Post, pk=kwargs['pk'])
+        if not post.is_paid():
+            if post.user.is_vet():
+                if not request.user.has_perm('users.is_vet'):
+                    return Response(
+                        messages.comment_permission,
+                        status=status.HTTP_403_FORBIDDEN)
+            else:
+                if not request.user.has_perm('users.is_pet_owner'):
+                    return Response(
+                        messages.comment_permission,
+                        status=status.HTTP_403_FORBIDDEN)
         serializer.save(post=post)
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -54,7 +70,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     def get_queryset(self):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
-        ).annotate(upvoters_count=Count('upvoters'))
+        ).annotate(
+            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
         return qs
 
 

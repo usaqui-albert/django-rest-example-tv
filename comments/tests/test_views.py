@@ -38,11 +38,11 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
-        assert len(resp.data) == 1
+        assert len(resp.data['results']) == 1
 
     def test_post_create(self):
         user = self.load_users_data().get_user(groups_id=1)
-        post = mixer.blend('posts.Post', user=user)
+        post = mixer.blend('posts.Post', user=user, visible_by_vet=False)
         data = {
             'description': 'BLAH BLAH'
         }
@@ -50,6 +50,18 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
         assert resp.data['description'] == data['description']
+
+    def test_post_create_vet_comment(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        vet = self.get_user(groups_id=5)
+        post = mixer.blend('posts.Post', user=user, visible_by_vet=False)
+        data = {
+            'description': 'BLAH BLAH'
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=vet)
+        resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 403
 
     def test_get_list_no_pet_owner(self):
         user = self.load_users_data().get_user(groups_id=4)
@@ -88,7 +100,7 @@ class TestCommentsVetListCreateView(CustomTestCase):
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.CommentsVetListCreateView.as_view()(req, pk=post.pk)
-        assert len(resp.data) == 1
+        assert len(resp.data['results']) == 1
 
     def test_get_list_no_vet(self):
         user = self.load_users_data().get_user(groups_id=1)
@@ -110,7 +122,33 @@ class TestCommentsVetListCreateView(CustomTestCase):
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.CommentsVetListCreateView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 201
         assert resp.data['description'] == data['description']
+
+    def test_post_create_vet_comment(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        vet = self.get_user(groups_id=5)
+        post = mixer.blend('posts.Post', user=user, visible_by_vet=True)
+        data = {
+            'description': 'BLAH BLAH'
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=vet)
+        resp = views.CommentsVetListCreateView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 201
+        assert resp.data['description'] == data['description']
+
+    def test_post_create_vet_comment_no_paid(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        vet = self.get_user(groups_id=5)
+        post = mixer.blend('posts.Post', user=user, visible_by_vet=False)
+        data = {
+            'description': 'BLAH BLAH'
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=vet)
+        resp = views.CommentsVetListCreateView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 403
 
 
 class TestCommentVoteView(CustomTestCase):
@@ -143,7 +181,7 @@ class TestCommentVoteView(CustomTestCase):
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
-        assert resp.data[0]['upvoters_count'] == 1
+        assert resp.data['results'][0]['upvoters_count'] == 1
 
     def test_get_downvote_count(self):
         owner = self.load_users_data().get_user(groups_id=1)
@@ -162,7 +200,7 @@ class TestCommentVoteView(CustomTestCase):
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
-        assert resp.data[0]['upvoters_count'] == 2
+        assert resp.data['results'][0]['upvoters_count'] == 2
         # Now test the downvote
         req = self.factory.delete('/')
         force_authenticate(req, user=liker1)
@@ -171,4 +209,4 @@ class TestCommentVoteView(CustomTestCase):
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
-        assert resp.data[0]['upvoters_count'] == 1
+        assert resp.data['results'][0]['upvoters_count'] == 1
