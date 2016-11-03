@@ -38,6 +38,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     stripe_token = models.CharField(max_length=100, null=True, blank=True)
     add_paid_post = models.BooleanField(default=True)
 
+    follows = models.ManyToManyField(
+        'users.user', related_name="followed_by", blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
