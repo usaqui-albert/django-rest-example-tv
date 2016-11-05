@@ -30,7 +30,8 @@ class PostSerializer(ModelSerializer):
         model = Post
         fields = (
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
-            'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments'
+            'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments',
+            'created_at'
         )
         extra_kwargs = {
             'user': {'read_only': True},
