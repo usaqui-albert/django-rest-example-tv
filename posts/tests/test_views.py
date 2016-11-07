@@ -10,6 +10,7 @@ from .. import views
 from .. import models
 from helpers.tests_helpers import CustomTestCase
 
+from TapVet import messages
 pytestmark = pytest.mark.django_db
 
 
@@ -439,7 +440,7 @@ class TestImagePostDeleteView(CustomTestCase):
         resp2 = views.ImagePostDeleteView.as_view()(
             req, pk=resp.data['images'][0]['id'])
         assert resp2.status_code == 406
-        assert resp2.data['detail'] == 'Error: A post need at least one image'
+        assert resp2.data['detail'] == messages.one_image
 
     def test_delete_no_auth(self):
         user = self.load_users_data().get_user(groups_id=1)
