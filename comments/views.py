@@ -1,7 +1,6 @@
 from django.db.models import Count
 from django.http import Http404
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
 
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.views import APIView
@@ -101,13 +100,15 @@ class CommentVoteView(APIView):
         qs.update(updated_at=timezone.now())
 
     def post(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, pk=kwargs['pk'])
-        self.update_post(comment.post)
+        comment = Comment.objects.filter(
+            pk=kwargs['pk']).select_related('post').first()
+        self.update_post(pk=comment.post.id)
         comment.upvoters.add(request.user.id)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, pk=kwargs['pk'])
-        self.update_post(comment.post)
+        comment = Comment.objects.filter(
+            pk=kwargs['pk']).select_related('post').first()
+        self.update_post(pk=comment.post.id)
         comment.upvoters.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
