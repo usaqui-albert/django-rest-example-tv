@@ -13,10 +13,12 @@ from rest_framework import permissions, status
 from rest_framework.views import APIView
 
 from TapVet import messages
-from TapVet.pagination import StandardPagination
+from TapVet.permissions import IsVet
+from TapVet.pagination import StandardPagination, CardsPagination
 from pets.permissions import IsOwnerReadOnly
 from .serializers import (
-    PostSerializer, PaymentAmountSerializer, ImagePostSerializer
+    PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
+    PaidPostSerializer
 )
 from .models import Post, PaymentAmount, ImagePost
 from .utils import paid_post_handler
@@ -271,3 +273,34 @@ class PostVoteView(APIView):
         post = self.get_post(pk=kwargs['pk'])
         post.likers.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PostPaidListView(ListAPIView):
+    """
+    Service to obtain only paid post. This will allow to make vets cards easy.
+    :Auth Required:
+    :Vet Required:
+    :accepted methods:
+    GET
+    """
+    pagination_class = CardsPagination
+    permission_classes = (IsVet, )
+    serializer_class = PaidPostSerializer
+
+    def get_queryset(self):
+        qs = Post.objects.filter(
+            visible_by_vet=True, visible_by_owner=True
+        ).exclude(
+            comments__post__user_id=self.request.user.id
+        ).annotate(
+            vet_comments=Count(
+                Case(
+                    When(
+                        comments__post__user__groups_id__in=[3, 4, 5],
+                        then=1
+                    ),
+                    output_field=IntegerField()
+                )
+            )
+        ).order_by('-updated_at', 'vet_comments')
+        return qs
