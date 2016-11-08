@@ -3,6 +3,7 @@ import stripe
 from django.conf import settings
 from django.db.models import Count, Case, When, IntegerField
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from rest_framework.response import Response
 from rest_framework.generics import (
@@ -118,6 +119,7 @@ class ImagePostDeleteView(DestroyAPIView):
         if post.user == request.user or request.user.is_staff:
             if images >= 2:
                 image.delete()
+                post.save()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:
                 response = {
@@ -255,12 +257,17 @@ class PostVoteView(APIView):
     allowed_methods = ('POST', 'DELETE')
     permission_classes = (permissions.IsAuthenticated, )
 
+    def get_post(self, pk):
+        qs = Post.objects.filter(pk=pk)
+        qs.update(updated_at=timezone.now())
+        return qs.first()
+
     def post(self, request, *args, **kwargs):
-        post = get_object_or_404(Post, pk=kwargs['pk'])
+        post = self.get_post(pk=kwargs['pk'])
         post.likers.add(request.user.id)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        post = get_object_or_404(Post, pk=kwargs['pk'])
+        post = self.get_post(pk=kwargs['pk'])
         post.likers.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
