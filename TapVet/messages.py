@@ -14,3 +14,4 @@ comment_permission = {"detail": "Error: You don't have permission to comment."}
 follow_permission = {
     "detail": "Error: You don't have permission to follow this user."
 }
+post_not_found = {"detail": "Post not found."}
