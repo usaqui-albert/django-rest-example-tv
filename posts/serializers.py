@@ -135,6 +135,20 @@ class PostSerializer(ModelSerializer):
 
 
 class PaymentAmountSerializer(ModelSerializer):
+
     class Meta:
         model = PaymentAmount
         fields = '__all__'
+
+
+class PaidPostSerializer(ModelSerializer):
+    images = ImagePostSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Post
+        fields = (
+            'description', 'pet', 'id', 'images'
+        )
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
