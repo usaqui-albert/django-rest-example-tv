@@ -53,10 +53,22 @@ class CreateUserSerializer(ModelSerializer):
         return user
 
 
+class ProfileImageSerializer(ModelSerializer):
+    class Meta:
+        model = ProfileImage
+        fields = ('id', 'standard', 'thumbnail')
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'id': {'read_only': True},
+        }
+
+
 class UserSerializers(ModelSerializer):
+    images = ProfileImageSerializer(read_only=True)
+
     class Meta:
         model = User
-        fields = ('username', 'email', 'full_name', 'groups', 'id', 'image')
+        fields = ('username', 'email', 'full_name', 'groups', 'id', 'images')
         extra_kwargs = {
             'username': {'read_only': True},
             'id': {'read_only': True},
@@ -139,12 +151,13 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     breeder = BreederSerializer(required=False)
     veterinarian = VeterinarianSerializer(required=False)
     image = ImageField(write_only=True, required=False)
+    images = ProfileImageSerializer(read_only=True, source='image')
 
     class Meta:
         model = User
         fields = (
             'username', 'email', 'full_name', 'groups', 'id',
-            'breeder', 'veterinarian', 'image')
+            'breeder', 'veterinarian', 'image', 'images')
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
@@ -175,6 +188,9 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        old_image = instance.image
+        if old_image:
+            old_image.delete()
         if image:
             self.create_image_profile(image, instance)
         return instance
