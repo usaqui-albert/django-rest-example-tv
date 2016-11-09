@@ -1,7 +1,13 @@
-from rest_framework.serializers import (ModelSerializer, ValidationError)
+from PIL import Image as Img
+from StringIO import StringIO
+
+from rest_framework.serializers import (
+    ModelSerializer, ValidationError, ImageField)
+
+from TapVet.images import ImageSerializerMixer
 
 from .models import (
-    User, Breeder, Veterinarian, AreaInterest)
+    User, Breeder, Veterinarian, AreaInterest, ProfileImage)
 from .mixins import Group
 
 
@@ -129,9 +135,10 @@ class AreaInterestSerializer(ModelSerializer):
         }
 
 
-class UserUpdateSerializer(ModelSerializer):
+class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     breeder = BreederSerializer(required=False)
     veterinarian = VeterinarianSerializer(required=False)
+    image = ImageField(write_only=True, required=False)
 
     class Meta:
         model = User
@@ -150,6 +157,7 @@ class UserUpdateSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         breeder_data = validated_data.pop('breeder', None)
         veterinarian_data = validated_data.pop('veterinarian', None)
+        image = validated_data.pop('image', None)
 
         if instance.groups.id == 2:
             if breeder_data:
@@ -167,4 +175,21 @@ class UserUpdateSerializer(ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        if image:
+            self.create_image_profile(image, instance)
         return instance
+
+    def create_image_profile(self, image_stream, user):
+        '''
+            This definition receive the image stream, make two image
+            off the same steam, then create an ProfileImage instance and
+            assign it to the user passed. Then the instance is saved
+        '''
+        img = Img.open(StringIO(image_stream.read()))
+        img_copy = img.copy()
+        standard = self.image_resize((612, 612), img, image_stream)
+        thumbnail = self.image_resize((150, 150), img_copy, image_stream)
+        profile_image = ProfileImage(
+            standard=standard, thumbnail=thumbnail,
+            user=user)
+        profile_image.save()
