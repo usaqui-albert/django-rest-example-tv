@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.models import Permission
 from .models import (
-    Breeder, User, Veterinarian, AreaInterest)
+    Breeder, User, Veterinarian, AreaInterest, ProfileImage)
 
 admin.site.register(Breeder)
 admin.site.register(Veterinarian)
 admin.site.register(User)
 admin.site.register(Permission)
 admin.site.register(AreaInterest)
+admin.site.register(ProfileImage)
