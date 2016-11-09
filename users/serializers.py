@@ -1,11 +1,11 @@
-from rest_framework import serializers
+from rest_framework.serializers import (ModelSerializer, ValidationError)
 
 from .models import (
     User, Breeder, Veterinarian, AreaInterest)
 from .mixins import Group
 
 
-class CreateUserSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(ModelSerializer):
     """Serializer to handle the creation of a user"""
     class Meta:
         model = User
@@ -24,7 +24,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         :return:
         """
         if len(value) < 5:
-            raise serializers.ValidationError(
+            raise ValidationError(
                 'Invalid full name, should be longer than 5 characters')
         return value
 
@@ -36,7 +36,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         :return:
         """
         if len(value) < 1:
-            raise serializers.ValidationError(
+            raise ValidationError(
                 'Invalid password, should not be empty')
         return value
 
@@ -47,17 +47,17 @@ class CreateUserSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserSerializers(serializers.ModelSerializer):
+class UserSerializers(ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'full_name', 'groups', 'id')
+        fields = ('username', 'email', 'full_name', 'groups', 'id', 'image')
         extra_kwargs = {
             'username': {'read_only': True},
             'id': {'read_only': True},
         }
 
 
-class BreederSerializer(serializers.ModelSerializer):
+class BreederSerializer(ModelSerializer):
     class Meta:
         model = Breeder
         fields = (
@@ -72,7 +72,7 @@ class BreederSerializer(serializers.ModelSerializer):
         return breeder
 
 
-class VeterinarianSerializer(serializers.ModelSerializer):
+class VeterinarianSerializer(ModelSerializer):
     class Meta:
         model = Veterinarian
         fields = (
@@ -112,14 +112,14 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         return self.instance
 
 
-class GroupsSerializer(serializers.ModelSerializer):
+class GroupsSerializer(ModelSerializer):
     class Meta:
         model = Group
         fields = ('id', 'name', 'description')
         read_only_fields = ('id', 'name', 'description')
 
 
-class AreaInterestSerializer(serializers.ModelSerializer):
+class AreaInterestSerializer(ModelSerializer):
     class Meta:
         model = AreaInterest
         fields = ('id', 'name')
@@ -129,7 +129,7 @@ class AreaInterestSerializer(serializers.ModelSerializer):
         }
 
 
-class UserUpdateSerializer(serializers.ModelSerializer):
+class UserUpdateSerializer(ModelSerializer):
     breeder = BreederSerializer(required=False)
     veterinarian = VeterinarianSerializer(required=False)
 
@@ -137,7 +137,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username', 'email', 'full_name', 'groups', 'id',
-            'breeder', 'veterinarian')
+            'breeder', 'veterinarian', 'image')
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
