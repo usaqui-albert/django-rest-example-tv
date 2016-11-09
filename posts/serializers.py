@@ -4,6 +4,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.serializers import (
     ModelSerializer, IntegerField, ImageField, ValidationError)
 
+from users.serializers import UserSerializers
+
 from .models import Post, ImagePost, PaymentAmount
 
 
@@ -25,13 +27,14 @@ class PostSerializer(ModelSerializer):
     image_1 = ImageField(write_only=True, required=False)
     image_2 = ImageField(write_only=True, required=False)
     image_3 = ImageField(write_only=True, required=False)
+    user_detail = UserSerializers(read_only=True, source='user')
 
     class Meta:
         model = Post
         fields = (
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
             'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments',
-            'created_at'
+            'created_at', 'user_detail'
         )
         extra_kwargs = {
             'user': {'read_only': True},
