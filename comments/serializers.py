@@ -34,11 +34,11 @@ class CommentVetSerializer(CommentSerializer):
         model = Comment
         fields = (
             'description', 'id', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'voted')
+            'upvoters_count', 'label', 'full_name', 'upvoted')
         extra_kwargs = {
             'user': {'read_only': True},
             'post': {'read_only': True}
         }
 
     def get_full_name(self, obj):
-        return 'Veterinary Professional #%s' % (1000 + obj.id)
+        return 'Veterinary Professional #%s' % (1000 + obj.user.id)
