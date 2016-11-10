@@ -1,7 +1,7 @@
 from StringIO import StringIO
 from PIL import Image as Img
 from rest_framework.serializers import (
-    ModelSerializer, IntegerField, ImageField, ValidationError)
+    ModelSerializer, IntegerField, ImageField, ValidationError, BooleanField)
 
 from TapVet.images import ImageSerializerMixer
 from users.serializers import UserSerializers
@@ -28,13 +28,14 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
     image_2 = ImageField(write_only=True, required=False)
     image_3 = ImageField(write_only=True, required=False)
     user_detail = UserSerializers(read_only=True, source='user')
+    interested = BooleanField(read_only=True)
 
     class Meta:
         model = Post
         fields = (
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
             'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments',
-            'created_at', 'user_detail'
+            'created_at', 'user_detail', 'interested'
         )
         extra_kwargs = {
             'user': {'read_only': True},
