@@ -312,13 +312,23 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
             '"detail": "Authentication credentials were not provided."'
         )
 
-    def test_get_auth(self):
+    def test_get_post_full_fields(self):
         user = self.load_users_data().get_user(groups_id=1)
         post = mixer.blend('posts.post', user=user)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
         assert resp.data['description'] == post.description
+        for key in [
+            'description', 'pet', 'user', 'id', 'likes_count', 'images',
+            'vet_comments', 'owner_comments',
+            'created_at', 'user_detail'
+        ]:
+            assert key in resp.data
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id'
+        ]:
+            assert key in resp.data['user_detail']
 
     def test_delete(self):
         user = self.load_users_data().get_user(groups_id=1)
