@@ -1,4 +1,3 @@
-from django.core.mail import mail_admins
 from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.template.loader import render_to_string
