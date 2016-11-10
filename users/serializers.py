@@ -64,11 +64,11 @@ class ProfileImageSerializer(ModelSerializer):
 
 
 class UserSerializers(ModelSerializer):
-    images = ProfileImageSerializer(read_only=True)
+    image = ProfileImageSerializer(read_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'full_name', 'groups', 'id', 'images')
+        fields = ('username', 'email', 'full_name', 'groups', 'id', 'image')
         extra_kwargs = {
             'username': {'read_only': True},
             'id': {'read_only': True},
