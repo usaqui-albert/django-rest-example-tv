@@ -15,6 +15,8 @@ from posts.models import Post
 from .models import Comment
 from .serializers import CommentSerializer
 
+from django.db.models import Case, Value, When, BooleanField
+
 
 class CommentsPetOwnerListCreateView(ListCreateAPIView):
     """
@@ -32,7 +34,13 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[1, 2]
         ).annotate(
-            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
+            upvoters_count=Count('upvoters'),
+            upvoted=Case(
+                When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+        ).select_related('user__groups').order_by('-upvoters_count')
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -62,8 +70,9 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         ).select_related('user__groups')
         if not qs:
             raise Http404()
+        aux = list(qs)
         qs.update(updated_at=timezone.now())
-        return qs.first()
+        return aux[0]
 
 
 class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
@@ -80,7 +89,13 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
         ).annotate(
-            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
+            upvoters_count=Count('upvoters'),
+            upvoted=Case(
+                When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+        ).select_related('user__groups').order_by('-upvoters_count')
         return qs
 
 
