@@ -160,7 +160,7 @@ DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
 
 ADMINS = [
     ('Leopoldo Pimentel', 'leofaster@gmail.com'),
-    ('Paula Marcano', 'paula.marcano@blanclink.com'),
+    ('Mayra Canas', 'mayrac@blanclabs.com'),
 ]
 
 BREADER_MESSAGE_ADMIN_TITLE = "New Breeeder Pending"
