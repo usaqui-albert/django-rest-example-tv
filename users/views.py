@@ -401,7 +401,8 @@ class ReferFriendView(generics.GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        refer_a_friend_by_email.delay(serializer.validated_data['email'])
-        return Response(
-            {'detail': 'The email has been sent successfully.'}
+        refer_a_friend_by_email.delay(
+            serializer.validated_data['email'],
+            request.user.full_name
         )
+        return Response(messages.request_successfully)
