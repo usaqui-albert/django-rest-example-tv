@@ -1,19 +1,21 @@
 from django.db.models import Count
-from django.shortcuts import get_object_or_404
+from django.http import Http404
+from django.utils import timezone
 
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
 
 from TapVet.pagination import StandardPagination
+from TapVet.permissions import IsPetOwner
 from TapVet import messages
 from posts.models import Post
 
 from .models import Comment
-from .permissions import IsPetOwner
 from .serializers import CommentSerializer
+
+from django.db.models import Case, Value, When, BooleanField
 
 
 class CommentsPetOwnerListCreateView(ListCreateAPIView):
@@ -32,14 +34,20 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[1, 2]
         ).annotate(
-            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
+            upvoters_count=Count('upvoters'),
+            upvoted=Case(
+                When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+        ).select_related('user__groups').order_by('-upvoters_count')
         return qs
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
-        post = get_object_or_404(Post, pk=kwargs['pk'])
+        post = self.get_post(kwargs['pk'])
         if not post.is_paid():
             if post.user.is_vet():
                 if not request.user.has_perm('users.is_vet'):
@@ -56,6 +64,16 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def get_post(self, pk):
+        qs = Post.objects.filter(
+            pk=pk
+        ).select_related('user__groups')
+        if not qs:
+            raise Http404()
+        aux = list(qs)
+        qs.update(updated_at=timezone.now())
+        return aux[0]
+
 
 class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     """
@@ -71,7 +89,13 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
         ).annotate(
-            upvoters_count=Count('upvoters')).order_by('-upvoters_count')
+            upvoters_count=Count('upvoters'),
+            upvoted=Case(
+                When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+        ).select_related('user__groups').order_by('-upvoters_count')
         return qs
 
 
@@ -86,12 +110,20 @@ class CommentVoteView(APIView):
     allowed_methods = ('POST', 'DELETE')
     permission_classes = (permissions.IsAuthenticated, )
 
+    def update_post(self, pk):
+        qs = Post.objects.filter(pk=pk)
+        qs.update(updated_at=timezone.now())
+
     def post(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, pk=kwargs['pk'])
+        comment = Comment.objects.filter(
+            pk=kwargs['pk']).select_related('post').first()
+        self.update_post(pk=comment.post.id)
         comment.upvoters.add(request.user.id)
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comment, pk=kwargs['pk'])
+        comment = Comment.objects.filter(
+            pk=kwargs['pk']).select_related('post').first()
+        self.update_post(pk=comment.post.id)
         comment.upvoters.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
