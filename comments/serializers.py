@@ -14,7 +14,7 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = (
             'description', 'id', 'user', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'voted')
+            'upvoters_count', 'label', 'full_name', 'upvoted')
         extra_kwargs = {
             'user': {'read_only': True},
             'post': {'read_only': True}
