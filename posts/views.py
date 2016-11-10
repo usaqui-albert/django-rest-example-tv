@@ -1,7 +1,8 @@
 import stripe
 
 from django.conf import settings
-from django.db.models import Count, Case, When, IntegerField
+from django.db.models import (
+    Count, Case, When, IntegerField, BooleanField, Value)
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -54,28 +55,60 @@ class PostListCreateView(ListCreateAPIView):
         )
 
     def get_queryset(self):
-        queryset = Post.objects.annotate(
-            vet_comments=Count(
-                Case(
+        if self.request.user.is_authenticated:
+            queryset = Post.objects.annotate(
+                vet_comments=Count(
+                    Case(
+                        When(
+                            comments__post__user__groups_id__in=[3, 4, 5],
+                            then=1
+                        ),
+                        output_field=IntegerField()
+                    )
+                ),
+                owner_comments=Count(
+                    Case(
+                        When(
+                            comments__post__user__groups_id__in=[1, 2],
+                            then=1
+                        ),
+                        output_field=IntegerField()
+                    )
+                ),
+                likes_count=Count('likers'),
+                interested=Case(
                     When(
-                        comments__post__user__groups_id__in=[3, 4, 5],
-                        then=1
+                        pk__in=self.request.user.likes.all(),
+                        then=Value(True)
                     ),
-                    output_field=IntegerField()
+                    default=Value(False),
+                    output_field=BooleanField(),
                 )
-            ),
-            owner_comments=Count(
-                Case(
-                    When(
-                        comments__post__user__groups_id__in=[1, 2],
-                        then=1
-                    ),
-                    output_field=IntegerField()
-                )
-            ),
-            likes_count=Count('likers')
-        )
-        return queryset
+            )
+            return queryset
+        else:
+            queryset = Post.objects.annotate(
+                vet_comments=Count(
+                    Case(
+                        When(
+                            comments__post__user__groups_id__in=[3, 4, 5],
+                            then=1
+                        ),
+                        output_field=IntegerField()
+                    )
+                ),
+                owner_comments=Count(
+                    Case(
+                        When(
+                            comments__post__user__groups_id__in=[1, 2],
+                            then=1
+                        ),
+                        output_field=IntegerField()
+                    )
+                ),
+                likes_count=Count('likers')
+            )
+            return queryset
 
 
 class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
@@ -118,7 +151,15 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
                     output_field=IntegerField()
                 )
             ),
-            likes_count=Count('likers')
+            likes_count=Count('likers'),
+            interested=Case(
+                When(
+                    pk__in=self.request.user.likes.all(),
+                    then=Value(True)
+                ),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
         )
         return queryset
 
