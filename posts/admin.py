@@ -13,7 +13,7 @@ class PostAdmin(admin.ModelAdmin):
     '''
     list_display = (
         'id', 'user', 'pet', 'visible_by_vet', 'visible_by_owner', 'get_likes',
-        'get_images')
+        'get_images', 'updated_at', 'created_at')
     list_filter = ('visible_by_vet', 'visible_by_owner')
     inlines = [
         ImageInline,

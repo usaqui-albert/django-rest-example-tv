@@ -39,6 +39,12 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
         assert len(resp.data['results']) == 1
+        for key in [
+            'description', 'id', 'post', 'created_at', 'updated_at',
+            'upvoters_count', 'label', 'full_name', 'upvoted'
+        ]:
+            assert key in resp.data['results'][0]
+        assert resp.data['results'][0]['full_name'] == user.full_name
 
     def test_post_create(self):
         user = self.load_users_data().get_user(groups_id=1)
@@ -101,6 +107,11 @@ class TestCommentsVetListCreateView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.CommentsVetListCreateView.as_view()(req, pk=post.pk)
         assert len(resp.data['results']) == 1
+        for key in [
+            'description', 'id', 'post', 'created_at', 'updated_at',
+            'upvoters_count', 'label', 'full_name', 'upvoted'
+        ]:
+            assert key in resp.data['results'][0]
 
     def test_get_list_no_vet(self):
         user = self.load_users_data().get_user(groups_id=1)
