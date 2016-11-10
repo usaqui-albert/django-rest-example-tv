@@ -330,7 +330,7 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
         ]:
             assert key in resp.data
         for key in [
-            'username', 'email', 'full_name', 'groups', 'id'
+            'username', 'email', 'full_name', 'groups', 'id', 'image'
         ]:
             assert key in resp.data['user_detail']
 
