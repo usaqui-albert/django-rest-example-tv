@@ -41,7 +41,7 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         assert len(resp.data['results']) == 1
         for key in [
             'description', 'id', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'upvoted'
+            'upvoters_count', 'label', 'full_name', 'upvoted', 'user'
         ]:
             assert key in resp.data['results'][0]
         assert resp.data['results'][0]['full_name'] == user.full_name
@@ -112,6 +112,10 @@ class TestCommentsVetListCreateView(CustomTestCase):
             'upvoters_count', 'label', 'full_name', 'upvoted'
         ]:
             assert key in resp.data['results'][0]
+        assert resp.data[
+            'results'][0]['full_name'] == 'Veterinary Professional #%s' % (
+                1000 + vet.id
+        )
 
     def test_get_list_no_vet(self):
         user = self.load_users_data().get_user(groups_id=1)
