@@ -9,13 +9,13 @@ class CommentSerializer(ModelSerializer):
     upvoters_count = IntegerField(read_only=True)
     label = CharField(source='user.groups.name', read_only=True)
     full_name = CharField(source='user.full_name', read_only=True)
-    voted = BooleanField(read_only=True)
+    upvoted = BooleanField(read_only=True)
 
     class Meta:
         model = Comment
         fields = (
             'description', 'id', 'user', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'voted')
+            'upvoters_count', 'label', 'full_name', 'upvoted')
         extra_kwargs = {
             'user': {'read_only': True},
             'post': {'read_only': True}
@@ -34,11 +34,11 @@ class CommentVetSerializer(CommentSerializer):
         model = Comment
         fields = (
             'description', 'id', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'voted')
+            'upvoters_count', 'label', 'full_name', 'upvoted')
         extra_kwargs = {
             'user': {'read_only': True},
             'post': {'read_only': True}
         }
 
     def get_full_name(self, obj):
-        return 'Veterinary Professional #%s' % (1000 + obj.id)
+        return 'Veterinary Professional #%s' % (1000 + obj.user.id)

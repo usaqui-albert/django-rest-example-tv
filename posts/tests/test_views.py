@@ -37,22 +37,17 @@ class TestPostListCreateView(CustomTestCase):
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405)')
 
-    def test_request_get_no_auth(self):
+    def test_get_request_non_authenticated_user(self):
         req = self.factory.get('/')
         resp = views.PostListCreateView.as_view()(req)
-        assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+        assert resp.status_code == 200, 'Should return 200 OK'
 
-    def test_request_get(self):
+    def test_get_request_authenticated_user(self):
         user = self.load_users_data().get_user(groups_id=1)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.PostListCreateView.as_view()(req)
-        assert resp.status_code == 200, (
-            'Should return 200 OK and a list of post'
-        )
+        assert resp.status_code == 200, 'Should return 200 OK'
 
     def test_request_get_many_likes(self):
         self.load_users_data()
@@ -73,10 +68,11 @@ class TestPostListCreateView(CustomTestCase):
     def test_request_post_no_auth(self):
         req = self.factory.post('/')
         resp = views.PostListCreateView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Authentication credentials ' \
+                                      'were not provided.'
         assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+            'Should return Method Unauthorized (401)')
 
     def test_post_request_image_field_missing(self):
         data = {'description': 'Test description'}
