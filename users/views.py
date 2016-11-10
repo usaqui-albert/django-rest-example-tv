@@ -5,6 +5,8 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
+from django.template.loader import render_to_string
+
 
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -26,6 +28,7 @@ from .serializers import (
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
     UserUpdateSerializer
 )
+from .tasks import send_mail
 
 
 class UserAuth(ObtainAuthToken):
@@ -385,3 +388,27 @@ class UserFollowView(APIView):
         user = get_object_or_404(User, pk=kwargs['pk'])
         user.follows.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserFeedBackView(APIView):
+    """
+    Service to send user feedback to admin.
+    :Auth Required:
+    :accepted methods:
+    POST = The message will be receive on 'message'
+    """
+    allowed_methods = ('POST', )
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        message_title = ""
+        message_body = request.POST.get('message')
+        msg_html = render_to_string(
+            'users/partials/email/breeder.html',
+            {
+                'user': request.user,
+                'messsage': message_body
+            }
+        )
+        send_mail.delay(
+            message_title, message_body, msg_html, True)
