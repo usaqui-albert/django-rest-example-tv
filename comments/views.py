@@ -35,7 +35,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
             post_id=self.kwargs['pk'], user__groups_id__in=[1, 2]
         ).annotate(
             upvoters_count=Count('upvoters'),
-            voted=Case(
+            upvoted=Case(
                 When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
                 default=Value(False),
                 output_field=BooleanField(),
@@ -89,7 +89,12 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
         ).annotate(
-            upvoters_count=Count('upvoters')
+            upvoters_count=Count('upvoters'),
+            upvoted=Case(
+                When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
         ).select_related('user__groups').order_by('-upvoters_count')
         return qs
 

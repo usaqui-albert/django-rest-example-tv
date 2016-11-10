@@ -8,7 +8,7 @@ class CommentSerializer(ModelSerializer):
     upvoters_count = IntegerField(read_only=True)
     label = CharField(source='user.groups.name', read_only=True)
     full_name = CharField(source='user.full_name', read_only=True)
-    voted = BooleanField(read_only=True)
+    upvoted = BooleanField(read_only=True)
 
     class Meta:
         model = Comment
