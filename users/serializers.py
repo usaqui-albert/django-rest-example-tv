@@ -168,3 +168,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class ReferFriendSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=100)
