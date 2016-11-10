@@ -1,5 +1,6 @@
 from rest_framework.serializers import (
-    ModelSerializer, IntegerField, CharField, BooleanField)
+    ModelSerializer, IntegerField, CharField, BooleanField,
+    SerializerMethodField)
 
 from .models import Comment
 
@@ -24,3 +25,20 @@ class CommentSerializer(ModelSerializer):
         comment = Comment(**dict(validated_data, user=self.context['user']))
         comment.save()
         return comment
+
+
+class CommentVetSerializer(CommentSerializer):
+    full_name = SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = (
+            'description', 'id', 'post', 'created_at', 'updated_at',
+            'upvoters_count', 'label', 'full_name', 'upvoted')
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'post': {'read_only': True}
+        }
+
+    def get_full_name(self, obj):
+        return 'Veterinary Professional #%s' % (1000 + obj.user.id)

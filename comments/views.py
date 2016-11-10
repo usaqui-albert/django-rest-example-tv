@@ -13,7 +13,7 @@ from TapVet import messages
 from posts.models import Post
 
 from .models import Comment
-from .serializers import CommentSerializer
+from .serializers import CommentSerializer, CommentVetSerializer
 
 from django.db.models import Case, Value, When, BooleanField
 
@@ -84,6 +84,7 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     POST
     """
     permission_classes = (permissions.IsAuthenticated, )
+    serializer_class = CommentVetSerializer
 
     def get_queryset(self):
         qs = Comment.objects.filter(

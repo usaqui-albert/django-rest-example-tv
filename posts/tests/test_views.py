@@ -37,14 +37,17 @@ class TestPostListCreateView(CustomTestCase):
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405)')
 
-    def test_request_get(self):
+    def test_get_request_non_authenticated_user(self):
+        req = self.factory.get('/')
+        resp = views.PostListCreateView.as_view()(req)
+        assert resp.status_code == 200, 'Should return 200 OK'
+
+    def test_get_request_authenticated_user(self):
         user = self.load_users_data().get_user(groups_id=1)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.PostListCreateView.as_view()(req)
-        assert resp.status_code == 200, (
-            'Should return 200 OK and a list of post'
-        )
+        assert resp.status_code == 200, 'Should return 200 OK'
 
     def test_request_get_many_likes(self):
         self.load_users_data()

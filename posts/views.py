@@ -33,7 +33,7 @@ class PostListCreateView(ListCreateAPIView):
     POST
     """
     serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
     pagination_class = StandardPagination
 
     def create(self, request, *args, **kwargs):
