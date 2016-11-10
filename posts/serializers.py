@@ -137,20 +137,6 @@ class PostSerializer(ModelSerializer):
         image_post.save()
 
 
-class PostDetailSerializer(PostSerializer):
-    class Meta:
-        model = Post
-        fields = (
-            'description', 'pet', 'user', 'id', 'likes_count', 'images',
-            'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments',
-            'created_at'
-        )
-        extra_kwargs = {
-            'user': {'read_only': True},
-            'id': {'read_only': True},
-        }
-
-
 class PaymentAmountSerializer(ModelSerializer):
 
     class Meta:
