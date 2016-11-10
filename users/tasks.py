@@ -8,3 +8,8 @@ def send_mail(subject, message, html_message, fail_silently=True):
         subject=subject, message=message, fail_silently=fail_silently,
         html_message=html_message
     )
+
+
+@task(ignore_result=True)
+def refer_a_friend_by_email(email):
+    return email
