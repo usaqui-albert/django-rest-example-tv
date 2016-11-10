@@ -401,14 +401,16 @@ class UserFeedBackView(APIView):
     permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request, *args, **kwargs):
-        message_title = ""
-        message_body = request.POST.get('message')
+        message_title = "[TapVet] New Feedback"
+        message_body = request.data.get('message', None)
         msg_html = render_to_string(
-            'users/partials/email/breeder.html',
+            'users/partials/email/feedback.html',
             {
                 'user': request.user,
-                'messsage': message_body
+                'message': message_body
             }
         )
         send_mail.delay(
             message_title, message_body, msg_html, True)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
