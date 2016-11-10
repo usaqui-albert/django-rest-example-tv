@@ -546,3 +546,44 @@ class TestPostLikeView(CustomTestCase):
         force_authenticate(req, user=owner)
         resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
         assert resp.data['likes_count'] == 1
+
+
+class TestPostPaidListView(CustomTestCase):
+
+    def test_get_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.PostPaidListView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_post_request_not_allowed(self):
+        user = self.load_users_data().get_user(groups_id=5)
+        req = self.factory.post('/', {})
+        force_authenticate(req, user=user)
+        resp = views.PostPaidListView.as_view()(req)
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
+
+    def test_get_no_vet(self):
+        owner = self.load_users_data().get_user(groups_id=1)
+        req = self.factory.get('/')
+        force_authenticate(req, user=owner)
+        resp = views.PostPaidListView.as_view()(req)
+        assert resp.status_code == 403, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_get_vet(self):
+        vet = self.load_users_data().get_user(groups_id=5)
+        req = self.factory.get('/')
+        [
+            mixer.blend(
+                'posts.post', visible_by_vet=True, visible_by_owner=True
+            ) for _ in range(10)
+        ]
+        force_authenticate(req, user=vet)
+        resp = views.PostPaidListView.as_view()(req)
+        assert resp.status_code == 200
