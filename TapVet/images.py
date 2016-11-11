@@ -2,8 +2,17 @@ from PIL import Image as Img
 from StringIO import StringIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
+STANDARD_SIZE = (612, 612)
+THUMBNAIL_SIZE = (150, 150)
+
 
 class ImageSerializerMixer(object):
+    quality = 70
+    image_format = [
+        ('JPEG', '%s.jpg', 'image/jpeg'),
+        ('PNG', '%s.png', 'image/png')
+    ]
+
     def image_with_background(self, img, size, output):
         '''
             Recieve the img and paste it on a white new image
@@ -13,7 +22,8 @@ class ImageSerializerMixer(object):
         background = Img.new('RGB', size, 'white')
         offset = (size[0] - img.size[0]) / 2, (size[1] - img.size[1]) / 2
         background.paste(img, offset)
-        background.save(output, format='JPEG', quality=70)
+        background.save(
+            output, format=self.image_format[0][0], quality=self.quality)
         output.seek(0)
         return output
 
@@ -21,7 +31,7 @@ class ImageSerializerMixer(object):
         '''
             Only save the image and change the output steam
         '''
-        img.save(output, format='JPEG', quality=70)
+        img.save(output, format=self.image_format[0][0], quality=self.quality)
         output.seek(0)
         return output
 
@@ -48,6 +58,8 @@ class ImageSerializerMixer(object):
         '''
         output = self.image_with_background(img, size, StringIO())
         image = InMemoryUploadedFile(
-            output, 'ImageField', "%s.jpg" % image_stream.name.split('.')[0],
-            'image/jpeg', output.len, None)
+            output, 'ImageField',
+            self.image_format[0][1] % image_stream.name.split('.')[0],
+            self.image_format[0][2], output.len, None
+        )
         return image
