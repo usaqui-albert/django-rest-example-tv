@@ -40,7 +40,8 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
                 default=Value(False),
                 output_field=BooleanField(),
             )
-        ).select_related('user__groups').order_by('-upvoters_count')
+        ).select_related('user__groups').order_by(
+            '-upvoters_count', '-updated_at')
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -96,7 +97,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
                 default=Value(False),
                 output_field=BooleanField(),
             )
-        ).select_related('user__groups').order_by('-upvoters_count')
+        ).select_related('user__groups').order_by(
+            '-upvoters_count', '-updated_at')
         return qs
 
 
