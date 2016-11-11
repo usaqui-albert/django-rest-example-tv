@@ -63,7 +63,8 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         serializer.save(post=post)
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            dict(serializer.data, upvoters_count=0),
+            status=status.HTTP_201_CREATED, headers=headers)
 
     def get_post(self, pk):
         qs = Post.objects.filter(
