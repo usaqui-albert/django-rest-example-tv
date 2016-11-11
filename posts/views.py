@@ -33,38 +33,49 @@ class PostListCreateView(ListCreateAPIView):
     POST
     """
     serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
     pagination_class = StandardPagination
-    queryset = Post.objects.annotate(
-        vet_comments=Count(
-            Case(
-                When(
-                    comments__post__user__groups_id__in=[3, 4, 5],
-                    then=1
-                ),
-                output_field=IntegerField()
-            )
-        ),
-        owner_comments=Count(
-            Case(
-                When(
-                    comments__post__user__groups_id__in=[1, 2],
-                    then=1
-                ),
-                output_field=IntegerField()
-            )
-        ),
-        likes_count=Count('likers')
-    )
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data, context={'user': request.user})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        headers = self.get_success_headers(serializer.data)
+        if request.user.is_authenticated():
+            serializer = self.serializer_class(
+                data=request.data, context={'user': request.user})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers
+            )
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            {'detail': messages.user_login},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    def get_queryset(self):
+        queryset = Post.objects.annotate(
+            vet_comments=Count(
+                Case(
+                    When(
+                        comments__post__user__groups_id__in=[3, 4, 5],
+                        then=1
+                    ),
+                    output_field=IntegerField()
+                )
+            ),
+            owner_comments=Count(
+                Case(
+                    When(
+                        comments__post__user__groups_id__in=[1, 2],
+                        then=1
+                    ),
+                    output_field=IntegerField()
+                )
+            ),
+            likes_count=Count('likers')
+        )
+        return queryset
 
 
 class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
@@ -79,27 +90,6 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     """
     serializer_class = PostSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
-    queryset = Post.objects.annotate(
-        vet_comments=Count(
-            Case(
-                When(
-                    comments__post__user__groups_id__in=[3, 4, 5],
-                    then=1
-                ),
-                output_field=IntegerField()
-            )
-        ),
-        owner_comments=Count(
-            Case(
-                When(
-                    comments__post__user__groups_id__in=[1, 2],
-                    then=1
-                ),
-                output_field=IntegerField()
-            )
-        ),
-        likes_count=Count('likers')
-    )
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -107,6 +97,30 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         map(lambda x: x.delete(), images)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_queryset(self):
+        queryset = Post.objects.annotate(
+            vet_comments=Count(
+                Case(
+                    When(
+                        comments__post__user__groups_id__in=[3, 4, 5],
+                        then=1
+                    ),
+                    output_field=IntegerField()
+                )
+            ),
+            owner_comments=Count(
+                Case(
+                    When(
+                        comments__post__user__groups_id__in=[1, 2],
+                        then=1
+                    ),
+                    output_field=IntegerField()
+                )
+            ),
+            likes_count=Count('likers')
+        )
+        return queryset
 
 
 class ImagePostDeleteView(DestroyAPIView):
