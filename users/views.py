@@ -24,8 +24,9 @@ from helpers.stripe_helpers import (
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
-    UserUpdateSerializer
+    UserUpdateSerializer, ReferFriendSerializer
 )
+from .tasks import refer_a_friend_by_email
 
 
 class UserAuth(ObtainAuthToken):
@@ -364,7 +365,8 @@ class UserFollowView(APIView):
     allowed_methods = ('POST', 'DELETE')
     permission_classes = (permissions.IsAuthenticated, )
 
-    def post(self, request, *args, **kwargs):
+    @staticmethod
+    def post(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
         if request.user.has_perm('users.is_vet'):
             if not user.is_vet():
@@ -381,7 +383,26 @@ class UserFollowView(APIView):
         user.follows.add(request.user.id)
         return Response(status=status.HTTP_201_CREATED)
 
-    def delete(self, request, *args, **kwargs):
+    @staticmethod
+    def delete(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
         user.follows.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ReferFriendView(generics.GenericAPIView):
+    """
+    :accepted methods:
+        POST
+    """
+    serializer_class = ReferFriendSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        refer_a_friend_by_email.delay(
+            serializer.validated_data['email'],
+            request.user.full_name
+        )
+        return Response(messages.request_successfully)

@@ -2,7 +2,7 @@ from PIL import Image as Img
 from StringIO import StringIO
 
 from rest_framework.serializers import (
-    ModelSerializer, ValidationError, ImageField)
+    ModelSerializer, ValidationError, ImageField, Serializer, EmailField)
 
 from TapVet.images import ImageSerializerMixer
 
@@ -212,3 +212,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             standard=standard, thumbnail=thumbnail,
             user=user)
         profile_image.save()
+
+
+class ReferFriendSerializer(Serializer):
+    email = EmailField(max_length=100)
