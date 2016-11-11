@@ -193,7 +193,6 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             old_image.delete()
         except:
             pass
-            # if there is an error, it will not break the system.
         if image:
             self.create_image_profile(image, instance)
         return instance
