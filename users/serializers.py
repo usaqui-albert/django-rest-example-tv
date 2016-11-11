@@ -1,11 +1,17 @@
-from rest_framework import serializers
+from PIL import Image as Img
+from StringIO import StringIO
+
+from rest_framework.serializers import (
+    ModelSerializer, ValidationError, ImageField, Serializer, EmailField)
+
+from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
 from .models import (
-    User, Breeder, Veterinarian, AreaInterest)
+    User, Breeder, Veterinarian, AreaInterest, ProfileImage)
 from .mixins import Group
 
 
-class CreateUserSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(ModelSerializer):
     """Serializer to handle the creation of a user"""
     class Meta:
         model = User
@@ -24,7 +30,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         :return:
         """
         if len(value) < 5:
-            raise serializers.ValidationError(
+            raise ValidationError(
                 'Invalid full name, should be longer than 5 characters')
         return value
 
@@ -36,7 +42,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         :return:
         """
         if len(value) < 1:
-            raise serializers.ValidationError(
+            raise ValidationError(
                 'Invalid password, should not be empty')
         return value
 
@@ -47,17 +53,29 @@ class CreateUserSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserSerializers(serializers.ModelSerializer):
+class ProfileImageSerializer(ModelSerializer):
+    class Meta:
+        model = ProfileImage
+        fields = ('id', 'standard', 'thumbnail')
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'id': {'read_only': True},
+        }
+
+
+class UserSerializers(ModelSerializer):
+    image = ProfileImageSerializer(read_only=True)
+
     class Meta:
         model = User
-        fields = ('username', 'email', 'full_name', 'groups', 'id')
+        fields = ('username', 'email', 'full_name', 'groups', 'id', 'image')
         extra_kwargs = {
             'username': {'read_only': True},
             'id': {'read_only': True},
         }
 
 
-class BreederSerializer(serializers.ModelSerializer):
+class BreederSerializer(ModelSerializer):
     class Meta:
         model = Breeder
         fields = (
@@ -72,7 +90,7 @@ class BreederSerializer(serializers.ModelSerializer):
         return breeder
 
 
-class VeterinarianSerializer(serializers.ModelSerializer):
+class VeterinarianSerializer(ModelSerializer):
     class Meta:
         model = Veterinarian
         fields = (
@@ -112,14 +130,14 @@ class VeterinarianSerializer(serializers.ModelSerializer):
         return self.instance
 
 
-class GroupsSerializer(serializers.ModelSerializer):
+class GroupsSerializer(ModelSerializer):
     class Meta:
         model = Group
         fields = ('id', 'name', 'description')
         read_only_fields = ('id', 'name', 'description')
 
 
-class AreaInterestSerializer(serializers.ModelSerializer):
+class AreaInterestSerializer(ModelSerializer):
     class Meta:
         model = AreaInterest
         fields = ('id', 'name')
@@ -129,15 +147,17 @@ class AreaInterestSerializer(serializers.ModelSerializer):
         }
 
 
-class UserUpdateSerializer(serializers.ModelSerializer):
+class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     breeder = BreederSerializer(required=False)
     veterinarian = VeterinarianSerializer(required=False)
+    image = ImageField(write_only=True, required=False)
+    images = ProfileImageSerializer(read_only=True, source='image')
 
     class Meta:
         model = User
         fields = (
             'username', 'email', 'full_name', 'groups', 'id',
-            'breeder', 'veterinarian')
+            'breeder', 'veterinarian', 'image', 'images')
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
@@ -150,6 +170,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         breeder_data = validated_data.pop('breeder', None)
         veterinarian_data = validated_data.pop('veterinarian', None)
+        image = validated_data.pop('image', None)
 
         if instance.groups.id == 2:
             if breeder_data:
@@ -167,8 +188,30 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        try:
+            old_image = instance.image
+            old_image.delete()
+        except:
+            pass
+        if image:
+            self.create_image_profile(image, instance)
         return instance
 
+    def create_image_profile(self, image_stream, user):
+        '''
+            This definition receive the image stream, make two image
+            off the same steam, then create an ProfileImage instance and
+            assign it to the user passed. Then the instance is saved
+        '''
+        img = Img.open(StringIO(image_stream.read()))
+        img_copy = img.copy()
+        standard = self.image_resize(STANDARD_SIZE, img, image_stream)
+        thumbnail = self.image_resize(THUMBNAIL_SIZE, img_copy, image_stream)
+        profile_image = ProfileImage(
+            standard=standard, thumbnail=thumbnail,
+            user=user)
+        profile_image.save()
 
-class ReferFriendSerializer(serializers.Serializer):
-    email = serializers.EmailField(max_length=100)
+
+class ReferFriendSerializer(Serializer):
+    email = EmailField(max_length=100)

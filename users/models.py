@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db.models.signals import post_save
 
-from pets.models import get_current_year, get_limit_year
+from pets.models import get_current_year, get_limit_year, uploads_path
 
 from .signals import create_auth_token, new_breeder_signal, new_vet_signal
 from .mixins import PermissionsMixin
@@ -149,3 +149,17 @@ class Veterinarian(models.Model):
 post_save.connect(
     new_vet_signal, sender=Veterinarian,
     dispatch_uid="users.models.veterinarian_post_save")
+
+
+class ProfileImage(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='image')
+    standard = models.ImageField(upload_to=uploads_path)
+    thumbnail = models.ImageField(upload_to=uploads_path)
+
+    class Meta:
+        verbose_name = "Profile Image"
+        verbose_name_plural = "Profile Images"
+
+    def __str__(self):
+        return u'Profile pic for: %s' % (self.user.username)

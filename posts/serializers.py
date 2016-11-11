@@ -1,9 +1,9 @@
 from StringIO import StringIO
 from PIL import Image as Img
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.serializers import (
     ModelSerializer, IntegerField, ImageField, ValidationError)
 
+from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 from users.serializers import UserSerializers
 
 from .models import Post, ImagePost, PaymentAmount
@@ -19,7 +19,7 @@ class ImagePostSerializer(ModelSerializer):
         }
 
 
-class PostSerializer(ModelSerializer):
+class PostSerializer(ModelSerializer, ImageSerializerMixer):
     likes_count = IntegerField(read_only=True)
     vet_comments = IntegerField(read_only=True)
     owner_comments = IntegerField(read_only=True)
@@ -73,64 +73,16 @@ class PostSerializer(ModelSerializer):
                 self.create_image_post(new_image, instance, index)
         return instance
 
-    def image_with_background(self, img, size, output):
-        '''
-            Recieve the img and paste it on a white new image
-            allowing to make a square image. offset variable, allowing
-            to center the image.
-        '''
-        background = Img.new('RGB', size, 'white')
-        offset = (size[0] - img.size[0]) / 2, (size[1] - img.size[1]) / 2
-        background.paste(img, offset)
-        background.save(output, format='JPEG', quality=70)
-        output.seek(0)
-        return output
-
-    def image_no_background(self, img, size, output):
-        '''
-            Only save the image and change the output steam
-        '''
-        img.save(output, format='JPEG', quality=70)
-        output.seek(0)
-        return output
-
-    def image_resize(self, size, img, image_stream):
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        img.thumbnail(size, Img.ANTIALIAS)
-        '''
-        Two choices:
-
-        output = self.image_no_background(img, size, StringIO())
-
-        Will return an image with no white background, this means that the
-        image will no be a square image.
-
-        output = self.image_with_background(img, size, StringIO())
-
-        Will return  an image with a white background, making this a square
-        image.
-
-        This choices will be helpful in  near the future when the client see
-        the feed frontend and choose one or the other.
-
-        '''
-        output = self.image_with_background(img, size, StringIO())
-        image = InMemoryUploadedFile(
-            output, 'ImageField', "%s.jpg" % image_stream.name.split('.')[0],
-            'image/jpeg', output.len, None)
-        return image
-
     def create_image_post(self, image_stream, post, index):
         '''
             This definition receive the image stream, make two image
             off the same steam, then create an imagePost instance and
-            assign it to the post passed. Then the instance is saved
+            assign it to the post passed. Then the instance is saved,
         '''
         img = Img.open(StringIO(image_stream.read()))
         img_copy = img.copy()
-        standard = self.image_resize((612, 612), img, image_stream)
-        thumbnail = self.image_resize((150, 150), img_copy, image_stream)
+        standard = self.image_resize(STANDARD_SIZE, img, image_stream)
+        thumbnail = self.image_resize(THUMBNAIL_SIZE, img_copy, image_stream)
         image_post = ImagePost(
             standard=standard, thumbnail=thumbnail,
             post=post, image_number=index)

@@ -1,6 +1,6 @@
 """Testing Views"""
 import pytest
-
+from PIL import Image
 from django.test import RequestFactory
 
 from rest_framework.test import APIRequestFactory
@@ -11,6 +11,8 @@ from countries import models as models_c
 from pets.models import get_current_year, get_limit_year
 from helpers.tests_helpers import CustomTestCase
 
+from posts.tests.test_views import get_test_image
+from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
 from .. import views
 from .. import models
 
@@ -367,6 +369,27 @@ class TestUserDetailView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 204, 'Should return No Content (204)'
+
+    def test_update_with_image(self):
+        user = self.load_users_data().get_user(groups_id=2)
+        tmp_file = get_test_image()
+        data = {
+            "full_name": "Albert Usaqui",
+            "email": user.email,
+            'image': tmp_file
+        }
+        tmp_file.seek(0)
+        req = self.factory.patch('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 200, (
+            'Should return OK (200) given the data to update is valid')
+        user.refresh_from_db()
+        assert user.full_name == 'Albert Usaqui', 'Should update the user'
+        img_s = Image.open(user.image.standard)
+        img_t = Image.open(user.image.thumbnail)
+        assert img_s.size == STANDARD_SIZE
+        assert img_t.size == THUMBNAIL_SIZE
 
 
 class GroupsListView:
