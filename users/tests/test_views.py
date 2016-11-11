@@ -12,6 +12,7 @@ from pets.models import get_current_year, get_limit_year
 from helpers.tests_helpers import CustomTestCase
 
 from posts.tests.test_views import get_test_image
+from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
 from .. import views
 from .. import models
 
@@ -387,8 +388,8 @@ class TestUserDetailView(CustomTestCase):
         assert user.full_name == 'Albert Usaqui', 'Should update the user'
         img_s = Image.open(user.image.standard)
         img_t = Image.open(user.image.thumbnail)
-        assert img_s.size == (612, 612)
-        assert img_t.size == (150, 150)
+        assert img_s.size == STANDARD_SIZE
+        assert img_t.size == THUMBNAIL_SIZE
 
 
 class GroupsListView:

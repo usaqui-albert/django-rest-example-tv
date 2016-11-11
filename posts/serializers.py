@@ -3,7 +3,7 @@ from PIL import Image as Img
 from rest_framework.serializers import (
     ModelSerializer, IntegerField, ImageField, ValidationError)
 
-from TapVet.images import ImageSerializerMixer
+from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 from users.serializers import UserSerializers
 
 from .models import Post, ImagePost, PaymentAmount
@@ -77,12 +77,12 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
         '''
             This definition receive the image stream, make two image
             off the same steam, then create an imagePost instance and
-            assign it to the post passed. Then the instance is saved
+            assign it to the post passed. Then the instance is saved,
         '''
         img = Img.open(StringIO(image_stream.read()))
         img_copy = img.copy()
-        standard = self.image_resize((612, 612), img, image_stream)
-        thumbnail = self.image_resize((150, 150), img_copy, image_stream)
+        standard = self.image_resize(STANDARD_SIZE, img, image_stream)
+        thumbnail = self.image_resize(THUMBNAIL_SIZE, img_copy, image_stream)
         image_post = ImagePost(
             standard=standard, thumbnail=thumbnail,
             post=post, image_number=index)
