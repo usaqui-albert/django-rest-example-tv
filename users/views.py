@@ -392,7 +392,6 @@ class UserFollowView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-<<<<<<< HEAD
 class UserFeedBackView(APIView):
     """
     Service to send user feedback to admin.
@@ -417,9 +416,11 @@ class UserFeedBackView(APIView):
             message_title, message_body, msg_html, True)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-=======
+
+
 class ReferFriendView(generics.GenericAPIView):
     """
+    Refer a friend endpoint
     :accepted methods:
         POST
     """
@@ -434,4 +435,3 @@ class ReferFriendView(generics.GenericAPIView):
             request.user.full_name
         )
         return Response(messages.request_successfully)
->>>>>>> develop
