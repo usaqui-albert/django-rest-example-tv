@@ -2,9 +2,9 @@ from PIL import Image as Img
 from StringIO import StringIO
 
 from rest_framework.serializers import (
-    ModelSerializer, ValidationError, ImageField)
+    ModelSerializer, ValidationError, ImageField, Serializer, EmailField)
 
-from TapVet.images import ImageSerializerMixer
+from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
 from .models import (
     User, Breeder, Veterinarian, AreaInterest, ProfileImage)
@@ -193,7 +193,6 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             old_image.delete()
         except:
             pass
-            # if there is an error, it will not break the system.
         if image:
             self.create_image_profile(image, instance)
         return instance
@@ -206,9 +205,13 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
         '''
         img = Img.open(StringIO(image_stream.read()))
         img_copy = img.copy()
-        standard = self.image_resize((612, 612), img, image_stream)
-        thumbnail = self.image_resize((150, 150), img_copy, image_stream)
+        standard = self.image_resize(STANDARD_SIZE, img, image_stream)
+        thumbnail = self.image_resize(THUMBNAIL_SIZE, img_copy, image_stream)
         profile_image = ProfileImage(
             standard=standard, thumbnail=thumbnail,
             user=user)
         profile_image.save()
+
+
+class ReferFriendSerializer(Serializer):
+    email = EmailField(max_length=100)

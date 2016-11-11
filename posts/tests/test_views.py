@@ -11,6 +11,7 @@ from .. import models
 from helpers.tests_helpers import CustomTestCase
 
 from TapVet import messages
+from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
 pytestmark = pytest.mark.django_db
 
 
@@ -128,8 +129,8 @@ class TestPostListCreateView(CustomTestCase):
         image = p.images.first()
         img_s = Image.open(image.standard)
         img_t = Image.open(image.thumbnail)
-        assert img_s.size == (612, 612)
-        assert img_t.size == (150, 150)
+        assert img_s.size == STANDARD_SIZE
+        assert img_t.size == THUMBNAIL_SIZE
 
 
 class TestPaidPostView(CustomTestCase):

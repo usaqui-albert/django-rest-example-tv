@@ -12,6 +12,7 @@ from pets.models import get_current_year, get_limit_year
 from helpers.tests_helpers import CustomTestCase
 
 from posts.tests.test_views import get_test_image
+from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
 from .. import views
 from .. import models
 
@@ -387,8 +388,8 @@ class TestUserDetailView(CustomTestCase):
         assert user.full_name == 'Albert Usaqui', 'Should update the user'
         img_s = Image.open(user.image.standard)
         img_t = Image.open(user.image.thumbnail)
-        assert img_s.size == (612, 612)
-        assert img_t.size == (150, 150)
+        assert img_s.size == STANDARD_SIZE
+        assert img_t.size == THUMBNAIL_SIZE
 
 
 class GroupsListView:
@@ -980,3 +981,67 @@ class TestUserFollowView(CustomTestCase):
         force_authenticate(req, user=pet_owner)
         resp = views.UserFollowView.as_view()(req, pk=pet_owner1.pk)
         assert resp.status_code == 204
+
+
+class TestReferFriendView(CustomTestCase):
+
+    def test_get_request_not_allowed(self):
+        req = self.factory.get('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.ReferFriendView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "GET" not allowed.'
+        assert resp.status_code == 405, 'Should return Method ' \
+                                        'Not Allowed (405)'
+
+    def test_put_request_not_allowed(self):
+        req = self.factory.put('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.ReferFriendView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "PUT" not allowed.'
+        assert resp.status_code == 405, 'Should return Method ' \
+                                        'Not Allowed (405)'
+
+    def test_delete_request_not_allowed(self):
+        req = self.factory.delete('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.ReferFriendView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "DELETE" not allowed.'
+        assert resp.status_code == 405, 'Should return Method ' \
+                                        'Not Allowed (405)'
+
+    def test_post_request_user_no_authenticated(self):
+        req = self.factory.post('/')
+        resp = views.ReferFriendView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Authentication credentials ' \
+                                      'were not provided.'
+        assert resp.status_code == 401
+
+    def test_post_request_email_field_missing(self):
+        req = self.factory.post('/', {})
+        force_authenticate(req, user=self.get_user())
+        resp = views.ReferFriendView.as_view()(req)
+        assert 'email' in resp.data
+        assert 'This field is required.' in resp.data['email']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_empty_email(self):
+        data = {'email': ''}
+        req = self.factory.post('/', data)
+        force_authenticate(req, user=self.get_user())
+        resp = views.ReferFriendView.as_view()(req)
+        assert 'email' in resp.data
+        assert 'This field may not be blank.' in resp.data['email']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+    def test_post_request_wrong_format_email(self):
+        data = {'email': 'jdoe@gmail.c'}
+        req = self.factory.post('/', data)
+        force_authenticate(req, user=self.get_user())
+        resp = views.ReferFriendView.as_view()(req)
+        assert 'email' in resp.data
+        assert 'Enter a valid email address.' in resp.data['email']
+        assert resp.status_code == 400, 'Should return Bad Request (400)'
