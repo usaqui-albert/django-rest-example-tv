@@ -2,6 +2,9 @@ from PIL import Image as Img
 from StringIO import StringIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
+STANDARD_SIZE = (612, 612)
+THUMBNAIL_SIZE = (150, 150)
+
 
 class ImageSerializerMixer(object):
     quality = 70
