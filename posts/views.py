@@ -60,7 +60,7 @@ class PostListCreateView(ListCreateAPIView):
                 vet_comments=Count(
                     Case(
                         When(
-                            comments__post__user__groups_id__in=[3, 4, 5],
+                            comments__user__groups_id__in=[3, 4, 5],
                             then=1
                         ),
                         output_field=IntegerField()
@@ -69,7 +69,7 @@ class PostListCreateView(ListCreateAPIView):
                 owner_comments=Count(
                     Case(
                         When(
-                            comments__post__user__groups_id__in=[1, 2],
+                            comments__user__groups_id__in=[1, 2],
                             then=1
                         ),
                         output_field=IntegerField()
@@ -85,13 +85,14 @@ class PostListCreateView(ListCreateAPIView):
                     output_field=BooleanField(),
                 )
             )
+            queryset = queryset.all()
             return queryset
         else:
             queryset = Post.objects.annotate(
                 vet_comments=Count(
                     Case(
                         When(
-                            comments__post__user__groups_id__in=[3, 4, 5],
+                            comments__user__groups_id__in=[3, 4, 5],
                             then=1
                         ),
                         output_field=IntegerField()
@@ -100,7 +101,7 @@ class PostListCreateView(ListCreateAPIView):
                 owner_comments=Count(
                     Case(
                         When(
-                            comments__post__user__groups_id__in=[1, 2],
+                            comments__user__groups_id__in=[1, 2],
                             then=1
                         ),
                         output_field=IntegerField()
@@ -108,6 +109,7 @@ class PostListCreateView(ListCreateAPIView):
                 ),
                 likes_count=Count('likers')
             )
+            queryset = queryset.all()
             return queryset
 
 
@@ -136,7 +138,7 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
             vet_comments=Count(
                 Case(
                     When(
-                        comments__post__user__groups_id__in=[3, 4, 5],
+                        comments__user__groups_id__in=[3, 4, 5],
                         then=1
                     ),
                     output_field=IntegerField()
@@ -145,7 +147,7 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
             owner_comments=Count(
                 Case(
                     When(
-                        comments__post__user__groups_id__in=[1, 2],
+                        comments__user__groups_id__in=[1, 2],
                         then=1
                     ),
                     output_field=IntegerField()
@@ -161,6 +163,7 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
                 output_field=BooleanField(),
             )
         )
+        queryset = queryset.all()
         return queryset
 
 
