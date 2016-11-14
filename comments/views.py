@@ -40,7 +40,8 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
                 default=Value(False),
                 output_field=BooleanField(),
             )
-        ).select_related('user__groups').order_by('-upvoters_count')
+        ).select_related('user__groups').order_by(
+            '-upvoters_count', '-updated_at')
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -62,7 +63,8 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         serializer.save(post=post)
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            dict(serializer.data, upvoters_count=0),
+            status=status.HTTP_201_CREATED, headers=headers)
 
     def get_post(self, pk):
         qs = Post.objects.filter(
@@ -96,7 +98,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
                 default=Value(False),
                 output_field=BooleanField(),
             )
-        ).select_related('user__groups').order_by('-upvoters_count')
+        ).select_related('user__groups').order_by(
+            '-upvoters_count', '-updated_at')
         return qs
 
 
