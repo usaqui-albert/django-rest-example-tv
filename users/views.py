@@ -5,6 +5,8 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
+from django.template.loader import render_to_string
+
 
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -26,7 +28,7 @@ from .serializers import (
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
     UserUpdateSerializer, ReferFriendSerializer
 )
-from .tasks import refer_a_friend_by_email
+from .tasks import send_mail, refer_a_friend_by_email
 
 
 class UserAuth(ObtainAuthToken):
@@ -390,8 +392,35 @@ class UserFollowView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class UserFeedBackView(APIView):
+    """
+    Service to send user feedback to admin.
+    :Auth Required:
+    :accepted methods:
+    POST = The message will be receive on 'message'
+    """
+    allowed_methods = ('POST', )
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        message_title = "[TapVet] New Feedback"
+        message_body = request.data.get('message', None)
+        msg_html = render_to_string(
+            'users/partials/email/feedback.html',
+            {
+                'user': request.user,
+                'message': message_body
+            }
+        )
+        send_mail.delay(
+            message_title, message_body, msg_html, True)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class ReferFriendView(generics.GenericAPIView):
     """
+    Refer a friend endpoint
     :accepted methods:
         POST
     """
