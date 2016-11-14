@@ -420,6 +420,7 @@ class UserFeedBackView(APIView):
 
 class ReferFriendView(generics.GenericAPIView):
     """
+    Refer a friend endpoint
     :accepted methods:
         POST
     """

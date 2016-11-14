@@ -983,6 +983,29 @@ class TestUserFollowView(CustomTestCase):
         assert resp.status_code == 204
 
 
+class TestUserFeedBackView(CustomTestCase):
+
+    def test_request_no_auth(self):
+        req = self.factory.post('/')
+        resp = views.UserFeedBackView.as_view()(req)
+        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+
+    def test_request_no_allowed(self):
+        req = self.factory.put('/', {})
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserFeedBackView.as_view()(req)
+        assert resp.status_code == 405
+
+    def test_request_post_complete(self):
+        data = {
+            'message': 'Blah Blah'
+        }
+        req = self.factory.post('/', data)
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserFeedBackView.as_view()(req)
+        assert resp.status_code == 204
+
+
 class TestReferFriendView(CustomTestCase):
 
     def test_get_request_not_allowed(self):
