@@ -29,13 +29,14 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
     image_3 = ImageField(write_only=True, required=False)
     user_detail = UserSerializers(read_only=True, source='user')
     interested = BooleanField(read_only=True)
+    is_paid = BooleanField(read_only=True)
 
     class Meta:
         model = Post
         fields = (
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
             'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments',
-            'created_at', 'user_detail', 'interested'
+            'created_at', 'user_detail', 'interested', 'is_paid'
         )
         extra_kwargs = {
             'user': {'read_only': True},
