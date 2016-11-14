@@ -35,7 +35,8 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
         fields = (
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
             'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments',
-            'created_at', 'user_detail', 'interested'
+            'created_at', 'user_detail', 'interested', 'visible_by_vet',
+            'visible_by_owner'
         )
         extra_kwargs = {
             'user': {'read_only': True},
