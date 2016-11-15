@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db.models.signals import post_save
@@ -57,6 +58,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def is_vet(self):
         return self.groups.id in [3, 4, 5] if self.groups else False
+
+    def get_label(self):
+        return settings.APP_LABEL.get(self.groups.id, '')
 
 
 # Func to connect the signal on post save.
