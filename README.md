@@ -43,6 +43,19 @@ Here is an exception, to install pytest-ipdb (used for unit testing) just run:
 
     pip install git+git://github.com/mverteuil/pytest-ipdb.git
 
+For running the server,you will need the following environment variables:
+
+EMAIL_HOST_USER = The email address from where to send the emails
+EMAIL_HOST_PASSWORD =  The password of the email address
+MYSQL_PASSWORD = MYSQL password 
+MYSQL_DATABASE = MYSQL database
+MYSQL_USER =  MYSQL User
+MYSQL_SERVER =  MYSQL server (usually localhost)
+MEDIA_ROOT = Folder where the media will be storage (Have to be a complete path)
+BROKER_URL =  Example: redis://localhost:6379/0
+CELERY_RESULT_BACKEND = Example: redis://localhost:6379/1
+STRIPE_API_KEY = Strike api Key
+
 
 ### Running ###
 
