@@ -2,7 +2,7 @@ import stripe
 
 from django.conf import settings
 from django.db.models import (
-    Count, Case, When, IntegerField, BooleanField, Value)
+    Case, When, BooleanField, Value)
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -22,7 +22,7 @@ from .serializers import (
     PaidPostSerializer
 )
 from .models import Post, PaymentAmount, ImagePost
-from .utils import paid_post_handler
+from .utils import paid_post_handler, get_annotate_params
 
 
 class PostListCreateView(ListCreateAPIView):
@@ -55,65 +55,38 @@ class PostListCreateView(ListCreateAPIView):
         )
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
+        annotate_params = get_annotate_params(
+            'vet_comments',
+            'owner_comments',
+            'likes_count'
+        )
+        if not self.request.user.is_authenticated:
             queryset = Post.objects.annotate(
-                vet_comments=Count(
-                    Case(
-                        When(
-                            comments__user__groups_id__in=[3, 4, 5],
-                            then=1
-                        ),
-                        output_field=IntegerField()
-                    )
-                ),
-                owner_comments=Count(
-                    Case(
-                        When(
-                            comments__user__groups_id__in=[1, 2],
-                            then=1
-                        ),
-                        output_field=IntegerField()
-                    )
-                ),
-                likes_count=Count('likers'),
-                interested=Case(
-                    When(
-                        pk__in=self.request.user.likes.all(),
-                        then=Value(True)
-                    ),
-                    default=Value(False),
-                    output_field=BooleanField(),
-                )
-            )
-            queryset = queryset.all()
-            return queryset
+                **annotate_params
+            ).select_related(
+                'user__groups',
+                'user__image'
+            ).prefetch_related('images')
         else:
-            queryset = Post.objects.annotate(
-                vet_comments=Count(
-                    Case(
-                        When(
-                            comments__user__groups_id__in=[3, 4, 5],
-                            then=1
-                        ),
-                        output_field=IntegerField()
-                    )
+            annotate_params['interested'] = Case(
+                When(
+                    pk__in=self.request.user.likes.all(),
+                    then=Value(True)
                 ),
-                owner_comments=Count(
-                    Case(
-                        When(
-                            comments__user__groups_id__in=[1, 2],
-                            then=1
-                        ),
-                        output_field=IntegerField()
-                    )
-                ),
-                likes_count=Count('likers')
+                default=Value(False),
+                output_field=BooleanField(),
             )
-            queryset = queryset.all()
-            return queryset
+            queryset = Post.objects.annotate(
+                **annotate_params
+            ).select_related(
+                'user__groups',
+                'user__image'
+            ).prefetch_related('images')
+        queryset = queryset.all()
+        return queryset
 
 
-class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     """
     Service to delete  posts.
 
@@ -134,36 +107,20 @@ class PostRetriveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self):
-        queryset = Post.objects.annotate(
-            vet_comments=Count(
-                Case(
-                    When(
-                        comments__user__groups_id__in=[3, 4, 5],
-                        then=1
-                    ),
-                    output_field=IntegerField()
-                )
-            ),
-            owner_comments=Count(
-                Case(
-                    When(
-                        comments__user__groups_id__in=[1, 2],
-                        then=1
-                    ),
-                    output_field=IntegerField()
-                )
-            ),
-            likes_count=Count('likers'),
-            interested=Case(
-                When(
-                    pk__in=self.request.user.likes.all(),
-                    then=Value(True)
-                ),
-                default=Value(False),
-                output_field=BooleanField(),
-            )
+        annotate_params = get_annotate_params(
+            'vet_comments',
+            'owner_comments',
+            'likes_count'
         )
-        queryset = queryset.all()
+        annotate_params['interested'] = Case(
+            When(
+                pk__in=self.request.user.likes.all(),
+                then=Value(True)
+            ),
+            default=Value(False),
+            output_field=BooleanField(),
+        )
+        queryset = Post.objects.annotate(**annotate_params).all()
         return queryset
 
 
@@ -241,7 +198,8 @@ class PaidPostView(APIView):
         """
         post = Post.objects.filter(
             pk=self.kwargs['pk'],
-            user=self.request.user.id).select_related('user')
+            user=self.request.user.id
+        ).select_related('user')
         return post
 
 
@@ -278,31 +236,15 @@ class PostByUserListView(ListAPIView):
     pagination_class = StandardPagination
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = PostSerializer
-    queryset = Post.objects.annotate(
-        vet_comments=Count(
-            Case(
-                When(
-                    comments__post__user__groups_id__in=[3, 4, 5],
-                    then=1
-                ),
-                output_field=IntegerField()
-            )
-        ),
-        owner_comments=Count(
-            Case(
-                When(
-                    comments__post__user__groups_id__in=[1, 2],
-                    then=1
-                ),
-                output_field=IntegerField()
-            )
-        ),
-        likes_count=Count('likers')
-    )
 
     def get_queryset(self):
-        qs = self.queryset
-        qs = qs.filter(user_id=self.kwargs['pk'])
+        qs = Post.objects.annotate(
+            **get_annotate_params(
+                'vet_comments',
+                'owner_comments',
+                'likes_count'
+            )
+        ).filter(user_id=self.kwargs['pk'])
         return qs
 
 
@@ -351,14 +293,6 @@ class PostPaidListView(ListAPIView):
         ).exclude(
             comments__post__user_id=self.request.user.id
         ).annotate(
-            vet_comments=Count(
-                Case(
-                    When(
-                        comments__post__user__groups_id__in=[3, 4, 5],
-                        then=1
-                    ),
-                    output_field=IntegerField()
-                )
-            )
+            **get_annotate_params('vet_comments')
         ).order_by('-updated_at', 'vet_comments')
         return qs
