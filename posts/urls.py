@@ -4,14 +4,14 @@ from comments.views import (
     CommentsPetOwnerListCreateView, CommentsVetListCreateView)
 
 from .views import (
-    PostListCreateView, PaidPostView, PostRetriveUpdateDeleteView,
+    PostListCreateView, PaidPostView, PostRetrieveUpdateDeleteView,
     ImagePostDeleteView, PostPaidListView, PostVoteView
 )
 
 urlpatterns = [
     url(r'^$', PostListCreateView.as_view()),
     url(r'^paids/$', PostPaidListView.as_view()),
-    url(r'^(?P<pk>[0-9]+)/$', PostRetriveUpdateDeleteView.as_view()),
+    url(r'^(?P<pk>[0-9]+)/$', PostRetrieveUpdateDeleteView.as_view()),
     url(r'^(?P<pk>[0-9]+)/paid/$', PaidPostView.as_view()),
     url(r'^(?P<pk>[0-9]+)/vote/$', PostVoteView.as_view()),
     url(
