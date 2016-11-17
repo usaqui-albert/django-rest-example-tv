@@ -1,7 +1,9 @@
 from StringIO import StringIO
 from PIL import Image as Img
 from rest_framework.serializers import (
-    ModelSerializer, IntegerField, ImageField, ValidationError, BooleanField)
+    ModelSerializer, IntegerField, ImageField, ValidationError,
+    BooleanField, SerializerMethodField
+)
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 from users.serializers import UserSerializers
@@ -30,13 +32,15 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
     user_detail = UserSerializers(read_only=True, source='user')
     interested = BooleanField(read_only=True)
     is_paid = BooleanField(read_only=True)
+    first_vet_comment = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Post
         fields = (
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
             'image_1', 'image_2', 'image_3', 'vet_comments', 'owner_comments',
-            'created_at', 'user_detail', 'interested', 'is_paid'
+            'created_at', 'user_detail', 'interested', 'first_vet_comment',
+            'is_paid'
         )
         extra_kwargs = {
             'user': {'read_only': True},
@@ -47,7 +51,7 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
         image_1 = validated_data.pop('image_1', None)
         image_2 = validated_data.pop('image_2', None)
         image_3 = validated_data.pop('image_3', None)
-        if not (image_1):
+        if not image_1:
             raise ValidationError('At least 1 image is required')
         post = Post(**dict(
             validated_data, user=self.context['user']))
@@ -89,6 +93,18 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
             standard=standard, thumbnail=thumbnail,
             post=post, image_number=index)
         image_post.save()
+
+    @staticmethod
+    def get_first_vet_comment(obj):
+        if obj.vet_comments_queryset:
+            first_vet_comment = obj.vet_comments_queryset[0]
+            return {
+                'description': first_vet_comment.description,
+                'created_at': first_vet_comment.created_at,
+                'id': first_vet_comment.id
+            }
+        else:
+            return None
 
 
 class PaymentAmountSerializer(ModelSerializer):

@@ -5,6 +5,7 @@ from django.db.models import (
     Case, When, BooleanField, Value)
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.db.models import Prefetch
 
 from rest_framework.response import Response
 from rest_framework.generics import (
@@ -23,6 +24,7 @@ from .serializers import (
 )
 from .models import Post, PaymentAmount, ImagePost
 from .utils import paid_post_handler, get_annotate_params
+from comments.models import Comment
 
 
 class PostListCreateView(ListCreateAPIView):
@@ -60,14 +62,7 @@ class PostListCreateView(ListCreateAPIView):
             'owner_comments',
             'likes_count'
         )
-        if not self.request.user.is_authenticated:
-            queryset = Post.objects.annotate(
-                **annotate_params
-            ).select_related(
-                'user__groups',
-                'user__image'
-            ).prefetch_related('images')
-        else:
+        if self.request.user.is_authenticated:
             annotate_params['interested'] = Case(
                 When(
                     pk__in=self.request.user.likes.all(),
@@ -76,14 +71,26 @@ class PostListCreateView(ListCreateAPIView):
                 default=Value(False),
                 output_field=BooleanField(),
             )
-            queryset = Post.objects.annotate(
-                **annotate_params
-            ).select_related(
-                'user__groups',
-                'user__image'
-            ).prefetch_related('images')
-        queryset = queryset.all()
-        return queryset
+        return self.helper(annotate_params).all()
+
+    @staticmethod
+    def helper(annotate_params):
+        vet_comments_queryset = Comment.objects.select_related(
+            'user__groups').filter(user__groups_id=3)
+        posts = Post.objects.annotate(
+            **annotate_params
+        ).select_related(
+            'user__groups',
+            'user__image'
+        ).prefetch_related(
+            'images',
+            Prefetch(
+                'comments',
+                queryset=vet_comments_queryset,
+                to_attr='vet_comments_queryset'
+            )
+        )
+        return posts
 
 
 class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
