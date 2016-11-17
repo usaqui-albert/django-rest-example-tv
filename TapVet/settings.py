@@ -169,3 +169,11 @@ PAID_POST_AMOUNT = '100'
 
 # Stripe data
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+
+# APP LABELS
+APP_LABEL = {
+    2: 'Breeder',
+    3: 'Veterinarian',
+    4: 'Student',
+    5: 'Technician'
+}
