@@ -303,7 +303,7 @@ class TestPostByuserListView(CustomTestCase):
             assert x
 
 
-class TestPostRetriveUpdateDeleteView(CustomTestCase):
+class TestPostRetrieveUpdateDeleteView(CustomTestCase):
 
     def test_get_no_auth(self):
         req = self.factory.get('/')
@@ -318,7 +318,7 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
         post = mixer.blend('posts.post', user=user)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
         assert resp.data['description'] == post.description
         for key in [
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
@@ -336,7 +336,7 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
         post = mixer.blend('posts.post', user=user)
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
         assert resp.data is None
 
     def test_put(self):
@@ -347,7 +347,7 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
         }
         req = self.factory.put('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(
             req, pk=post.pk)
         assert resp.data['description'] == 'New description'
 
@@ -359,7 +359,7 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
         }
         req = self.factory.patch('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(
             req, pk=post.pk)
         assert resp.data['description'] == 'New description'
 
@@ -374,7 +374,7 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
         tmp_file.seek(0)
         req = self.factory.put('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(
             req, pk=post.pk)
         assert resp.status_code == 200
         p = models.Post.objects.last()
@@ -393,7 +393,7 @@ class TestPostRetriveUpdateDeleteView(CustomTestCase):
         }
         req = self.factory.put('/', data=data)
         force_authenticate(req, user=user2)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(
             req, pk=post.pk)
         assert resp.status_code == 403
         assert resp.data['detail'] == 'Error: You dont have permission to edit'
@@ -524,7 +524,7 @@ class TestPostLikeView(CustomTestCase):
         # Now we test the counter
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
         assert resp.data['likes_count'] == 1
 
     def test_get_downvote_count(self):
@@ -542,7 +542,7 @@ class TestPostLikeView(CustomTestCase):
         # Now we test the counter
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
         assert resp.data['likes_count'] == 2
         # Now test the downvote
         req = self.factory.delete('/')
@@ -551,7 +551,7 @@ class TestPostLikeView(CustomTestCase):
         assert resp.status_code == 204
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
-        resp = views.PostRetriveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
         assert resp.data['likes_count'] == 1
 
 
