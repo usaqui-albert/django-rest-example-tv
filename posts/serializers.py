@@ -96,7 +96,10 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
 
     @staticmethod
     def get_first_vet_comment(obj):
-        if obj.vet_comments_queryset:
+        if hasattr(
+            obj,
+            'vet_comments_queryset'
+        ) and obj.vet_comments_queryset:
             first_vet_comment = obj.vet_comments_queryset[0]
             return {
                 'description': first_vet_comment.description,
