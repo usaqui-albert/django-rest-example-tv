@@ -57,21 +57,29 @@ class PostListCreateView(ListCreateAPIView):
         )
 
     def get_queryset(self):
+        user = self.request.user
         annotate_params = get_annotate_params(
             'vet_comments',
             'owner_comments',
             'likes_count'
         )
-        if self.request.user.is_authenticated:
+        filters = {'visible_by_owner': True}
+        if user.is_authenticated():
             annotate_params['interested'] = Case(
                 When(
-                    pk__in=self.request.user.likes.all(),
+                    pk__in=user.likes.all(),
                     then=Value(True)
                 ),
                 default=Value(False),
                 output_field=BooleanField(),
             )
-        return self.helper(annotate_params).all()
+            group_id = user.groups.id
+            if group_id in [3, 4, 5]:
+                filters = {'visible_by_vet': True}
+                # TODO: here is missing the validation for a verified vet
+                if group_id == 3:
+                    filters['visible_by_owner'] = True
+        return self.helper(annotate_params).filter(**filters)
 
     @staticmethod
     def helper(annotate_params):
