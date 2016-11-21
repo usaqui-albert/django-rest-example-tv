@@ -157,7 +157,10 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
         model = User
         fields = (
             'username', 'email', 'full_name', 'groups', 'id',
-            'breeder', 'veterinarian', 'image', 'images')
+            'breeder', 'veterinarian', 'image', 'images', 'blur_images',
+            'interested_notification', 'vet_reply_notification',
+            'comments_notification', 'comments_like_notification'
+        )
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
