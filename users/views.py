@@ -45,10 +45,14 @@ class UserAuth(ObtainAuthToken):
         try:
             serializer.is_valid(raise_exception=True)
         except:
-            msg = {'detail': messages.bad_login}
-            return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                messages.bad_login, status=status.HTTP_400_BAD_REQUEST)
         user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
+        token = Token.objects.filter(user=user).first()
+        if not token:
+            return Response(
+                messages.inactive, status=status.HTTP_403_FORBIDDEN)
+
         return Response(
             {
                 'token': token.key,
@@ -57,7 +61,12 @@ class UserAuth(ObtainAuthToken):
                 'email': user.email,
                 'groups': user.groups.id,
                 'stripe': user.stripe_token,
-                'created_at': user.created_at
+                'created_at': user.created_at,
+                'blur_images': user.blur_images,
+                'interested_notification': user.interested_notification,
+                'vet_reply_notification': user.vet_reply_notification,
+                'comments_notification': user.comments_notification,
+                'comments_like_notification': user.comments_like_notification
             }
         )
 
