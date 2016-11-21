@@ -44,7 +44,7 @@ tuple_helper = (
              output_field=IntegerField()
          )
      )),
-    ('likes_count', Count('likers')),
+    ('likes_count', Count('likers', distinct=True)),
 )
 
 
