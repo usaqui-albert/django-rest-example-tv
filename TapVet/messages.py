@@ -16,5 +16,8 @@ follow_permission = {
 }
 post_not_found = {"detail": "Post not found."}
 request_successfully = {
-    "detail": "Your request has been processed successfully"}
-inactive = {"detail": "You have been marked as inactive by the admin"}
+    "detail": "Your request has been processed successfully "}
+inactive = {
+    "detail": "You have been marked as inactive inactive by the TapVet " +
+    "administration"
+}
