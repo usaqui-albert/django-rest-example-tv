@@ -376,21 +376,26 @@ class UserFollowView(APIView):
     allowed_methods = ('POST', 'DELETE')
     permission_classes = (permissions.IsAuthenticated, )
 
-    @staticmethod
-    def post(request, **kwargs):
+    def forbidden(self):
+        return Response(
+            messages.follow_permission,
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    def post(self, request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
         if request.user.has_perm('users.is_vet'):
             if not user.is_vet():
-                return Response(
-                    messages.follow_permission,
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return self.forbidden()
+            else:
+                try:
+                    if not user.veterinarian.verified:
+                        return self.forbidden()
+                except:
+                    return self.forbidden()
         else:
             if user.is_vet():
-                return Response(
-                    messages.follow_permission,
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return self.forbidden()
         user.follows.add(request.user.id)
         return Response(status=status.HTTP_201_CREATED)
 
