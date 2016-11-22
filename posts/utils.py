@@ -54,3 +54,13 @@ def get_annotate_params(*args):
         for key, value in tuple_helper
         if key in args
     ])
+
+
+def handler_images_order(queryset, image_id):
+    images = [image for image in queryset if not image.id == image_id]
+    images.sort(key=lambda x: x.image_number)
+    index_list = range(1, len(images) + 1)
+    for image, index in zip(images, index_list):
+        image.image_number = index
+        image.save()
+    return images
