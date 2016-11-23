@@ -22,6 +22,7 @@ def paid_post_handler(user, amount):
     else:
         return True
 
+
 # helpers to get annotate params
 tuple_helper = (
     ('vet_comments',
