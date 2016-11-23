@@ -2,6 +2,7 @@ import stripe
 from stripe.error import CardError, InvalidRequestError, APIConnectionError
 
 from django.db import IntegrityError
+from django.db.models import Count
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
@@ -272,7 +273,13 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     '''
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
     serializer_class = UserUpdateSerializer
-    queryset = User.objects.all()
+    queryset = User.objects.annotate(
+        follows_count=Count('follows', distinct=True),
+        followed_by_count=Count('followed_by', distinct=True),
+        comments_count=Count('comments', distinct=True),
+        interest_count=Count('posts__likers', distinct=True),
+        upvotes_count=Count('comments__upvoters', distinct=True)
+    )
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
