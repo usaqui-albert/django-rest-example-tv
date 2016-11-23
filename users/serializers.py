@@ -3,6 +3,7 @@ from StringIO import StringIO
 
 from rest_framework.serializers import (
     ModelSerializer, ValidationError, ImageField, Serializer, EmailField)
+from rest_framework.models import Token
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
@@ -218,3 +219,12 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
 
 class ReferFriendSerializer(Serializer):
     email = EmailField(max_length=100)
+
+
+class TokenSerializer(ModelSerializer):
+        class Meta:
+            model = Token
+            fields = ('key')
+            extra_kwargs = {
+                'key': {'read_only': True},
+            }
