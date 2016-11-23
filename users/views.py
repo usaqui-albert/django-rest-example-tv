@@ -26,7 +26,7 @@ from helpers.stripe_helpers import (
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
-    UserUpdateSerializer, ReferFriendSerializer
+    UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer
 )
 from .tasks import send_mail, refer_a_friend_by_email
 
@@ -52,23 +52,8 @@ class UserAuth(ObtainAuthToken):
         if not token:
             return Response(
                 messages.inactive, status=status.HTTP_403_FORBIDDEN)
-
-        return Response(
-            {
-                'token': token.key,
-                'id': user.id,
-                'full_name': user.full_name,
-                'email': user.email,
-                'groups': user.groups.id,
-                'stripe': user.stripe_token,
-                'created_at': user.created_at,
-                'blur_images': user.blur_images,
-                'interested_notification': user.interested_notification,
-                'vet_reply_notification': user.vet_reply_notification,
-                'comments_notification': user.comments_notification,
-                'comments_like_notification': user.comments_like_notification
-            }
-        )
+        serializer = UserLoginSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserView(generics.ListCreateAPIView):
