@@ -54,3 +54,28 @@ def get_annotate_params(*args):
         for key, value in tuple_helper
         if key in args
     ])
+
+
+def weight_post_tuples_handler(weight_post_tuples, weight, post):
+    tuples_indexes = range(len(weight_post_tuples))
+    for index in tuples_indexes:
+        if post.id == weight_post_tuples[index][1].id:
+            updated_tuple = (
+                weight_post_tuples[index][0] + weight,
+                weight_post_tuples[index][1]
+            )
+            weight_post_tuples[index] = updated_tuple
+            return weight_post_tuples
+    weight_post_tuples.append((weight, post))
+    return weight_post_tuples
+
+
+def business_intelligence_algorithm(feed_variables, **kwargs):
+    tuples = []
+    for key, qs in kwargs.iteritems():
+        weight = getattr(feed_variables, key)
+        for post in qs:
+            weight_post_tuples_handler(tuples, weight, post)
+    tuples.sort(reverse=True)
+    posts = [y for _, y in tuples]
+    return posts
