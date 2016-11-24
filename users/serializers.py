@@ -3,8 +3,9 @@ from StringIO import StringIO
 
 from rest_framework.serializers import (
     ModelSerializer, ValidationError, ImageField, Serializer, EmailField,
-    IntegerField
+    CharField, SerializerMethodField, IntegerField
 )
+from rest_framework.authtoken.models import Token
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
@@ -67,10 +68,14 @@ class ProfileImageSerializer(ModelSerializer):
 
 class UserSerializers(ModelSerializer):
     image = ProfileImageSerializer(read_only=True)
+    label = CharField(source='user.get_label', read_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'full_name', 'groups', 'id', 'image')
+        fields = (
+            'username', 'email', 'full_name', 'groups', 'id', 'image',
+            'label'
+        )
         extra_kwargs = {
             'username': {'read_only': True},
             'id': {'read_only': True},
@@ -231,3 +236,36 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
 
 class ReferFriendSerializer(Serializer):
     email = EmailField(max_length=100)
+
+
+class TokenSerializer(ModelSerializer):
+        class Meta:
+            model = Token
+            fields = ('key')
+            extra_kwargs = {
+                'key': {'read_only': True},
+            }
+
+
+class UserLoginSerializer(ModelSerializer):
+    image = ProfileImageSerializer(read_only=True)
+    label = CharField(source='get_label', read_only=True)
+    token = CharField(source="auth_token.key", read_only=True)
+    settings = SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'full_name', 'email', 'groups',
+            'created_at', 'stripe_token', 'image',
+            'label', 'token', 'settings', 'created_at'
+        )
+
+    def get_settings(self, obj):
+        return {
+            'blur_images': obj.blur_images,
+            'interested_notification': obj.interested_notification,
+            'vet_reply_notification': obj.vet_reply_notification,
+            'comments_notification': obj.comments_notification,
+            'comments_like_notification': obj.comments_like_notification
+        }
