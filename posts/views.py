@@ -3,7 +3,6 @@ import stripe
 from django.conf import settings
 from django.db.models import (
     Case, When, BooleanField, Value)
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Prefetch
 
@@ -23,7 +22,7 @@ from .serializers import (
     PaidPostSerializer
 )
 from .models import Post, PaymentAmount, ImagePost
-from .utils import paid_post_handler, get_annotate_params
+from .utils import paid_post_handler, get_annotate_params, handler_images_order
 from comments.models import Comment
 
 
@@ -142,14 +141,19 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 class ImagePostDeleteView(DestroyAPIView):
     serializer_class = ImagePostSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = ImagePost.objects.all()
 
     def delete(self, request, *args, **kwargs):
-        image = get_object_or_404(ImagePost, pk=kwargs['pk'])
+        image = self.get_queryset().first()
+        if not image:
+            return Response(
+                messages.image_not_found,
+                status=status.HTTP_404_NOT_FOUND
+            )
         post = image.post
-        images = post.images.count()
+        images = post.images.all()
         if post.user == request.user or request.user.is_staff:
-            if images >= 2:
+            if images.count() > 1:
+                handler_images_order(images, int(image.id))
                 image.delete()
                 post.save()
                 return Response(status=status.HTTP_204_NO_CONTENT)
@@ -164,6 +168,14 @@ class ImagePostDeleteView(DestroyAPIView):
                 'detail': messages.permission
             }
             return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+
+    def get_queryset(self):
+        queryset = ImagePost.objects.select_related(
+            'post__user'
+        ).prefetch_related(
+            'post__images'
+        ).filter(pk=self.kwargs['pk'])
+        return queryset
 
 
 class PaidPostView(APIView):

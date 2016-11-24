@@ -2,7 +2,10 @@ from PIL import Image as Img
 from StringIO import StringIO
 
 from rest_framework.serializers import (
-    ModelSerializer, ValidationError, ImageField, Serializer, EmailField)
+    ModelSerializer, ValidationError, ImageField, Serializer, EmailField,
+    CharField, SerializerMethodField, IntegerField
+)
+from rest_framework.authtoken.models import Token
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
@@ -65,10 +68,14 @@ class ProfileImageSerializer(ModelSerializer):
 
 class UserSerializers(ModelSerializer):
     image = ProfileImageSerializer(read_only=True)
+    label = CharField(source='user.get_label', read_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'full_name', 'groups', 'id', 'image')
+        fields = (
+            'username', 'email', 'full_name', 'groups', 'id', 'image',
+            'label'
+        )
         extra_kwargs = {
             'username': {'read_only': True},
             'id': {'read_only': True},
@@ -152,6 +159,11 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     veterinarian = VeterinarianSerializer(required=False)
     image = ImageField(write_only=True, required=False)
     images = ProfileImageSerializer(read_only=True, source='image')
+    follows_count = IntegerField(read_only=True)
+    followed_by_count = IntegerField(read_only=True)
+    comments_count = IntegerField(read_only=True)
+    interest_count = IntegerField(read_only=True)
+    upvotes_count = IntegerField(read_only=True)
 
     class Meta:
         model = User
@@ -159,7 +171,9 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             'username', 'email', 'full_name', 'groups', 'id',
             'breeder', 'veterinarian', 'image', 'images', 'blur_images',
             'interested_notification', 'vet_reply_notification',
-            'comments_notification', 'comments_like_notification'
+            'comments_notification', 'comments_like_notification',
+            'follows_count', 'followed_by_count', 'comments_count',
+            'interest_count', 'upvotes_count'
         )
         extra_kwargs = {
             'password': {'write_only': True},
@@ -167,7 +181,11 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             'username': {'read_only': True},
             'user': {'read_only': True},
             'groups': {'read_only': True},
-            'verified': {'read_only': True}
+            'verified': {'read_only': True},
+            'interested_notification': {'write_only': True},
+            'vet_reply_notification': {'write_only': True},
+            'comments_notification': {'write_only': True},
+            'comments_like_notification': {'write_only': True}
         }
 
     def update(self, instance, validated_data):
@@ -218,3 +236,36 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
 
 class ReferFriendSerializer(Serializer):
     email = EmailField(max_length=100)
+
+
+class TokenSerializer(ModelSerializer):
+        class Meta:
+            model = Token
+            fields = ('key')
+            extra_kwargs = {
+                'key': {'read_only': True},
+            }
+
+
+class UserLoginSerializer(ModelSerializer):
+    image = ProfileImageSerializer(read_only=True)
+    label = CharField(source='get_label', read_only=True)
+    token = CharField(source="auth_token.key", read_only=True)
+    settings = SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'full_name', 'email', 'groups',
+            'created_at', 'stripe_token', 'image',
+            'label', 'token', 'settings', 'created_at'
+        )
+
+    def get_settings(self, obj):
+        return {
+            'blur_images': obj.blur_images,
+            'interested_notification': obj.interested_notification,
+            'vet_reply_notification': obj.vet_reply_notification,
+            'comments_notification': obj.comments_notification,
+            'comments_like_notification': obj.comments_like_notification
+        }
