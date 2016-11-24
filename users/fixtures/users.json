@@ -31,14 +31,14 @@
         "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
         "permissions": [
             [
-                "is_pet_owner",
-                "users",
-                "user"
-            ],
-            [
                 "add_pet",
                 "pets",
                 "pet"
+            ],
+            [
+                "is_pet_owner",
+                "users",
+                "user"
             ]
         ]
     }
@@ -51,14 +51,14 @@
         "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
         "permissions": [
             [
-                "is_pet_owner",
-                "users",
-                "user"
-            ],
-            [
                 "add_pet",
                 "pets",
                 "pet"
+            ],
+            [
+                "is_pet_owner",
+                "users",
+                "user"
             ]
         ]
     }
@@ -106,6 +106,15 @@
                 "user"
             ]
         ]
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 6,
+    "fields": {
+        "name": "Admin",
+        "description": "",
+        "permissions": []
     }
 },
 {
@@ -242,21 +251,39 @@
     }
 },
 {
-        "model": "users.user",
-        "pk": null,
-        "fields": {
-            "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
-            "is_superuser": true,
-            "groups": 1,
-            "username": "tapvet",
-            "email": "blanclink.test@gmail.com",
-            "full_name": "TapVet Administrator",
-            "is_active": true,
-            "is_staff": true,
-            "stripe_token": null,
-            "add_paid_post": true,
-            "created_at": "2016-10-04T22:06:07.660Z",
-            "updated_at": "2016-10-11T20:20:41.564Z"
-        }
+    "model": "users.user",
+    "pk": null,
+    "fields": {
+        "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+        "is_superuser": true,
+        "groups": 1,
+        "username": "tapvet",
+        "email": "blanclink.test@gmail.com",
+        "full_name": "TapVet Administrator",
+        "is_active": true,
+        "is_staff": true,
+        "stripe_token": null,
+        "add_paid_post": true,
+        "created_at": "2016-10-04T22:06:07.660Z",
+        "updated_at": "2016-10-11T20:20:41.564Z"
     }
+},
+{
+    "model": "users.user",
+    "pk": null,
+    "fields": {
+        "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+        "is_superuser": false,
+        "groups": 1,
+        "username": "admin",
+        "email": "blanclink.admin@gmail.com",
+        "full_name": "TapVet Admin",
+        "is_active": true,
+        "is_staff": true,
+        "stripe_token": null,
+        "add_paid_post": true,
+        "created_at": "2016-10-04T22:06:07.660Z",
+        "updated_at": "2016-10-11T20:20:41.564Z"
+    }
+}
 ]
