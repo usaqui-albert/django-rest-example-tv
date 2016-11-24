@@ -1,6 +1,13 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+min_max_range = [
+    MinValueValidator(0),
+    MaxValueValidator(20)
+]
+
 
 def uploads_path(instance, filename):
     '''
@@ -70,3 +77,37 @@ class PaymentAmount(models.Model):
     value = models.PositiveIntegerField(default=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class FeedVariable(models.Model):
+    is_vet = models.BooleanField(default=False)
+    post_quantity = models.PositiveSmallIntegerField(
+        validators=min_max_range
+    )
+
+    posts_user_has_liked = models.PositiveSmallIntegerField(
+        validators=min_max_range
+    )
+    posts_user_has_comment = models.PositiveSmallIntegerField(
+        validators=min_max_range
+    )
+    posts_user_follows = models.PositiveSmallIntegerField(
+        validators=min_max_range
+    )
+    posts_by_user = models.PositiveSmallIntegerField(
+        validators=min_max_range
+    )
+    new_posts = models.PositiveSmallIntegerField(
+        validators=min_max_range
+    )
+    paid_posts = models.PositiveSmallIntegerField(
+        validators=min_max_range,
+        null=True,
+        blank=True
+    )
+
+
+class ActivePost(models.Model):
+    post = models.ForeignKey('posts.Post', related_name='active_post_weight')
+
+    created_at = models.DateTimeField(auto_now_add=True)
