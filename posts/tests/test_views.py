@@ -39,11 +39,13 @@ class TestPostListCreateView(CustomTestCase):
             'Should return Method Not Allowed (405)')
 
     def test_get_request_non_authenticated_user(self):
+        self.load_feed_variables()
         req = self.factory.get('/')
         resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 200, 'Should return 200 OK'
 
     def test_get_request_authenticated_user(self):
+        self.load_feed_variables()
         user = self.load_users_data().get_user(groups_id=1)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
@@ -51,7 +53,7 @@ class TestPostListCreateView(CustomTestCase):
         assert resp.status_code == 200, 'Should return 200 OK'
 
     def test_request_get_many_likes(self):
-        self.load_users_data()
+        self.load_users_data().load_feed_variables()
         users = [mixer.blend('users.user', groups_id=1) for _ in range(30)]
         user = mixer.blend('users.user', groups_id=1)
         [mixer.blend(
