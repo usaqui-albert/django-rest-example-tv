@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Post, ImagePost
+from .models import Post, ImagePost, FeedVariable, ActivePost
 
 
 class ImageInline(admin.TabularInline):
@@ -22,3 +22,5 @@ class PostAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Post, PostAdmin)
+admin.site.register(FeedVariable)
+admin.site.register(ActivePost)

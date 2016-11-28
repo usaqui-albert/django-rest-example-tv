@@ -172,4 +172,4 @@ class ProfileImage(models.Model):
         verbose_name_plural = "Profile Images"
 
     def __str__(self):
-        return u'Profile pic for: %s' % (self.user.username)
+        return u'Profile pic for: %s' % self.user.username

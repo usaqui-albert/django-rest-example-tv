@@ -78,10 +78,10 @@ class PostListCreateView(ListCreateAPIView):
                 # TODO: here is missing the validation for a verified vet
                 if group_id == 3:
                     filters['visible_by_owner'] = True
-        return self.helper(annotate_params, user).filter(**filters)
+        return self.helper(annotate_params, user, filters)
 
     @staticmethod
-    def helper(annotate_params, user):
+    def helper(annotate_params, user, filters):
         vet_comments_queryset = Comment.objects.select_related(
             'user__groups').filter(user__groups_id=3)
         posts = Post.objects.annotate(
@@ -96,7 +96,7 @@ class PostListCreateView(ListCreateAPIView):
                 queryset=vet_comments_queryset,
                 to_attr='vet_comments_queryset'
             )
-        )
+        ).filter(**filters)
         return posts
 
 
