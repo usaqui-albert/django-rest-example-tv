@@ -22,6 +22,9 @@ from posts.views import PaymentAmountDetail
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(
+        r'^api/v1/dashboard/users/',
+        include('users.dashboard.urls', namespace='dashboard_users')),
     url(r'^api/v1/users/', include('users.urls', namespace='users')),
     url(r'^api/v1/pets/', include('pets.urls', namespace='pets')),
     url(r'^api/v1/posts/', include('posts.urls', namespace='posts')),

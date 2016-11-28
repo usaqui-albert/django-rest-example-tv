@@ -139,7 +139,7 @@ class GroupsListView(generics.ListAPIView):
     """
     serializer_class = GroupsSerializer
     permission_classes = (permissions.AllowAny,)
-    queryset = Group.objects.all()
+    queryset = Group.objects.exclude(name__icontains='admin')
     allowed_methods = ('GET',)
 
 
