@@ -2,7 +2,7 @@ import stripe
 from stripe.error import CardError, InvalidRequestError, APIConnectionError
 
 from django.db import IntegrityError
-from django.db.models import Count
+from django.db.models import Count, Value, Case, When, BooleanField
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
@@ -278,6 +278,21 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
             error = {'detail': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data)
+
+    def get_queryset(self):
+        qs = self.queryset
+        if self.request.user.is_authenticated():
+            qs = qs.annotate(
+                followed=Case(
+                    When(
+                        pk__in=self.request.user.follows.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+        return qs.all()
 
 
 class StripeCustomerView(APIView):
