@@ -18,6 +18,13 @@ def uploads_path(instance, filename):
     return '/'.join(['uploads', 'posts', filename])
 
 
+class UserLikesPost(models.Model):
+    user = models.ForeignKey('users.User', related_name='user_likes')
+    post = models.ForeignKey('posts.Post', related_name='user_likes')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Post(models.Model):
     description = models.CharField(max_length=1200)
     visible_by_vet = models.BooleanField(default=False)
@@ -28,7 +35,11 @@ class Post(models.Model):
         on_delete=models.SET_NULL, blank=True)
     user = models.ForeignKey('users.User', related_name='posts')
     likers = models.ManyToManyField(
-        'users.User', related_name='likes', blank=True)
+        'users.User',
+        through=UserLikesPost,
+        related_name='likes',
+        blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
