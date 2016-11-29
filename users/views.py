@@ -2,7 +2,7 @@ import stripe
 from stripe.error import CardError, InvalidRequestError, APIConnectionError
 
 from django.db import IntegrityError
-from django.db.models import Count
+from django.db.models import Count, Value, Case, When, BooleanField
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
@@ -139,7 +139,7 @@ class GroupsListView(generics.ListAPIView):
     """
     serializer_class = GroupsSerializer
     permission_classes = (permissions.AllowAny,)
-    queryset = Group.objects.all()
+    queryset = Group.objects.exclude(name__icontains='admin')
     allowed_methods = ('GET',)
 
 
@@ -279,6 +279,21 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.data)
 
+    def get_queryset(self):
+        qs = self.queryset
+        if self.request.user.is_authenticated():
+            qs = qs.annotate(
+                followed=Case(
+                    When(
+                        pk__in=self.request.user.follows.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+        return qs.all()
+
 
 class StripeCustomerView(APIView):
     """Service to create a stripe customer for a TapVet user
@@ -368,21 +383,26 @@ class UserFollowView(APIView):
     allowed_methods = ('POST', 'DELETE')
     permission_classes = (permissions.IsAuthenticated, )
 
-    @staticmethod
-    def post(request, **kwargs):
+    def forbidden(self):
+        return Response(
+            messages.follow_permission,
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    def post(self, request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
         if request.user.has_perm('users.is_vet'):
             if not user.is_vet():
-                return Response(
-                    messages.follow_permission,
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return self.forbidden()
+            else:
+                try:
+                    if not user.veterinarian.verified:
+                        return self.forbidden()
+                except:
+                    return self.forbidden()
         else:
             if user.is_vet():
-                return Response(
-                    messages.follow_permission,
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return self.forbidden()
         user.follows.add(request.user.id)
         return Response(status=status.HTTP_201_CREATED)
 

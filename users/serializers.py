@@ -3,7 +3,7 @@ from StringIO import StringIO
 
 from rest_framework.serializers import (
     ModelSerializer, ValidationError, ImageField, Serializer, EmailField,
-    CharField, SerializerMethodField, IntegerField
+    CharField, SerializerMethodField, IntegerField, BooleanField
 )
 from rest_framework.authtoken.models import Token
 
@@ -164,11 +164,12 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     comments_count = IntegerField(read_only=True)
     interest_count = IntegerField(read_only=True)
     upvotes_count = IntegerField(read_only=True)
+    followed = BooleanField(read_only=True)
 
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'full_name', 'groups', 'id',
+            'username', 'email', 'full_name', 'groups', 'id', 'followed',
             'breeder', 'veterinarian', 'image', 'images', 'blur_images',
             'interested_notification', 'vet_reply_notification',
             'comments_notification', 'comments_like_notification',
@@ -185,7 +186,8 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             'interested_notification': {'write_only': True},
             'vet_reply_notification': {'write_only': True},
             'comments_notification': {'write_only': True},
-            'comments_like_notification': {'write_only': True}
+            'comments_like_notification': {'write_only': True},
+            'blur_images': {'write_only': True}
         }
 
     def update(self, instance, validated_data):

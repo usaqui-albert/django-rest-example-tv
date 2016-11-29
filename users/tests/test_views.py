@@ -953,14 +953,25 @@ class TestUserFollowView(CustomTestCase):
     def test_vet_follow_vet(self):
         vet = self.load_users_data().get_user(groups_id=3)
         vet1 = self.get_user(groups_id=4)
+        area_interest = mixer.blend(models.AreaInterest)
+        country = mixer.blend(models_c.Country)
+        state = mixer.blend(models_c.State, country=country)
+        data = {
+            'graduating_year': get_current_year() - 5,
+            'veterinarian_type': 5,
+            'area_interest': area_interest,
+            'country': country,
+            'state': state
+        }
+        mixer.blend('users.Veterinarian', user=vet1, verified=True, **data)
         req = self.factory.post('/')
         force_authenticate(req, user=vet)
         resp = views.UserFollowView.as_view()(req, pk=vet1.pk)
         assert resp.status_code == 201
 
     def test_pet_owner_follow_pet_owner(self):
-        pet_owner = self.load_users_data().get_user(groups_id=3)
-        pet_owner1 = self.get_user(groups_id=4)
+        pet_owner = self.load_users_data().get_user(groups_id=1)
+        pet_owner1 = self.get_user(groups_id=2)
         req = self.factory.post('/')
         force_authenticate(req, user=pet_owner)
         resp = views.UserFollowView.as_view()(req, pk=pet_owner1.pk)
@@ -981,6 +992,14 @@ class TestUserFollowView(CustomTestCase):
         force_authenticate(req, user=pet_owner)
         resp = views.UserFollowView.as_view()(req, pk=pet_owner1.pk)
         assert resp.status_code == 204
+
+    def test_no_vet_yet_follow(self):
+        vet = self.load_users_data().get_user(groups_id=3)
+        vet1 = self.get_user(groups_id=4)
+        req = self.factory.post('/')
+        force_authenticate(req, user=vet)
+        resp = views.UserFollowView.as_view()(req, pk=vet1.pk)
+        assert resp.status_code == 403
 
 
 class TestUserFeedBackView(CustomTestCase):

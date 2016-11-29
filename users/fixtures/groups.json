@@ -7,14 +7,14 @@
         "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
         "permissions": [
             [
-                "pet_owner",
-                "comments",
-                "comment"
-            ],
-            [
                 "add_pet",
                 "pets",
                 "pet"
+            ],
+            [
+                "is_pet_owner",
+                "users",
+                "user"
             ]
         ]
     }
@@ -27,14 +27,14 @@
         "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
         "permissions": [
             [
-                "pet_owner",
-                "comments",
-                "comment"
-            ],
-            [
                 "add_pet",
                 "pets",
                 "pet"
+            ],
+            [
+                "is_pet_owner",
+                "users",
+                "user"
             ]
         ]
     }
@@ -47,9 +47,9 @@
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
         "permissions": [
             [
-                "vet_comments",
-                "comments",
-                "comment"
+                "is_vet",
+                "users",
+                "user"
             ]
         ]
     }
@@ -62,9 +62,9 @@
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
         "permissions": [
             [
-                "vet_comments",
-                "comments",
-                "comment"
+                "is_vet",
+                "users",
+                "user"
             ]
         ]
     }
@@ -77,11 +77,20 @@
         "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
         "permissions": [
             [
-                "vet_comments",
-                "comments",
-                "comment"
+                "is_vet",
+                "users",
+                "user"
             ]
         ]
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 6,
+    "fields": {
+        "name": "Admin",
+        "description": "",
+        "permissions": []
     }
 }
 ]
