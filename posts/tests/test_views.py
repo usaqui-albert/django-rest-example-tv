@@ -56,9 +56,14 @@ class TestPostListCreateView(CustomTestCase):
         self.load_users_data().load_feed_variables()
         users = [mixer.blend('users.user', groups_id=1) for _ in range(30)]
         user = mixer.blend('users.user', groups_id=1)
-        [mixer.blend(
-            'posts.post', user=user, likers=[x for x in users])
-            for _ in range(10)]
+        posts = [mixer.blend(models.Post, user=user) for _ in range(10)]
+        for p in posts:
+            for u in users:
+                mixer.blend(
+                    models.UserLikesPost,
+                    user=u,
+                    post=p
+                )
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.PostListCreateView.as_view()(req)
