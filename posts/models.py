@@ -24,6 +24,9 @@ class UserLikesPost(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('user', 'post')
+
 
 class Post(models.Model):
     description = models.CharField(max_length=1200)
