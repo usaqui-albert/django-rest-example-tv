@@ -1,15 +1,16 @@
 import stripe
+from datetime import timedelta
 
 from django.conf import settings
+from django.db import IntegrityError
 from django.db.models import (
-    Case, When, BooleanField, Value)
+    Case, When, Prefetch, Value, IntegerField, F, BooleanField)
 from django.utils import timezone
-from django.db.models import Prefetch
 
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView, DestroyAPIView,
-    RetrieveUpdateDestroyAPIView)
+    RetrieveUpdateDestroyAPIView, get_object_or_404)
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 
@@ -21,7 +22,7 @@ from .serializers import (
     PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
     PaidPostSerializer
 )
-from .models import Post, PaymentAmount, ImagePost
+from .models import Post, PaymentAmount, ImagePost, UserLikesPost
 from .utils import paid_post_handler, get_annotate_params, handler_images_order
 from comments.models import Comment
 
@@ -132,7 +133,7 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
                 then=Value(True)
             ),
             default=Value(False),
-            output_field=BooleanField(),
+            output_field=BooleanField()
         )
         queryset = Post.objects.annotate(**annotate_params).all()
         return queryset
@@ -284,22 +285,47 @@ class PostVoteView(APIView):
     DELETE
     """
     allowed_methods = ('POST', 'DELETE')
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated,)
 
-    def get_post(self, pk):
-        qs = Post.objects.filter(pk=pk)
-        qs.update(updated_at=timezone.now())
-        return qs.first()
+    @staticmethod
+    def get_post(pk):
+        return Post.objects.filter(pk=pk).first()
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         post = self.get_post(pk=kwargs['pk'])
-        post.likers.add(request.user.id)
-        return Response(status=status.HTTP_201_CREATED)
+        if post:
+            try:
+                UserLikesPost.objects.create(
+                    user=request.user,
+                    post=post
+                )
+            except IntegrityError:
+                return Response(
+                    messages.already_liked,
+                    status=status.HTTP_409_CONFLICT
+                )
+            else:
+                post.updated_at = timezone.now()
+                return Response(status=status.HTTP_201_CREATED)
+        return Response(
+            messages.post_not_found,
+            status=status.HTTP_404_NOT_FOUND
+        )
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, **kwargs):
         post = self.get_post(pk=kwargs['pk'])
-        post.likers.remove(request.user.id)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if post:
+            obj = get_object_or_404(
+                UserLikesPost,
+                user=request.user.id,
+                post=post.id
+            )
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            messages.post_not_found,
+            status=status.HTTP_404_NOT_FOUND
+        )
 
 
 class PostPaidListView(ListAPIView):
