@@ -258,13 +258,7 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     '''
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
     serializer_class = UserUpdateSerializer
-    queryset = User.objects.annotate(
-        follows_count=Count('follows', distinct=True),
-        followed_by_count=Count('followed_by', distinct=True),
-        comments_count=Count('comments', distinct=True),
-        interest_count=Count('posts__likers', distinct=True),
-        upvotes_count=Count('comments__upvoters', distinct=True)
-    )
+    queryset = User.objects.all()
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -280,9 +274,17 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         return Response(serializer.data)
 
     def get_queryset(self):
-        qs = self.queryset
+        params = {
+            'follows_count': Count('follows', distinct=True),
+            'followed_by_count': Count('followed_by', distinct=True),
+            'comments_count': Count('comments', distinct=True),
+            'interest_count': Count('posts__likers', distinct=True),
+            'upvotes_count': Count('comments__upvoters', distinct=True)
+        }
+
         if self.request.user.is_authenticated():
-            qs = qs.annotate(
+            params = dict(
+                params,
                 followed=Case(
                     When(
                         pk__in=self.request.user.follows.all(),
@@ -292,6 +294,7 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
                     output_field=BooleanField()
                 )
             )
+        qs = self.queryset.annotate(**params)
         return qs.all()
 
 
@@ -403,13 +406,13 @@ class UserFollowView(APIView):
         else:
             if user.is_vet():
                 return self.forbidden()
-        user.follows.add(request.user.id)
+        request.user.follows.add(user.id)
         return Response(status=status.HTTP_201_CREATED)
 
     @staticmethod
     def delete(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
-        user.follows.remove(request.user.id)
+        request.user.follows.remove(user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
