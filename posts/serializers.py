@@ -23,8 +23,8 @@ class ImagePostSerializer(ModelSerializer):
 
 class PostSerializer(ModelSerializer, ImageSerializerMixer):
     likes_count = IntegerField(read_only=True)
-    vet_comments = IntegerField(read_only=True)
-    owner_comments = IntegerField(read_only=True)
+    vet_comments = SerializerMethodField(read_only=True)
+    owner_comments = SerializerMethodField(read_only=True)
     images = ImagePostSerializer(many=True, read_only=True)
     image_1 = ImageField(write_only=True, required=False)
     image_2 = ImageField(write_only=True, required=False)
@@ -108,6 +108,24 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
             }
         else:
             return None
+
+    @staticmethod
+    def get_vet_comments(obj):
+        if hasattr(
+            obj,
+            'vet_comments_queryset'
+        ) and obj.vet_comments_queryset:
+            return len(obj.vet_comments_queryset)
+        return 0
+
+    @staticmethod
+    def get_owner_comments(obj):
+        if hasattr(
+            obj,
+            'owner_comments_queryset'
+        ) and obj.owner_comments_queryset:
+            return len(obj.owner_comments_queryset)
+        return 0
 
 
 class PaymentAmountSerializer(ModelSerializer):
