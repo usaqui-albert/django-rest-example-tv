@@ -22,3 +22,6 @@ inactive = {
     "detail": "You have been marked as inactive inactive by the TapVet " +
     "administration"
 }
+already_liked = {
+    "detail": "This post is already liked by you."
+}
