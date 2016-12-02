@@ -1,10 +1,14 @@
 import stripe
+from django.utils import timezone
+from datetime import timedelta
 
-from django.db.models import Count, Case, When, IntegerField
+from django.db.models import Count, Case, When, IntegerField, Value, Prefetch
 
 from stripe.error import APIConnectionError, InvalidRequestError, CardError
 from helpers.stripe_helpers import stripe_errors_handler
 from TapVet.settings import STRIPE_API_KEY
+from comments.models import Comment
+
 
 stripe.api_key = STRIPE_API_KEY
 
@@ -25,27 +29,15 @@ def paid_post_handler(user, amount):
 
 # helpers to get annotate params
 tuple_helper = (
-    ('vet_comments',
-     Count(
-         Case(
-             When(
-                 comments__user__groups_id__in=[3, 4, 5],
-                 then=1
-             ),
-             output_field=IntegerField()
-         )
-     )),
-    ('owner_comments',
-     Count(
-         Case(
-             When(
-                 comments__user__groups_id__in=[1, 2],
-                 then=1
-             ),
-             output_field=IntegerField()
-         )
-     )),
     ('likes_count', Count('likers', distinct=True)),
+    ('one_day_recently', Case(
+        When(
+            created_at__gte=timezone.now() - timedelta(days=1),
+            then=Value(1)
+        ),
+        default=Value(0),
+        output_field=IntegerField()
+    ))
 )
 
 
@@ -90,3 +82,22 @@ def business_intelligence_algorithm(feed_variables, **kwargs):
     tuples.sort(reverse=True)
     posts = [y for _, y in tuples]
     return posts
+
+
+# Queries to prefetch
+vet_comments_queryset = Comment.objects.select_related(
+    'user__groups').filter(user__groups_id__in=[3, 4, 5])
+owner_comments_queryset = Comment.objects.select_related(
+    'user__groups').filter(user__groups_id__in=[1, 2])
+
+# Prefetch vet and per owner comments
+prefetch_vet_comments = Prefetch(
+    'comments',
+    queryset=vet_comments_queryset,
+    to_attr='vet_comments_queryset'
+)
+prefetch_owner_comments = Prefetch(
+    'comments',
+    queryset=owner_comments_queryset,
+    to_attr='owner_comments_queryset'
+)

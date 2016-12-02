@@ -1,16 +1,17 @@
 import stripe
-from datetime import timedelta
 
 from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import (
-    Case, When, Prefetch, Value, IntegerField, F, BooleanField)
+    Case, When, Value, IntegerField, F, BooleanField
+)
 from django.utils import timezone
 
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView, DestroyAPIView,
-    RetrieveUpdateDestroyAPIView, get_object_or_404)
+    RetrieveUpdateDestroyAPIView, get_object_or_404
+)
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 
@@ -23,8 +24,10 @@ from .serializers import (
     PaidPostSerializer
 )
 from .models import Post, PaymentAmount, ImagePost, UserLikesPost
-from .utils import paid_post_handler, get_annotate_params, handler_images_order
-from comments.models import Comment
+from .utils import (
+    paid_post_handler, get_annotate_params, handler_images_order,
+    prefetch_vet_comments, prefetch_owner_comments
+)
 
 
 class PostListCreateView(ListCreateAPIView):
@@ -59,32 +62,56 @@ class PostListCreateView(ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         annotate_params = get_annotate_params(
-            'vet_comments',
-            'owner_comments',
+            'one_day_recently',
             'likes_count'
         )
         filters = {'visible_by_owner': True}
         if user.is_authenticated():
-            annotate_params['interested'] = Case(
+            annotate_params['case_1'] = Case(
                 When(
                     pk__in=user.likes.all(),
-                    then=Value(True)
+                    then=Value(1)
                 ),
-                default=Value(False),
-                output_field=BooleanField(),
+                default=Value(0),
+                output_field=IntegerField()
             )
+            annotate_params['case_2'] = Case(
+                When(
+                    pk__in=self.get_posts_ids(),
+                    then=Value(1)
+                ),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+            annotate_params['case_3'] = Case(
+                When(
+                    user__in=user.follows.all(),
+                    then=Value(1)
+                ),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+            annotate_params['case_4'] = Case(
+                When(
+                    user=user.id,
+                    then=Value(1)
+                ),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+            annotate_params['points'] = F('case_1') + F('case_2') + \
+                F('case_3') + F('case_4') + F('one_day_recently')
+            annotate_params['interested'] = F('case_1')
             group_id = user.groups.id
             if group_id in [3, 4, 5]:
                 filters = {'visible_by_vet': True}
                 # TODO: here is missing the validation for a verified vet
                 if group_id == 3:
                     filters['visible_by_owner'] = True
-        return self.helper(annotate_params, user, filters)
+        return self.helper(annotate_params, filters, user.is_authenticated())
 
     @staticmethod
-    def helper(annotate_params, user, filters):
-        vet_comments_queryset = Comment.objects.select_related(
-            'user__groups').filter(user__groups_id=3)
+    def helper(annotate_params, filters, is_authenticated):
         posts = Post.objects.annotate(
             **annotate_params
         ).select_related(
@@ -92,13 +119,23 @@ class PostListCreateView(ListCreateAPIView):
             'user__image'
         ).prefetch_related(
             'images',
-            Prefetch(
-                'comments',
-                queryset=vet_comments_queryset,
-                to_attr='vet_comments_queryset'
-            )
+            prefetch_vet_comments,
+            prefetch_owner_comments
         ).filter(**filters)
+        if is_authenticated:
+            posts = posts.order_by('-points', '-id')
+        else:
+            posts = posts.order_by('-id')
         return posts
+
+    def get_posts_ids(self):
+        posts_ids = []
+        comments = self.request.user.comments.all()
+        for comment in comments:
+            post_id = comment.post_id
+            if post_id not in posts_ids:
+                posts_ids.append(post_id)
+        return posts_ids or [0]
 
 
 class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
@@ -122,11 +159,7 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self):
-        annotate_params = get_annotate_params(
-            'vet_comments',
-            'owner_comments',
-            'likes_count'
-        )
+        annotate_params = get_annotate_params('likes_count')
         annotate_params['interested'] = Case(
             When(
                 pk__in=self.request.user.likes.all(),
@@ -135,8 +168,13 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
             default=Value(False),
             output_field=BooleanField()
         )
-        queryset = Post.objects.annotate(**annotate_params).all()
-        return queryset
+        queryset = Post.objects.annotate(
+            **annotate_params
+        ).prefetch_related(
+            prefetch_vet_comments,
+            prefetch_owner_comments
+        )
+        return queryset.all()
 
 
 class ImagePostDeleteView(DestroyAPIView):
@@ -267,11 +305,7 @@ class PostByUserListView(ListAPIView):
 
     def get_queryset(self):
         qs = Post.objects.annotate(
-            **get_annotate_params(
-                'vet_comments',
-                'owner_comments',
-                'likes_count'
-            )
+            **get_annotate_params('likes_count')
         ).filter(user_id=self.kwargs['pk'])
         return qs
 
@@ -345,7 +379,5 @@ class PostPaidListView(ListAPIView):
             visible_by_vet=True, visible_by_owner=True
         ).exclude(
             comments__post__user_id=self.request.user.id
-        ).annotate(
-            **get_annotate_params('vet_comments')
-        ).order_by('-updated_at', 'vet_comments')
+        ).order_by('-updated_at')
         return qs
