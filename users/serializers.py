@@ -271,3 +271,10 @@ class UserLoginSerializer(ModelSerializer):
             'comments_notification': obj.comments_notification,
             'comments_like_notification': obj.comments_like_notification
         }
+
+
+class UserFollowsSerializer(UserSerializers):
+    follows = BooleanField(read_only=True)
+
+    class Meta(UserSerializers.Meta):
+        UserSerializers.Meta.fields += ('follows',)
