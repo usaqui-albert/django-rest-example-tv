@@ -275,6 +275,7 @@ class UserLoginSerializer(ModelSerializer):
 
 class UserFollowsSerializer(UserSerializers):
     following = BooleanField(read_only=True)
+    label = CharField(source='get_label', read_only=True)
 
     class Meta(UserSerializers.Meta):
         UserSerializers.Meta.fields += ('following',)
