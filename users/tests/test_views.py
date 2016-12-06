@@ -1155,7 +1155,8 @@ class TestUserFollowedListView(CustomTestCase):
         user = self.get_user(groups_id=1)
         req = self.factory.post('/')
         force_authenticate(req, user=user)
-        resp = views.UserFollowView.as_view()(req, pk=to_follow.pk)
+        resp = views.UserFollowView.as_view()(
+            req, pk=to_follow.pk)
         assert resp.status_code == 201
         req = self.factory.get('/')
         force_authenticate(req, user=user)
