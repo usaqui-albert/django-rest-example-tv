@@ -278,4 +278,4 @@ class UserFollowsSerializer(UserSerializers):
     label = CharField(source='get_label', read_only=True)
 
     class Meta(UserSerializers.Meta):
-        UserSerializers.Meta.fields += ('following',)
+        fields = UserSerializers.Meta.fields + ('following',)
