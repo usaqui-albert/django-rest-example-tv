@@ -8,13 +8,14 @@ from .views import (
     BreederListCreateView, GroupsListView, UserFeedBackView,
     AuthorizeBreederView, AuthorizeVetView, AreaInterestListView,
     UserRetrieveUpdateView, StripeCustomerView, UserFollowView,
-    ReferFriendView
+    ReferFriendView, UserFollowsListView
 )
 
 urlpatterns = [
     url(r'^$', UserView.as_view()),
     url(r'^(?P<pk>\d+)/$', UserRetrieveUpdateView.as_view()),
     url(r'^(?P<pk>\d+)/follow/$', UserFollowView.as_view()),
+    url(r'^(?P<pk>\d+)/follows/$', UserFollowsListView.as_view()),
     url(r'^(?P<pk>\d+)/payments/$', StripeCustomerView.as_view()),
     url(r'^(?P<pk>\d+)/pets/$', PetListByUser.as_view()),
     url(r'^(?P<pk>\d+)/posts/$', PostByUserListView.as_view()),

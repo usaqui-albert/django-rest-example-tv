@@ -12,7 +12,11 @@ from django.template.loader import render_to_string
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework import generics, permissions
+from rest_framework import permissions
+from rest_framework.generics import (
+    ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView,
+    GenericAPIView, RetrieveUpdateAPIView
+)
 from rest_framework.views import APIView
 from rest_framework import status
 
@@ -27,7 +31,8 @@ from helpers.stripe_helpers import (
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
-    UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer
+    UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer,
+    UserFollowsSerializer
 )
 from .tasks import send_mail, refer_a_friend_by_email
 
@@ -57,7 +62,7 @@ class UserAuth(ObtainAuthToken):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserView(generics.ListCreateAPIView):
+class UserView(ListCreateAPIView):
     """
     Service to create new users.
     Need authentication to list user
@@ -102,7 +107,7 @@ class UserView(generics.ListCreateAPIView):
             )
 
 
-class UserGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
+class UserGetUpdateView(RetrieveUpdateDestroyAPIView):
     """
     Service to update users.
     PUT Method is used to update all required fields. Will responde in case
@@ -130,7 +135,7 @@ class UserGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
         return self.destroy(request, *args, **kwargs)
 
 
-class GroupsListView(generics.ListAPIView):
+class GroupsListView(ListAPIView):
     """
     Service to list users groups.
 
@@ -143,7 +148,7 @@ class GroupsListView(generics.ListAPIView):
     allowed_methods = ('GET',)
 
 
-class BreederListCreateView(generics.ListCreateAPIView):
+class BreederListCreateView(ListCreateAPIView):
     """
     Service to create and list Breeder users. Need and authenticated user
 
@@ -171,7 +176,7 @@ class BreederListCreateView(generics.ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class VeterinarianListCreateView(generics.ListCreateAPIView):
+class VeterinarianListCreateView(ListCreateAPIView):
     """
     Service to create and list Veterinarians users. Need and authenticated user
 
@@ -199,7 +204,7 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class AuthorizeBreederView(generics.GenericAPIView):
+class AuthorizeBreederView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
     serializer_class = BreederSerializer
     allowed_methods = ('PATCH',)
@@ -212,7 +217,7 @@ class AuthorizeBreederView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
-class AuthorizeVetView(generics.GenericAPIView):
+class AuthorizeVetView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
     serializer_class = VeterinarianSerializer
     allowed_methods = ('PATCH',)
@@ -225,7 +230,7 @@ class AuthorizeVetView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
-class AreaInterestListView(generics.ListAPIView):
+class AreaInterestListView(ListAPIView):
     '''
     List for Area of Interest.
     Required:
@@ -238,7 +243,7 @@ class AreaInterestListView(generics.ListAPIView):
     queryset = AreaInterest.objects.all()
 
 
-class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class UserRetrieveUpdateView(RetrieveUpdateAPIView):
     '''
     One view to rule them all, one view to edit them.
 
@@ -442,7 +447,7 @@ class UserFeedBackView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ReferFriendView(generics.GenericAPIView):
+class ReferFriendView(GenericAPIView):
     """
     Refer a friend endpoint
     :accepted methods:
@@ -459,3 +464,24 @@ class ReferFriendView(generics.GenericAPIView):
             request.user.full_name
         )
         return Response(messages.request_successfully)
+
+
+class UserFollowsListView(ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = UserFollowsSerializer
+
+    def get_queryset(self):
+        user = User.objects.filter(id=self.kwargs.get('pk', None)).first()
+        qs = user.follows.all()
+        if self.request.user.is_authenticated():
+            qs = qs.annotate(
+                following=Case(
+                    When(
+                        pk__in=self.request.user.follows.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+        return qs
