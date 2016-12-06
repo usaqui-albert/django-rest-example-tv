@@ -473,7 +473,7 @@ class UserFollowsListView(ListAPIView):
     pagination_class = StandardPagination
 
     def get_queryset(self):
-        user = User.objects.filter(id=self.kwargs.get('pk', None)).first()
+        user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
         qs = user.follows.all()
         if self.request.user.is_authenticated():
             qs = qs.annotate(
@@ -491,7 +491,7 @@ class UserFollowsListView(ListAPIView):
 
 class UserFollowedListView(UserFollowsListView):
     def get_queryset(self):
-        user = User.objects.filter(id=self.kwargs.get('pk', None)).first()
+        user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
         qs = user.followed_by.all()
         if self.request.user.is_authenticated():
             qs = qs.annotate(
