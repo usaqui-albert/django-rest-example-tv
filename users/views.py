@@ -1,6 +1,7 @@
 import stripe
 from stripe.error import CardError, InvalidRequestError, APIConnectionError
 
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Count, Value, Case, When, BooleanField
 from django.core.exceptions import ValidationError
@@ -21,7 +22,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from TapVet import messages
-from TapVet.settings import STRIPE_API_KEY
+from TapVet.pagination import StandardPagination
 
 from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
@@ -313,7 +314,7 @@ class StripeCustomerView(APIView):
 
     def __init__(self, **kwargs):
         super(StripeCustomerView, self).__init__(**kwargs)
-        stripe.api_key = STRIPE_API_KEY
+        stripe.api_key = settings.STRIPE_API_KEY
 
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -469,10 +470,29 @@ class ReferFriendView(GenericAPIView):
 class UserFollowsListView(ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = UserFollowsSerializer
+    pagination_class = StandardPagination
 
     def get_queryset(self):
         user = User.objects.filter(id=self.kwargs.get('pk', None)).first()
         qs = user.follows.all()
+        if self.request.user.is_authenticated():
+            qs = qs.annotate(
+                following=Case(
+                    When(
+                        pk__in=self.request.user.follows.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+        return qs
+
+
+class UserFollowedListView(UserFollowsListView):
+    def get_queryset(self):
+        user = User.objects.filter(id=self.kwargs.get('pk', None)).first()
+        qs = user.followed_by.all()
         if self.request.user.is_authenticated():
             qs = qs.annotate(
                 following=Case(
