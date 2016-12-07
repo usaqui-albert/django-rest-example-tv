@@ -117,4 +117,12 @@ class TestAdminUsersListView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.AdminUsersListView.as_view()(req)
         assert 'detail' in resp.data
-        assert resp.status_code == 401
+        assert resp.status_code == 403
+
+    def test_get_request_admin(self):
+        user = self.load_users_data().get_user(is_staff=True)
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.AdminUsersListView.as_view()(req)
+        assert 'results' in resp.data
+        assert resp.status_code == 200
