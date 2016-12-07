@@ -28,3 +28,6 @@ class Feedback(models.Model):
                 "The feedback is only valid if is been done by the post owner"
             )
         super(Feedback, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return u'FEEDBACK: user:%s, post: %s' % (self.user.id, self.post.id)
