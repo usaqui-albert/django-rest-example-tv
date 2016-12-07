@@ -1,6 +1,11 @@
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.serializers import ValidationError
+from rest_framework.serializers import ValidationError, ModelSerializer
+
+from users.models import User
+from users.serializers import (
+    BreederSerializer, VeterinarianSerializer, ProfileImageSerializer
+)
 
 
 class AdminAuthTokenSerializer(AuthTokenSerializer):
@@ -28,3 +33,16 @@ class AdminAuthTokenSerializer(AuthTokenSerializer):
 
         attrs['user'] = user
         return attrs
+
+
+class AdminUserSerializer(ModelSerializer):
+    breeder = BreederSerializer(required=False)
+    veterinarian = VeterinarianSerializer(required=False)
+    images = ProfileImageSerializer(read_only=True, source='image')
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'full_name', 'groups', 'id', 'breeder',
+            'veterinarian', 'images'
+        )
