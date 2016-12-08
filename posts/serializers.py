@@ -80,11 +80,11 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
         return instance
 
     def create_image_post(self, image_stream, post, index):
-        '''
+        """
             This definition receive the image stream, make two image
-            off the same steam, then create an imagePost instance and
-            assign it to the post passed. Then the instance is saved,
-        '''
+            off the same stream, then create an ImagePost instance and
+            assign it to the post passed. Then the instance is saved
+        """
         img = Img.open(StringIO(image_stream.read()))
         img_copy = img.copy()
         standard = self.image_resize(STANDARD_SIZE, img, image_stream)
@@ -104,7 +104,8 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
             return {
                 'description': first_vet_comment.description,
                 'created_at': first_vet_comment.created_at,
-                'id': first_vet_comment.id
+                'id': first_vet_comment.id,
+                'label': first_vet_comment.user.get_label()
             }
         else:
             return None

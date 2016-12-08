@@ -390,36 +390,39 @@ class UserFollowView(APIView):
     DELETE
     """
     allowed_methods = ('POST', 'DELETE')
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def forbidden(self):
-        return Response(
-            messages.follow_permission,
-            status=status.HTTP_403_FORBIDDEN
-        )
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['pk'])
-        if request.user.has_perm('users.is_vet'):
-            if not user.is_vet():
-                return self.forbidden()
-            else:
-                try:
-                    if not user.veterinarian.verified:
-                        return self.forbidden()
-                except:
-                    return self.forbidden()
-        else:
-            if user.is_vet():
-                return self.forbidden()
-        request.user.follows.add(user.id)
-        return Response(status=status.HTTP_201_CREATED)
+        user = self.get_user(kwargs['pk'])
+        if user:
+            if request.user.has_perm('users.is_vet'):
+                if user.is_vet() and hasattr(
+                        user, 'veterinarian') and user.veterinarian.verified:
+                    return self.helper(user.id)
+            elif not user.is_vet():
+                return self.helper(user.id)
+            return Response(
+                messages.follow_permission,
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return Response(
+            messages.user_not_found,
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     @staticmethod
     def delete(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
         request.user.follows.remove(user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def get_user(user_id):
+        return User.objects.filter(pk=user_id).select_related('groups').first()
+
+    def helper(self, user_id):
+        self.request.user.follows.add(user_id)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class UserFeedBackView(APIView):
