@@ -432,10 +432,10 @@ class UserFeedBackView(APIView):
     :accepted methods:
     POST = The message will be receive on 'message'
     """
-    allowed_methods = ('POST', )
-    permission_classes = (permissions.IsAuthenticated, )
+    allowed_methods = ('POST',)
+    permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         message_title = "[TapVet] New Feedback"
         message_body = request.data.get('message', None)
         msg_html = render_to_string(
