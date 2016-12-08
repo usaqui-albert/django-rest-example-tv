@@ -125,3 +125,23 @@ class ActivePost(models.Model):
     post = models.ForeignKey('posts.Post', related_name='active_post_weight')
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Report(models.Model):
+    OFFENSIVE = 1
+    RELEVANT = 2
+    SPAM = 3
+    REPORT_TYPE = (
+        (OFFENSIVE, 'It is offensive'),
+        (RELEVANT, 'It is not relevant'),
+        (SPAM, 'It is spam'),
+    )
+
+    post = models.ForeignKey(Post, related_name='reports')
+    user = models.ForeignKey('users.User', related_name='reports')
+    type = models.PositiveSmallIntegerField(choices=REPORT_TYPE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post', 'type')
