@@ -13,6 +13,7 @@ from helpers.tests_helpers import CustomTestCase
 
 from posts.tests.test_views import get_test_image
 from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
+
 from .. import views
 from .. import models
 
@@ -41,7 +42,9 @@ class TestUserAuth(CustomTestCase):
         req = self.factory.post('/', data=data)
 
         resp = views.UserAuth.as_view()(req)
-        for key in ['full_name', 'email', 'token', 'stripe', 'groups', 'id']:
+        for key in [
+            'full_name', 'email', 'token', 'stripe_token', 'groups', 'id'
+        ]:
             assert key in resp.data
         assert resp.status_code == 200, 'Should return Success (200)'
 
@@ -1033,8 +1036,9 @@ class TestReferFriendView(CustomTestCase):
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "GET" not allowed.'
-        assert resp.status_code == 405, 'Should return Method ' \
-                                        'Not Allowed (405)'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
 
     def test_put_request_not_allowed(self):
         req = self.factory.put('/')
@@ -1042,8 +1046,9 @@ class TestReferFriendView(CustomTestCase):
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "PUT" not allowed.'
-        assert resp.status_code == 405, 'Should return Method ' \
-                                        'Not Allowed (405)'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
 
     def test_delete_request_not_allowed(self):
         req = self.factory.delete('/')
@@ -1051,24 +1056,26 @@ class TestReferFriendView(CustomTestCase):
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "DELETE" not allowed.'
-        assert resp.status_code == 405, 'Should return Method ' \
-                                        'Not Allowed (405)'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
 
     def test_post_request_user_no_authenticated(self):
         req = self.factory.post('/')
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Authentication credentials ' \
-                                      'were not provided.'
         assert resp.status_code == 401
+        assert resp.data['detail'] == (
+            'Authentication credentials were not provided.'
+        )
 
     def test_post_request_email_field_missing(self):
         req = self.factory.post('/', {})
         force_authenticate(req, user=self.get_user())
         resp = views.ReferFriendView.as_view()(req)
         assert 'email' in resp.data
-        assert 'This field is required.' in resp.data['email']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
+        assert 'This field is required.' in resp.data['email']
 
     def test_post_request_empty_email(self):
         data = {'email': ''}
@@ -1087,3 +1094,78 @@ class TestReferFriendView(CustomTestCase):
         assert 'email' in resp.data
         assert 'Enter a valid email address.' in resp.data['email']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+
+class TestUserFollowsListView(CustomTestCase):
+
+    def test_request_not_allowed(self):
+        req = self.factory.post('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserFollowsListView.as_view()(req)
+        assert resp.data['detail'] == 'Method "POST" not allowed.'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
+
+    def test_request_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.UserFollowsListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.status_code == 401
+
+    def test_get_list(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 201
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowsListView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+            'following'
+        ]:
+            assert key in resp.data['results'][0]
+        assert resp.data['results'][0]['following']
+
+
+class TestUserFollowedListView(CustomTestCase):
+
+    def test_request_not_allowed(self):
+        req = self.factory.post('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserFollowedListView.as_view()(req)
+        assert resp.data['detail'] == 'Method "POST" not allowed.'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
+
+    def test_request_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.UserFollowedListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.status_code == 401
+
+    def test_get_list(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(
+            req, pk=to_follow.pk)
+        assert resp.status_code == 201
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowedListView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+            'following'
+        ]:
+            assert key in resp.data['results'][0]
+        assert resp.data['results'][0]['id'] == user.id
