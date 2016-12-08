@@ -16,6 +16,8 @@ follow_permission = {
 }
 post_not_found = {"detail": "Post not found."}
 image_not_found = {"detail": "Image not found."}
+user_not_found = {"detail": "User not found."}
+
 request_successfully = {
     "detail": "Your request has been processed successfully "}
 inactive = {
