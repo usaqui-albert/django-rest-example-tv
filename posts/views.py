@@ -10,7 +10,7 @@ from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView, DestroyAPIView,
-    RetrieveUpdateDestroyAPIView, get_object_or_404
+    RetrieveUpdateDestroyAPIView, get_object_or_404, GenericAPIView
 )
 from rest_framework import permissions, status
 from rest_framework.views import APIView
@@ -21,9 +21,9 @@ from TapVet.pagination import StandardPagination, CardsPagination
 from pets.permissions import IsOwnerReadOnly
 from .serializers import (
     PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
-    PaidPostSerializer
+    PaidPostSerializer, ReportTypeSerializer
 )
-from .models import Post, PaymentAmount, ImagePost, UserLikesPost
+from .models import Post, PaymentAmount, ImagePost, UserLikesPost, Report
 from .utils import (
     paid_post_handler, get_annotate_params, handler_images_order,
     prefetch_vet_comments, prefetch_owner_comments
@@ -381,3 +381,29 @@ class PostPaidListView(ListAPIView):
             comments__post__user_id=self.request.user.id
         ).order_by('-updated_at')
         return qs
+
+
+class UserReportView(GenericAPIView):
+    """
+    Service for a user reports a post
+
+    :accepted methods:
+        POST
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = ReportTypeSerializer
+
+    def post(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        post = get_object_or_404(Post, pk=kwargs['pk'])
+        try:
+            Report.objects.create(
+                user=request.user,
+                post=post,
+                type=serializer.validated_data['type']
+            )
+        except IntegrityError:
+            return Response(status=status.HTTP_409_CONFLICT)
+        else:
+            return Response(status=status.HTTP_201_CREATED)

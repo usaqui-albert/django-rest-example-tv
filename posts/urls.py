@@ -5,7 +5,7 @@ from comments.views import (
 
 from .views import (
     PostListCreateView, PaidPostView, PostRetrieveUpdateDeleteView,
-    ImagePostDeleteView, PostPaidListView, PostVoteView
+    ImagePostDeleteView, PostPaidListView, PostVoteView, UserReportView
 )
 
 urlpatterns = [
@@ -21,5 +21,6 @@ urlpatterns = [
         r'^(?P<pk>[0-9]+)/pet-comments/$',
         CommentsPetOwnerListCreateView.as_view()
     ),
+    url(r'^(?P<pk>\d+)/reports/$', UserReportView.as_view()),
     url(r'^images/(?P<pk>[0-9]+)/$', ImagePostDeleteView.as_view()),
 ]
