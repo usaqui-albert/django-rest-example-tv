@@ -404,6 +404,9 @@ class PostReportView(GenericAPIView):
                 type=serializer.validated_data['type']
             )
         except IntegrityError:
-            return Response(status=status.HTTP_409_CONFLICT)
+            return Response(
+                messages.post_already_reported,
+                status=status.HTTP_409_CONFLICT
+            )
         else:
             return Response(status=status.HTTP_201_CREATED)
