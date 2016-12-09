@@ -383,7 +383,7 @@ class PostPaidListView(ListAPIView):
         return qs
 
 
-class UserReportView(GenericAPIView):
+class PostReportView(GenericAPIView):
     """
     Service for a user reports a post
 
