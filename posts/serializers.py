@@ -2,13 +2,13 @@ from StringIO import StringIO
 from PIL import Image as Img
 from rest_framework.serializers import (
     ModelSerializer, IntegerField, ImageField, ValidationError,
-    BooleanField, SerializerMethodField
+    BooleanField, SerializerMethodField, Serializer, ChoiceField
 )
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 from users.serializers import UserSerializers
 
-from .models import Post, ImagePost, PaymentAmount
+from .models import Post, ImagePost, PaymentAmount, Report
 
 
 class ImagePostSerializer(ModelSerializer):
@@ -147,3 +147,7 @@ class PaidPostSerializer(ModelSerializer):
         extra_kwargs = {
             'id': {'read_only': True},
         }
+
+
+class ReportTypeSerializer(Serializer):
+    type = ChoiceField(choices=Report.REPORT_TYPE)

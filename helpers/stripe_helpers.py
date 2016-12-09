@@ -35,6 +35,7 @@ def get_customer_in_stripe(instance):
         error = "There is no stripe customer available for this user"
     return error
 
+
 def card_list(queryset):
     return [{"id": i.id,
              "brand": i.brand,

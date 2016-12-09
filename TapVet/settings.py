@@ -163,6 +163,7 @@ ADMINS = [
     ('Mayra Canas', 'mayrac@blanclabs.com'),
 ]
 
+REPORT_MESSAGE_ADMIN_TITLE = " New Report Pending"
 BREADER_MESSAGE_ADMIN_TITLE = "New Breeeder Pending"
 VET_MESSAGE_ADMIN_TITLE = "New Vet Pending"
 PAID_POST_AMOUNT = '100'
