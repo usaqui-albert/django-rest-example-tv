@@ -155,7 +155,7 @@ class FeedbackCreateView(CreateAPIView):
             serializer.save()
         except ValueError as e:
             return Response(
-                {'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST
+                messages.feedback_user, status=status.HTTP_400_BAD_REQUEST
             )
         headers = self.get_success_headers(serializer.data)
         return Response(
