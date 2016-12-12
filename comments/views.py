@@ -1,6 +1,7 @@
 from django.db.models import Count
 from django.http import Http404
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 from rest_framework.generics import ListCreateAPIView, CreateAPIView
 from rest_framework.views import APIView
@@ -142,10 +143,20 @@ class FeedbackCreateView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data,
-            context={'user': request.user}
+            context={
+                'user': request.user,
+                'comment': get_object_or_404(
+                    Comment, pk=kwargs.get('pk', None)
+                )
+            }
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            serializer.save()
+        except ValueError as e:
+            return Response(
+                {'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST
+            )
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
