@@ -13,7 +13,7 @@ from users.models import User
 
 from .models import Pet, PetType
 from .serializers import PetSerializer, PetTypeSerializer
-from .permissions import IsOwnerReadOnly
+from TapVet.permissions import IsOwnerOrReadOnly
 
 
 class PetsListCreateView(ListCreateAPIView):
@@ -26,7 +26,7 @@ class PetsListCreateView(ListCreateAPIView):
     POST = Create a Pet
     """
     serializer_class = PetSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly,)
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly,)
     queryset = Pet.objects.all().select_related('user', 'pet_type')
 
     def create(self, request, *args, **kwargs):
@@ -69,7 +69,7 @@ class PetsListCreateView(ListCreateAPIView):
 
 class PetRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = PetSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
     queryset = Pet.objects.all()
 
     def update(self, request, *args, **kwargs):

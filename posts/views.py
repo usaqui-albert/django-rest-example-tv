@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 from TapVet import messages
 from TapVet.permissions import IsVet
 from TapVet.pagination import StandardPagination, CardsPagination
-from pets.permissions import IsOwnerReadOnly
+from TapVet.permissions import IsOwnerOrReadOnly
 from .serializers import (
     PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
     PaidPostSerializer, ReportTypeSerializer
@@ -149,7 +149,7 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     DELETE
     """
     serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
+    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -160,14 +160,15 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         annotate_params = get_annotate_params('likes_count')
-        annotate_params['interested'] = Case(
-            When(
-                pk__in=self.request.user.likes.all(),
-                then=Value(True)
-            ),
-            default=Value(False),
-            output_field=BooleanField()
-        )
+        if self.request.user.is_authenticated():
+            annotate_params['interested'] = Case(
+                When(
+                    pk__in=self.request.user.likes.all(),
+                    then=Value(True)
+                ),
+                default=Value(False),
+                output_field=BooleanField()
+            )
         queryset = Post.objects.annotate(
             **annotate_params
         ).prefetch_related(
