@@ -372,7 +372,7 @@ class PostPaidListView(ListAPIView):
         qs = Post.objects.filter(
             visible_by_vet=True, visible_by_owner=True
         ).exclude(
-            comments__post__user_id=self.request.user.id
+            comments__user_id=self.request.user.id
         ).order_by('-updated_at')
         return qs
 
