@@ -286,17 +286,16 @@ class TestUserView(CustomTestCase):
 
 class TestUserDetailView(CustomTestCase):
 
-    def test_post_request_not_allowed(self):
-        req = self.factory.post('/')
-        force_authenticate(req, user=self.get_user())
-        resp = views.UserGetUpdateView.as_view()(req)
-        assert resp.status_code == 405, (
-            'Should HTTP 405 Method Not Allowed')
-
-    def test_get_request_no_authentication(self):
+    def test_get_request_non_authenticated_user_and_does_not_exist(self):
         req = self.factory.get('/')
-        resp = views.UserRetrieveUpdateView.as_view()(req)
-        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=1)
+        assert resp.status_code == 404, 'Should return Unauthorized (401)'
+
+    def test_get_request_non_authenticated_user_and_object_exist(self):
+        user = self.get_user()
+        req = self.factory.get('/')
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
+        assert resp.status_code == 200, 'Should return OK 200()'
 
     def test_get_request_with_authentication(self):
         user = self.get_user()
@@ -304,17 +303,6 @@ class TestUserDetailView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, 'Should return OK (200)'
-
-    def test_put_request_no_authentication(self):
-        user = mixer.blend(models.User)
-        data = {
-            "full_name": "Albert Usaqui",
-            "email": user.email,
-        }
-        req = self.factory.patch('/', data=data)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 401, (
-            'Should return Http 401 Unauthorized')
 
     def test_update_request_with_authentication(self):
         user = self.load_users_data().get_user(groups_id=2)
@@ -329,18 +317,6 @@ class TestUserDetailView(CustomTestCase):
             'Should return OK (200) given the data to update is valid')
         user.refresh_from_db()
         assert user.full_name == 'Albert Usaqui', 'Should update the user'
-
-    def test_put_request_with_authentication(self):
-        user = self.get_user()
-        data = {
-            "full_name": "Albert Usaqui",
-            "email": user.email,
-        }
-        req = self.factory.put('/', data=data)
-        force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 200, (
-            'Should return HTTP 200 OK')
 
     def test_put_request_by_different_user(self):
         user = self.get_user()
@@ -360,7 +336,7 @@ class TestUserDetailView(CustomTestCase):
     def test_delete_request_authenticated_but_no_admin(self):
         req = self.factory.delete('/')
         force_authenticate(req, user=self.get_user())
-        resp = views.UserGetUpdateView.as_view()(req)
+        resp = views.UserRetrieveUpdateView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'You need admin status to delete.'
         assert resp.status_code == 401, (
@@ -370,7 +346,7 @@ class TestUserDetailView(CustomTestCase):
         user = self.get_user(is_staff=True)
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 204, 'Should return No Content (204)'
 
     def test_update_with_image(self):
