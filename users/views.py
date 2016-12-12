@@ -101,7 +101,7 @@ class UserView(ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             message = {
-                "detail": messages.user_login
+                'detail': messages.user_login
             }
             return Response(
                 message,

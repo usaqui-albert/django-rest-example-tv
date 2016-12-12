@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
+from posts.models import Post
+
 
 class IsVet(BasePermission):
     message = 'Error: You dont have permission to view'
@@ -41,6 +43,11 @@ class IsOwnerOrReadOnly(BasePermission):
             return True
         elif request.user and request.user.is_authenticated():
             # request user must be equal to obj user or request user is staff.
-            return obj.user_id == request.user.id or request.user.is_staff
+            if request.user.is_staff:
+                return True
+            elif isinstance(obj, Post):
+                return obj.user_id == request.user.id
+            else:
+                return obj.id == request.user.id
         else:
             return False
