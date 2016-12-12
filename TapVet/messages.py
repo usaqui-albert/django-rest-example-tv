@@ -15,6 +15,8 @@ follow_permission = {
 }
 post_not_found = {"detail": "Post not found."}
 image_not_found = {"detail": "Image not found."}
+user_not_found = {"detail": "User not found."}
+
 request_successfully = {
     "detail": "Your request has been processed successfully "}
 inactive = {
@@ -26,4 +28,16 @@ already_liked = {
 }
 
 # COMMENTS
-feedback_user = {"detail": "The feedback is only valid if is been done by the post owner"}
+feedback_user = {
+    "detail": "The feedback is only valid if is been done by the post owner"}
+# END COMMENT
+post_already_reported = {
+    "detail": "Dear user, you can't report a post multiples times with "
+              "the same reason."
+}
+forbidden_action = {
+    "detail": "You are not allowed to do this action."
+}
+card_updated_successfully = {
+    "detail": "Your card has been updated successfully."
+}

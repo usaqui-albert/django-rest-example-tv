@@ -23,11 +23,12 @@ from rest_framework import status
 
 from TapVet import messages
 from TapVet.pagination import StandardPagination
+from TapVet.permissions import IsOwnerOrReadOnly
 
-from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
 from helpers.stripe_helpers import (
-    stripe_errors_handler, get_customer_in_stripe, card_list
+    stripe_errors_handler, get_customer_in_stripe, card_list,
+    get_first_card_token, add_card_to_customer, delete_card_from_customer
 )
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
@@ -328,36 +329,56 @@ class StripeCustomerView(APIView):
         """
         user = request.user
         if user.id == int(kwargs['pk']):
-            if 'token' in request.data:
-                token = request.data.get('token')
-                if token:
-                    if user.stripe_token:
-                        response_msg = {
-                            'detail': 'You already have a customer in stripe'}
+            token = request.data.get('token', None)
+            if token:
+                if user.stripe_token:
+                    customer = get_customer_in_stripe(user)
+                    if isinstance(customer, str):
+                        response_msg = customer
                     else:
-                        try:
-                            customer = stripe.Customer.create(
-                                source=token,
-                                description='Customer for %s' % user.__str__()
+                        card_token = get_first_card_token(customer.sources.data)
+                        added = add_card_to_customer(customer, token)
+                        if added is True:
+                            deleted = delete_card_from_customer(
+                                customer,
+                                card_token
                             )
-                        except (
-                            APIConnectionError, InvalidRequestError,
-                            CardError
-                        ) as err:
-                            response_msg = {
-                                'detail': stripe_errors_handler(err)}
+                            if deleted is True:
+                                return Response(
+                                    messages.card_updated_successfully,
+                                    status=status.HTTP_200_OK
+                                )
+                            else:
+                                response_msg = deleted
                         else:
-                            cus_token = customer.id
-                            user.stripe_token = cus_token
-                            user.save()
-                            return Response({'stripe': cus_token})
+                            response_msg = added
                 else:
-                    response_msg = {'detail': 'Token field can not be empty'}
+                    try:
+                        customer = stripe.Customer.create(
+                            source=token,
+                            description='Customer for %s' % user.__str__()
+                        )
+                    except (
+                        APIConnectionError, InvalidRequestError,
+                        CardError
+                    ) as err:
+                        response_msg = {
+                            'detail': stripe_errors_handler(err)}
+                    else:
+                        cus_token = customer.id
+                        user.stripe_token = cus_token
+                        user.save()
+                        return Response(
+                            {'stripe': cus_token},
+                            status=status.HTTP_201_CREATED
+                        )
             else:
                 response_msg = {'detail': 'Token field is required'}
             return Response(response_msg, status=status.HTTP_400_BAD_REQUEST)
-        response_msg = {'detail': 'You are not allowed to do this action'}
-        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            messages.forbidden_action,
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     @staticmethod
     def get(request, **kwargs):
@@ -369,16 +390,18 @@ class StripeCustomerView(APIView):
         """
         user = request.user
         if user.id == int(kwargs['pk']):
-            if user.stripe_token:
-                customer = get_customer_in_stripe(user)
-                cards = customer.sources.data
-                return Response(card_list(cards))
-            no_customer_response = {
-                'detail': 'There is no customer for this user'}
-            return Response(
-                no_customer_response, status=status.HTTP_404_NOT_FOUND)
-        response_msg = {'detail': 'You are not allowed to do this action'}
-        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+            customer = get_customer_in_stripe(user)
+            if isinstance(customer, str):
+                return Response(
+                    {"detail": customer},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            cards = customer.sources.data
+            return Response(card_list(cards))
+        return Response(
+            messages.forbidden_action,
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class UserFollowView(APIView):
@@ -390,36 +413,39 @@ class UserFollowView(APIView):
     DELETE
     """
     allowed_methods = ('POST', 'DELETE')
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def forbidden(self):
-        return Response(
-            messages.follow_permission,
-            status=status.HTTP_403_FORBIDDEN
-        )
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['pk'])
-        if request.user.has_perm('users.is_vet'):
-            if not user.is_vet():
-                return self.forbidden()
-            else:
-                try:
-                    if not user.veterinarian.verified:
-                        return self.forbidden()
-                except:
-                    return self.forbidden()
-        else:
-            if user.is_vet():
-                return self.forbidden()
-        request.user.follows.add(user.id)
-        return Response(status=status.HTTP_201_CREATED)
+        user = self.get_user(kwargs['pk'])
+        if user:
+            if request.user.has_perm('users.is_vet'):
+                if user.is_vet() and hasattr(
+                        user, 'veterinarian') and user.veterinarian.verified:
+                    return self.helper(user.id)
+            elif not user.is_vet():
+                return self.helper(user.id)
+            return Response(
+                messages.follow_permission,
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return Response(
+            messages.user_not_found,
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     @staticmethod
     def delete(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
         request.user.follows.remove(user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def get_user(user_id):
+        return User.objects.filter(pk=user_id).select_related('groups').first()
+
+    def helper(self, user_id):
+        self.request.user.follows.add(user_id)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class UserFeedBackView(APIView):
@@ -429,10 +455,10 @@ class UserFeedBackView(APIView):
     :accepted methods:
     POST = The message will be receive on 'message'
     """
-    allowed_methods = ('POST', )
-    permission_classes = (permissions.IsAuthenticated, )
+    allowed_methods = ('POST',)
+    permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         message_title = "[TapVet] New Feedback"
         message_body = request.data.get('message', None)
         msg_html = render_to_string(
