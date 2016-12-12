@@ -3,7 +3,6 @@ import pytest
 
 from mixer.backend.django import mixer
 
-from TapVet import messages
 from .. import models
 
 from helpers.tests_helpers import CustomTestCase
@@ -40,4 +39,5 @@ class TestFeedbackModel(CustomTestCase):
         try:
             feedback.save()
         except ValueError as e:
-            assert messages.feedback_user['detail'] == str(e)
+            assert str(e) == (
+                'Error: the user have to be the same that the post owner')
