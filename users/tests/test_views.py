@@ -865,7 +865,7 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=2)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You are not allowed to do this action'
+        assert resp.data['detail'] == 'You are not allowed to do this action.'
         assert resp.status_code == 403, 'Should return Forbidden (403)'
 
     def test_post_request_no_data(self):
@@ -885,17 +885,7 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Token field can not be empty'
-        assert resp.status_code == 400, 'Should return Bad Request (400)'
-
-    def test_user_has_already_stripe_customer(self):
-        user = self.get_user(stripe_token='tok_test')
-        req = self.factory.post('/', {'token': 'tok_123'})
-        force_authenticate(req, user=user)
-
-        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You already have a customer in stripe'
+        assert resp.data['detail'] == 'Token field is required'
         assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_get_request_user_no_authenticated(self):
@@ -910,17 +900,18 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=2)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You are not allowed to do this action'
+        assert resp.data['detail'] == 'You are not allowed to do this action.'
         assert resp.status_code == 403, 'Should return Forbidden (403)'
 
-    def test_get_user_has_no_stripe_customer(self):
+    def test_get_request_user_has_no_stripe_customer(self):
         user = self.get_user(stripe_token=None)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
 
         resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'There is no customer for this user'
+        assert resp.data['detail'] == 'There is no stripe customer available ' \
+                                      'for this user'
         assert resp.status_code == 404, 'Should return Not Found (404)'
 
 
