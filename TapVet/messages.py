@@ -31,3 +31,9 @@ post_already_reported = {
     "detail": "Dear user, you can't report a post multiples times with "
               "the same reason."
 }
+forbidden_action = {
+    "detail": "You are not allowed to do this action."
+}
+card_updated_successfully = {
+    "detail": "Your card has been updated successfully."
+}

@@ -27,7 +27,8 @@ from TapVet.pagination import StandardPagination
 from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
 from helpers.stripe_helpers import (
-    stripe_errors_handler, get_customer_in_stripe, card_list
+    stripe_errors_handler, get_customer_in_stripe, card_list,
+    get_first_card_token, add_card_to_customer, delete_card_from_customer
 )
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
@@ -328,36 +329,56 @@ class StripeCustomerView(APIView):
         """
         user = request.user
         if user.id == int(kwargs['pk']):
-            if 'token' in request.data:
-                token = request.data.get('token')
-                if token:
-                    if user.stripe_token:
-                        response_msg = {
-                            'detail': 'You already have a customer in stripe'}
+            token = request.data.get('token', None)
+            if token:
+                if user.stripe_token:
+                    customer = get_customer_in_stripe(user)
+                    if isinstance(customer, str):
+                        response_msg = customer
                     else:
-                        try:
-                            customer = stripe.Customer.create(
-                                source=token,
-                                description='Customer for %s' % user.__str__()
+                        card_token = get_first_card_token(customer.sources.data)
+                        added = add_card_to_customer(customer, token)
+                        if added is True:
+                            deleted = delete_card_from_customer(
+                                customer,
+                                card_token
                             )
-                        except (
-                            APIConnectionError, InvalidRequestError,
-                            CardError
-                        ) as err:
-                            response_msg = {
-                                'detail': stripe_errors_handler(err)}
+                            if deleted is True:
+                                return Response(
+                                    messages.card_updated_successfully,
+                                    status=status.HTTP_200_OK
+                                )
+                            else:
+                                response_msg = deleted
                         else:
-                            cus_token = customer.id
-                            user.stripe_token = cus_token
-                            user.save()
-                            return Response({'stripe': cus_token})
+                            response_msg = added
                 else:
-                    response_msg = {'detail': 'Token field can not be empty'}
+                    try:
+                        customer = stripe.Customer.create(
+                            source=token,
+                            description='Customer for %s' % user.__str__()
+                        )
+                    except (
+                        APIConnectionError, InvalidRequestError,
+                        CardError
+                    ) as err:
+                        response_msg = {
+                            'detail': stripe_errors_handler(err)}
+                    else:
+                        cus_token = customer.id
+                        user.stripe_token = cus_token
+                        user.save()
+                        return Response(
+                            {'stripe': cus_token},
+                            status=status.HTTP_201_CREATED
+                        )
             else:
                 response_msg = {'detail': 'Token field is required'}
             return Response(response_msg, status=status.HTTP_400_BAD_REQUEST)
-        response_msg = {'detail': 'You are not allowed to do this action'}
-        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            messages.forbidden_action,
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     @staticmethod
     def get(request, **kwargs):
@@ -369,16 +390,18 @@ class StripeCustomerView(APIView):
         """
         user = request.user
         if user.id == int(kwargs['pk']):
-            if user.stripe_token:
-                customer = get_customer_in_stripe(user)
-                cards = customer.sources.data
-                return Response(card_list(cards))
-            no_customer_response = {
-                'detail': 'There is no customer for this user'}
-            return Response(
-                no_customer_response, status=status.HTTP_404_NOT_FOUND)
-        response_msg = {'detail': 'You are not allowed to do this action'}
-        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+            customer = get_customer_in_stripe(user)
+            if isinstance(customer, str):
+                return Response(
+                    {"detail": customer},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            cards = customer.sources.data
+            return Response(card_list(cards))
+        return Response(
+            messages.forbidden_action,
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class UserFollowView(APIView):
