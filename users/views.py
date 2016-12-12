@@ -23,8 +23,8 @@ from rest_framework import status
 
 from TapVet import messages
 from TapVet.pagination import StandardPagination
+from TapVet.permissions import IsOwnerOrReadOnly
 
-from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
 from helpers.stripe_helpers import (
     stripe_errors_handler, get_customer_in_stripe, card_list,
