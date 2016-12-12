@@ -2,7 +2,7 @@ from django.db.models import Count
 from django.http import Http404
 from django.utils import timezone
 
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, CreateAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -12,8 +12,9 @@ from TapVet.permissions import IsPetOwner
 from TapVet import messages
 from posts.models import Post
 
-from .models import Comment
-from .serializers import CommentSerializer, CommentVetSerializer
+from .models import Comment, Feedback
+from .serializers import (
+    CommentSerializer, CommentVetSerializer, FeedbackSerializer)
 
 from django.db.models import Case, Value, When, BooleanField
 
@@ -131,3 +132,20 @@ class CommentVoteView(APIView):
         self.update_post(pk=comment.post.id)
         comment.upvoters.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FeedbackCreateView(CreateAPIView):
+    serializer_class = FeedbackSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = Feedback
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'user': request.user}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
