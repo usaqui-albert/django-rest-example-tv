@@ -20,7 +20,7 @@ class Feedback(models.Model):
     post = models.ForeignKey('posts.post')
     user = models.ForeignKey('users.user')
     was_helpful = models.BooleanField()
-    descritpion = models.CharField(max_length=500, null=True, blank=True)
+    description = models.CharField(max_length=500, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.post.user == self.user:
