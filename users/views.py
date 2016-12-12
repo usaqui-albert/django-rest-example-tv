@@ -394,7 +394,7 @@ class StripeCustomerView(APIView):
             if isinstance(customer, str):
                 return Response(
                     {"detail": customer},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_404_NOT_FOUND
                 )
             cards = customer.sources.data
             return Response(card_list(cards))
