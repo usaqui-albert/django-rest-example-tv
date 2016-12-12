@@ -48,9 +48,15 @@ class FeedbackSerializer(ModelSerializer):
 
     class Meta:
         model = Feedback
-        fields = ('post', 'user', 'was_helpful', 'description')
+        fields = ('was_helpful', 'description')
 
     def create(self, validated_data):
-        feedback = Feedback(**dict(validated_data, user=self.context['user']))
+        feedback = Feedback(
+            **dict(
+                validated_data,
+                user=self.context['user'],
+                comment=self.context['comment']
+            )
+        )
         feedback.save()
         return feedback
