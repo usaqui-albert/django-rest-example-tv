@@ -109,34 +109,6 @@ class UserView(ListCreateAPIView):
             )
 
 
-class UserGetUpdateView(RetrieveUpdateDestroyAPIView):
-    """
-    Service to update users.
-    PUT Method is used to update all required fields. Will responde in case
-    some is missing
-    PATCH Method is used to update any field, will not response in case
-    some required fill is missing
-
-    :accepted methods:
-    GET =  Dont need authentication
-    PUT = Need authentication
-    PATCH = Need authentication
-    """
-    serializer_class = UserSerializers
-    permission_classes = (IsOwnerOrReadOnly,)
-    allowed_methods = ('GET', 'PUT', 'PATCH', 'DELETE')
-    queryset = User.objects.all()
-
-    def delete(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response(
-                {
-                    'detail': messages.admin_delete
-                },
-                status.HTTP_401_UNAUTHORIZED)
-        return self.destroy(request, *args, **kwargs)
-
-
 class GroupsListView(ListAPIView):
     """
     Service to list users groups.
@@ -245,7 +217,7 @@ class AreaInterestListView(ListAPIView):
     queryset = AreaInterest.objects.all()
 
 
-class UserRetrieveUpdateView(RetrieveUpdateAPIView):
+class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
     '''
     One view to rule them all, one view to edit them.
 
@@ -263,7 +235,7 @@ class UserRetrieveUpdateView(RetrieveUpdateAPIView):
     PUT = Modify the entire object, need the full instace
     PATCH = Modify only the needed fields
     '''
-    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
+    permission_classes = (IsOwnerOrReadOnly,)
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
 
@@ -303,6 +275,15 @@ class UserRetrieveUpdateView(RetrieveUpdateAPIView):
             )
         qs = self.queryset.annotate(**params)
         return qs.all()
+
+    def delete(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response(
+                {
+                    'detail': messages.admin_delete
+                },
+                status.HTTP_401_UNAUTHORIZED)
+        return self.destroy(request, *args, **kwargs)
 
 
 class StripeCustomerView(APIView):

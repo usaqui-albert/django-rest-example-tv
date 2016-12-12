@@ -365,7 +365,7 @@ class PostPaidListView(ListAPIView):
     GET
     """
     pagination_class = CardsPagination
-    permission_classes = (IsVet, )
+    permission_classes = (IsVet,)
     serializer_class = PaidPostSerializer
 
     def get_queryset(self):
