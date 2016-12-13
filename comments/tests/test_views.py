@@ -5,6 +5,8 @@ from rest_framework.test import force_authenticate
 
 from mixer.backend.django import mixer
 
+from TapVet import messages
+
 from .. import views
 from .. import models
 
@@ -225,3 +227,49 @@ class TestCommentVoteView(CustomTestCase):
         force_authenticate(req, user=owner)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
         assert resp.data['results'][0]['upvoters_count'] == 1
+
+
+class TestFeedbackCreateView(CustomTestCase):
+
+    def test_get_no_auth(self):
+        req = self.factory.get('/')
+        resp = views.FeedbackCreateView.as_view()(req)
+        assert resp.status_code == 401, (
+            'Should return Method Unauthorized (401) with a json ' +
+            '"detail": "Authentication credentials were not provided."'
+        )
+
+    def test_get(self):
+        user = self.get_user()
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.FeedbackCreateView.as_view()(req)
+        assert resp.status_code == 405
+
+    def test_post(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        comment = mixer.blend('comments.comment', post=post)
+        data = {
+            'description': 'blah blah',
+            'was_helpful': True
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.FeedbackCreateView.as_view()(req, pk=comment.pk)
+        assert resp.status_code == 201
+        assert resp.data['was_helpful']
+
+    def test_post_bad(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post')
+        comment = mixer.blend('comments.comment', post=post)
+        data = {
+            'description': 'blah blah',
+            'was_helpful': True
+        }
+        req = self.factory.post('/', data=data)
+        force_authenticate(req, user=user)
+        resp = views.FeedbackCreateView.as_view()(req, pk=comment.pk)
+        assert resp.status_code == 400
+        assert resp.data['detail'] == messages.feedback_user['detail']

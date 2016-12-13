@@ -1,5 +1,4 @@
 
-
 pet_no_pets = "This user doesn't have pets."
 
 admin_delete = "You need admin status to delete."
@@ -27,6 +26,13 @@ inactive = {
 already_liked = {
     "detail": "This post is already liked by you."
 }
+
+# COMMENTS
+feedback_user = {
+    "detail": "The feedback is only valid if it has been done " +
+    "by the post owner"
+}
+# END COMMENT
 post_already_reported = {
     "detail": "Dear user, you can't report a post multiples times with "
               "the same reason."
