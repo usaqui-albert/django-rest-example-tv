@@ -29,7 +29,9 @@ already_liked = {
 
 # COMMENTS
 feedback_user = {
-    "detail": "The feedback is only valid if is been done by the post owner"}
+    "detail": "The feedback is only valid if it has been done " +
+    "by the post owner"
+}
 # END COMMENT
 post_already_reported = {
     "detail": "Dear user, you can't report a post multiples times with "

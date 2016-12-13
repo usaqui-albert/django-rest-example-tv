@@ -25,7 +25,7 @@ class Feedback(models.Model):
     def save(self, *args, **kwargs):
         if not self.comment.post.user == self.user:
             raise ValueError(
-                "Error: the user have to be the same that the post owner"
+                "Error: The user has to be the same that the post owner"
             )
         super(Feedback, self).save(*args, **kwargs)
 
