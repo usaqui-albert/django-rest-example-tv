@@ -494,7 +494,7 @@ class ReferFriendView(GenericAPIView):
 
 
 class UserFollowsListView(ListAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
     serializer_class = UserFollowsSerializer
     pagination_class = StandardPagination
 
