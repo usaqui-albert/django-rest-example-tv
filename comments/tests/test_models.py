@@ -40,4 +40,5 @@ class TestFeedbackModel(CustomTestCase):
             feedback.save()
         except ValueError as e:
             assert str(e) == (
-                'Error: the user have to be the same that the post owner')
+                'Error: The user has to be the same that the post owner'
+            )
