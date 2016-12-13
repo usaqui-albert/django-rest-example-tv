@@ -330,8 +330,8 @@ class TestUserDetailView(CustomTestCase):
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert 'detail' in resp.data
         assert resp.status_code == 403, 'Should return HTTP 403 Forbidden'
-        assert resp.data['detail'] == 'You do not have permission to perform ' \
-                                      'this action.'
+        assert resp.data['detail'] == ('You do not have permission to perform '
+                                       'this action.')
 
     def test_delete_request_authenticated_but_no_admin(self):
         req = self.factory.delete('/')
