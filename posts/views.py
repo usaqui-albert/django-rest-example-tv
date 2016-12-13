@@ -149,14 +149,7 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     DELETE
     """
     serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
-
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        images = instance.images.all()
-        map(lambda x: x.delete(), images)
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         annotate_params = get_annotate_params('likes_count')
@@ -372,14 +365,14 @@ class PostPaidListView(ListAPIView):
     GET
     """
     pagination_class = CardsPagination
-    permission_classes = (IsVet, )
+    permission_classes = (IsVet,)
     serializer_class = PaidPostSerializer
 
     def get_queryset(self):
         qs = Post.objects.filter(
             visible_by_vet=True, visible_by_owner=True
         ).exclude(
-            comments__post__user_id=self.request.user.id
+            comments__user_id=self.request.user.id
         ).order_by('-updated_at')
         return qs
 
