@@ -4,6 +4,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status
+from rest_framework.filters import OrderingFilter
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 from TapVet import messages
 from TapVet.pagination import StandardPagination
@@ -40,7 +43,49 @@ class AdminAuth(ObtainAuthToken):
 
 
 class AdminUsersListView(ListAPIView):
+    '''
+    View for  ther admin dashboard. This view will paginate users by 20 per
+    page.
+
+    Will allow to change the amount of users per page by sending 'page_size'
+    queryparam
+
+    ORDERING FIELDS:
+        * is_active
+        * username
+        * email
+        * full_name
+        * created_at
+
+    SEARCH FIELDS:
+        * username
+        * email
+        * full_name
+        * is_active
+        * groups
+        * veterinarian__verified
+
+    EXAMPLES
+    * ORDERING:
+        -- api/v1/dashboard/users?ordering=username
+        -- api/v1/dashboard/users?ordering=-username (Reverse of the above)
+        -- api/v1/dashboard/users?ordering=is_active,username
+    * SEARCHING:
+        -- api/v1/dashboard/users?category=username&is_active=True
+        -- api/v1/dashboard/users?veterinarian__verified=True
+    * PAGE SIZE:
+        -- api/v1/dashboard/users?page_size=40
+
+    '''
     pagination_class = StandardPagination
     queryset = User.objects.all()
     permission_classes = (IsAdminUser,)
     serializer_class = AdminUserSerializer
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    filter_fields = (
+        'username', 'email', 'full_name', 'is_active', 'groups',
+        'veterinarian__verified'
+    )
+    ordering_fields = (
+        'is_active', 'username', 'email', 'full_name', 'created_at'
+    )
