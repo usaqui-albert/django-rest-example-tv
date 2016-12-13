@@ -1075,10 +1075,21 @@ class TestUserFollowsListView(CustomTestCase):
         )
 
     def test_request_no_auth(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 201
         req = self.factory.get('/')
-        resp = views.UserFollowsListView.as_view()(req)
-        assert 'detail' in resp.data
-        assert resp.status_code == 401
+        resp = views.UserFollowsListView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+            
+        ]:
+            assert key in resp.data['results'][0]
 
     def test_get_list(self):
         to_follow = self.load_users_data().get_user(groups_id=1)
@@ -1112,10 +1123,22 @@ class TestUserFollowedListView(CustomTestCase):
         )
 
     def test_request_no_auth(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(
+            req, pk=to_follow.pk)
+        assert resp.status_code == 201
         req = self.factory.get('/')
-        resp = views.UserFollowedListView.as_view()(req)
-        assert 'detail' in resp.data
-        assert resp.status_code == 401
+        resp = views.UserFollowedListView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+        ]:
+            assert key in resp.data['results'][0]
+        assert resp.data['results'][0]['id'] == user.id
 
     def test_get_list(self):
         to_follow = self.load_users_data().get_user(groups_id=1)
