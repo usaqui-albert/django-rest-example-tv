@@ -44,7 +44,7 @@ class AdminAuth(ObtainAuthToken):
 
 class AdminUsersListView(ListAPIView):
     '''
-    View for  ther admin dashboard. This view will paginate users by 20 per
+    View for the admin dashboard. This view will paginate users by 20 per
     page.
 
     Will allow to change the amount of users per page by sending 'page_size'
