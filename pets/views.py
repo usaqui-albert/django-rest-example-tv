@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import (
-    ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView)
+    CreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView)
 from rest_framework import permissions
 
 from TapVet import messages
@@ -16,7 +16,7 @@ from .serializers import PetSerializer, PetTypeSerializer
 from TapVet.permissions import IsOwnerOrReadOnly
 
 
-class PetsListCreateView(ListCreateAPIView):
+class PetCreateView(CreateAPIView):
     """
     Service to create new and list pets.
     Need authentication
@@ -54,18 +54,6 @@ class PetsListCreateView(ListCreateAPIView):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            message = {
-                "detail": messages.admin_required
-            }
-            return Response(
-                message,
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        return self.list(request, *args, **kwargs)
-
 
 class PetRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = PetSerializer
@@ -90,14 +78,14 @@ class PetRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
 class PetListByUser(ListAPIView):
     serializer_class = PetSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
         """
         Get the list of pets for the user pk
         """
         user = get_object_or_404(User, pk=self.kwargs['pk'])
-        queryset = Pet.objects.filter(user=user)
+        queryset = Pet.objects.filter(user=user).select_related('pet_type')
         return queryset
 
 

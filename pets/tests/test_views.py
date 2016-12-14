@@ -18,7 +18,7 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.put('/', {})
         force_authenticate(req, user=self.get_user())
 
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "PUT" not allowed.'
         assert resp.status_code == 405, (
@@ -28,38 +28,21 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.delete('/')
         force_authenticate(req, user=self.get_user())
 
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "DELETE" not allowed.'
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405)')
 
-    def test_get_request_user_no_authenticated(self):
-        req = self.factory.get('/')
-        resp = views.PetsListCreateView.as_view()(req)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Authentication credentials were ' \
-                                      'not provided.'
-        assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401)')
-
-    def test_get_request_user_authenticated_but_no_admin(self):
+    def test_get_request_not_allowed(self):
         req = self.factory.get('/')
         force_authenticate(req, user=self.get_user())
-        resp = views.PetsListCreateView.as_view()(req)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Admin level is needed for this action.'
-        assert resp.status_code == 403, (
-            'Should return Method Forbidden (403)')
 
-    def test_get_request_user_authenticated_and_admin(self):
-        user = self.get_user(is_staff=True)
-        req = self.factory.get('/')
-        force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
-        assert resp.status_code == 200, (
-            'Should return OK (200) and a json response ' +
-            'with a list of all pets.')
+        resp = views.PetCreateView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "GET" not allowed.'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)')
 
     def test_post_valid_data(self):
         user = self.load_users_data().get_user(groups_id=1)
@@ -74,7 +57,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         awaited_keys = ['name', 'gender', 'image', 'breed', 'pet_type_name',
                         'user', 'pet_type', 'fixed', 'id', 'birth_year']
         for key in awaited_keys:
@@ -94,7 +77,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'The pet year of birth cannot be ' \
                                       'lower than 1916'
@@ -115,7 +98,7 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.post('/', data)
         force_authenticate(req, user=user)
 
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'The pet year of birth cannot be ' \
                                       'higher than the current year'
@@ -134,7 +117,7 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.post('/', data)
         force_authenticate(req, user=user)
 
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'birth_year' in resp.data
         assert 'This field is required.' in resp.data['birth_year']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -153,7 +136,7 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.post('/', data)
         force_authenticate(req, user=user)
 
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'birth_year' in resp.data
         assert 'A valid integer is required.' in resp.data['birth_year']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -171,7 +154,7 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.post('/', data)
         force_authenticate(req, user=user)
 
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'name' in resp.data
         assert 'This field is required.' in resp.data['name']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -189,7 +172,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'name' in resp.data
         assert 'This field may not be blank.' in resp.data['name']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -206,7 +189,7 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.post('/', data)
         force_authenticate(req, user=user)
 
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'pet_type' in resp.data
         assert 'This field is required.' in resp.data['pet_type']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -223,7 +206,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'pet_type' in resp.data
         assert 'This field may not be null.' in resp.data['pet_type']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -240,7 +223,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'pet_type' in resp.data
         assert 'Invalid pk "1" - object does ' \
                'not exist.' in resp.data['pet_type']
@@ -258,7 +241,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'pet_type' in resp.data
         assert 'Incorrect type. Expected pk value, ' \
                'received unicode.' in resp.data['pet_type']
@@ -276,7 +259,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'gender' in resp.data
         assert 'This field is required.' in resp.data['gender']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -294,7 +277,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'gender' in resp.data
         assert '"any choice" is not a valid choice.' in resp.data['gender']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
@@ -312,7 +295,7 @@ class TestPetListCreateView(CustomTestCase):
         }
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PetsListCreateView.as_view()(req)
+        resp = views.PetCreateView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'This user doesn\'t have pets.'
         assert resp.status_code == 401, 'Should return Unauthorized (401)'
