@@ -16,7 +16,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework import permissions
 from rest_framework.generics import (
     ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView,
-    GenericAPIView, RetrieveUpdateAPIView
+    GenericAPIView
 )
 from rest_framework.views import APIView
 from rest_framework import status
@@ -317,7 +317,8 @@ class StripeCustomerView(APIView):
                     if isinstance(customer, str):
                         response_msg = customer
                     else:
-                        card_token = get_first_card_token(customer.sources.data)
+                        card_token = get_first_card_token(
+                            customer.sources.data)
                         added = add_card_to_customer(customer, token)
                         if added is True:
                             deleted = delete_card_from_customer(

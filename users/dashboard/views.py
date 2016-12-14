@@ -1,10 +1,15 @@
+from django.shortcuts import get_object_or_404
+
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAdminUser
-from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.views import APIView
+from rest_framework.generics import (
+    ListAPIView, RetrieveAPIView
+)
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -110,3 +115,36 @@ class AdminUserDetailView(RetrieveAPIView):
 
 class AdminPetView(PetListByUser):
     permission_classes = (IsAdminUser,)
+
+
+class AdminUserDeactive(APIView):
+    '''
+    Service to manage the user sessions.
+    METHODS
+    POST
+    * Create the auth token for any user
+    DELETE
+    * Delete the auth token for any user except super admin
+    '''
+    allowed_methods = ('POST', 'DELETE')
+    permission_classes = (IsAdminUser,)
+
+    def post(self, request, **kwargs):
+        user = get_object_or_404(User, pk=kwargs.get('pk', None))
+        user.is_active = True
+        user.save()
+        if hasattr(user, 'auth_token'):
+            return Response(status=status.HTTP_200_OK)
+        else:
+            Token.objects.create(user=user)
+            return Response(status=status.HTTP_201_CREATED)
+
+    def delete(self, request, **kwargs):
+        user = get_object_or_404(User, pk=kwargs.get('pk', None))
+        if not user.is_superuser:
+            user.is_active = False
+            user.save()
+            Token.objects.filter(user=user).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
