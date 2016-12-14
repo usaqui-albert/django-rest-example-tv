@@ -12,6 +12,7 @@ from TapVet import messages
 from TapVet.pagination import StandardPagination
 from users.serializers import UserLoginSerializer
 from users.models import User
+from pets.views import PetListByUser
 
 from .serializers import AdminAuthTokenSerializer, AdminUserSerializer
 
@@ -104,3 +105,7 @@ class AdminUserDetailView(RetrieveAPIView):
         'veterinarian__country', 'veterinarian__state',
         'breeder__country', 'breeder__state'
     )
+
+
+class AdminPetView(PetListByUser):
+    permission_classes = (IsAdminUser,)
