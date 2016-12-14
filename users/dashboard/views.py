@@ -4,7 +4,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -86,7 +86,8 @@ class AdminUsersListView(ListAPIView):
     )
     permission_classes = (IsAdminUser,)
     serializer_class = AdminUserSerializer
-    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
+    search_fields = ('username', 'full_name', 'email')
     filter_fields = (
         'username', 'email', 'full_name', 'is_active', 'groups',
         'veterinarian__verified'
