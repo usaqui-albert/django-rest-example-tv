@@ -20,16 +20,16 @@ class AdminAuthTokenSerializer(AuthTokenSerializer):
             if user:
                 if not user.is_active:
                     msg = 'User account is disabled.'
-                    raise ValidationError(msg, code='authorization')
+                    raise ValidationError(msg)
                 if not user.is_staff:
                     msg = 'You need valid staff permissions.'
-                    raise ValidationError(msg, code='authorization')
+                    raise ValidationError(msg)
             else:
                 msg = 'Unable to log in with provided credentials.'
-                raise ValidationError(msg, code='authorization')
+                raise ValidationError(msg)
         else:
             msg = 'Must include "username" and "password".'
-            raise ValidationError(msg, code='authorization')
+            raise ValidationError(msg)
 
         attrs['user'] = user
         return attrs

@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework import status
 from rest_framework.filters import OrderingFilter
@@ -78,7 +78,11 @@ class AdminUsersListView(ListAPIView):
 
     '''
     pagination_class = StandardPagination
-    queryset = User.objects.all()
+    queryset = User.objects.all().select_related(
+        'image',
+        'veterinarian__country', 'veterinarian__state',
+        'breeder__country', 'breeder__state'
+    )
     permission_classes = (IsAdminUser,)
     serializer_class = AdminUserSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter)
@@ -88,4 +92,15 @@ class AdminUsersListView(ListAPIView):
     )
     ordering_fields = (
         'is_active', 'username', 'email', 'full_name', 'created_at'
+    )
+
+
+class AdminUserDetailView(RetrieveAPIView):
+    pagination_class = StandardPagination
+    permission_classes = (IsAdminUser,)
+    serializer_class = AdminUserSerializer
+    queryset = User.objects.all().select_related(
+        'image',
+        'veterinarian__country', 'veterinarian__state',
+        'breeder__country', 'breeder__state'
     )

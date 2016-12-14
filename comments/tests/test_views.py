@@ -21,15 +21,15 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         req = self.factory.put('/', {})
         force_authenticate(req, user=self.get_user())
         resp = views.CommentsPetOwnerListCreateView.as_view()(req)
-        assert resp.status_code == 403
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "PUT" not allowed.'
+        assert resp.status_code == 405, ('Should return Method Not Allowed '
+                                         '(405)')
 
-    def test_request_get_no_auth(self):
+    def test_get_request_no_auth(self):
         req = self.factory.get('/')
-        resp = views.CommentsPetOwnerListCreateView.as_view()(req)
-        assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+        resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=1)
+        assert resp.status_code == 200, 'Should return OK (200)'
 
     def test_get_list(self):
         user = self.load_users_data().get_user(groups_id=1)
@@ -72,15 +72,13 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         assert resp.status_code == 403
 
     def test_get_list_no_pet_owner(self):
-        user = self.load_users_data().get_user(groups_id=4)
-        vet = self.get_user(groups_id=5)
-        post = mixer.blend('posts.Post', user=user)
-        mixer.blend(models.Comment, post=post, user=user)
+        vet = self.load_users_data().get_user(groups_id=4)
+        post = mixer.blend('posts.Post', user=vet)
         mixer.blend(models.Comment, post=post, user=vet)
         req = self.factory.get('/')
-        force_authenticate(req, user=user)
+        force_authenticate(req, user=vet)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
-        assert resp.status_code == 403
+        assert resp.status_code == 200, 'Should return OK (200)'
 
 
 class TestCommentsVetListCreateView(CustomTestCase):
@@ -91,13 +89,10 @@ class TestCommentsVetListCreateView(CustomTestCase):
         resp = views.CommentsVetListCreateView.as_view()(req)
         assert resp.status_code == 405
 
-    def test_request_get_no_auth(self):
+    def test_get_request_no_auth(self):
         req = self.factory.get('/')
-        resp = views.CommentsVetListCreateView.as_view()(req)
-        assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+        resp = views.CommentsVetListCreateView.as_view()(req, pk=1)
+        assert resp.status_code == 200, 'Should return OK (200)'
 
     def test_get_list(self):
         user = self.load_users_data().get_user(groups_id=1)
