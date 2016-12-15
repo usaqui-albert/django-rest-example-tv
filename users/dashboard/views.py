@@ -129,7 +129,8 @@ class AdminUserDeactive(APIView):
     allowed_methods = ('POST', 'DELETE')
     permission_classes = (IsAdminUser,)
 
-    def post(self, request, **kwargs):
+    @staticmethod
+    def post(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs.get('pk', None))
         user.is_active = True
         user.save()
@@ -139,7 +140,8 @@ class AdminUserDeactive(APIView):
             Token.objects.create(user=user)
             return Response(status=status.HTTP_201_CREATED)
 
-    def delete(self, request, **kwargs):
+    @staticmethod
+    def delete(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs.get('pk', None))
         if not user.is_superuser:
             user.is_active = False
