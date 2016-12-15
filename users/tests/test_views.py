@@ -13,6 +13,7 @@ from helpers.tests_helpers import CustomTestCase
 
 from posts.tests.test_views import get_test_image
 from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
+
 from .. import views
 from .. import models
 
@@ -41,7 +42,9 @@ class TestUserAuth(CustomTestCase):
         req = self.factory.post('/', data=data)
 
         resp = views.UserAuth.as_view()(req)
-        for key in ['full_name', 'email', 'token', 'stripe', 'groups', 'id']:
+        for key in [
+            'full_name', 'email', 'token', 'stripe_token', 'groups', 'id'
+        ]:
             assert key in resp.data
         assert resp.status_code == 200, 'Should return Success (200)'
 
@@ -283,17 +286,16 @@ class TestUserView(CustomTestCase):
 
 class TestUserDetailView(CustomTestCase):
 
-    def test_post_request_not_allowed(self):
-        req = self.factory.post('/')
-        force_authenticate(req, user=self.get_user())
-        resp = views.UserGetUpdateView.as_view()(req)
-        assert resp.status_code == 405, (
-            'Should HTTP 405 Method Not Allowed')
-
-    def test_get_request_no_authentication(self):
+    def test_get_request_non_authenticated_user_and_does_not_exist(self):
         req = self.factory.get('/')
-        resp = views.UserRetrieveUpdateView.as_view()(req)
-        assert resp.status_code == 401, 'Should return Unauthorized (401)'
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=1)
+        assert resp.status_code == 404, 'Should return Unauthorized (401)'
+
+    def test_get_request_non_authenticated_user_and_object_exist(self):
+        user = self.get_user()
+        req = self.factory.get('/')
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
+        assert resp.status_code == 200, 'Should return OK 200()'
 
     def test_get_request_with_authentication(self):
         user = self.get_user()
@@ -301,17 +303,6 @@ class TestUserDetailView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 200, 'Should return OK (200)'
-
-    def test_put_request_no_authentication(self):
-        user = mixer.blend(models.User)
-        data = {
-            "full_name": "Albert Usaqui",
-            "email": user.email,
-        }
-        req = self.factory.patch('/', data=data)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 401, (
-            'Should return Http 401 Unauthorized')
 
     def test_update_request_with_authentication(self):
         user = self.load_users_data().get_user(groups_id=2)
@@ -327,18 +318,6 @@ class TestUserDetailView(CustomTestCase):
         user.refresh_from_db()
         assert user.full_name == 'Albert Usaqui', 'Should update the user'
 
-    def test_put_request_with_authentication(self):
-        user = self.get_user()
-        data = {
-            "full_name": "Albert Usaqui",
-            "email": user.email,
-        }
-        req = self.factory.put('/', data=data)
-        force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
-        assert resp.status_code == 200, (
-            'Should return HTTP 200 OK')
-
     def test_put_request_by_different_user(self):
         user = self.get_user()
         user2 = self.get_user()
@@ -350,14 +329,14 @@ class TestUserDetailView(CustomTestCase):
         force_authenticate(req, user=user2)
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Error: You dont have permission to edit'
-        assert resp.status_code == 403, (
-            'Should return HTTP 403 Forbidden')
+        assert resp.status_code == 403, 'Should return HTTP 403 Forbidden'
+        assert resp.data['detail'] == ('You do not have permission to perform '
+                                       'this action.')
 
     def test_delete_request_authenticated_but_no_admin(self):
         req = self.factory.delete('/')
         force_authenticate(req, user=self.get_user())
-        resp = views.UserGetUpdateView.as_view()(req)
+        resp = views.UserRetrieveUpdateView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'You need admin status to delete.'
         assert resp.status_code == 401, (
@@ -367,7 +346,7 @@ class TestUserDetailView(CustomTestCase):
         user = self.get_user(is_staff=True)
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
-        resp = views.UserGetUpdateView.as_view()(req, pk=user.pk)
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
         assert resp.status_code == 204, 'Should return No Content (204)'
 
     def test_update_with_image(self):
@@ -862,7 +841,7 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=2)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You are not allowed to do this action'
+        assert resp.data['detail'] == 'You are not allowed to do this action.'
         assert resp.status_code == 403, 'Should return Forbidden (403)'
 
     def test_post_request_no_data(self):
@@ -882,17 +861,7 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Token field can not be empty'
-        assert resp.status_code == 400, 'Should return Bad Request (400)'
-
-    def test_user_has_already_stripe_customer(self):
-        user = self.get_user(stripe_token='tok_test')
-        req = self.factory.post('/', {'token': 'tok_123'})
-        force_authenticate(req, user=user)
-
-        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You already have a customer in stripe'
+        assert resp.data['detail'] == 'Token field is required'
         assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_get_request_user_no_authenticated(self):
@@ -907,17 +876,18 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=2)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You are not allowed to do this action'
+        assert resp.data['detail'] == 'You are not allowed to do this action.'
         assert resp.status_code == 403, 'Should return Forbidden (403)'
 
-    def test_get_user_has_no_stripe_customer(self):
+    def test_get_request_user_has_no_stripe_customer(self):
         user = self.get_user(stripe_token=None)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
 
         resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'There is no customer for this user'
+        assert resp.data['detail'] == 'There is no stripe customer available ' \
+                                      'for this user'
         assert resp.status_code == 404, 'Should return Not Found (404)'
 
 
@@ -1033,8 +1003,9 @@ class TestReferFriendView(CustomTestCase):
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "GET" not allowed.'
-        assert resp.status_code == 405, 'Should return Method ' \
-                                        'Not Allowed (405)'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
 
     def test_put_request_not_allowed(self):
         req = self.factory.put('/')
@@ -1042,8 +1013,9 @@ class TestReferFriendView(CustomTestCase):
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "PUT" not allowed.'
-        assert resp.status_code == 405, 'Should return Method ' \
-                                        'Not Allowed (405)'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
 
     def test_delete_request_not_allowed(self):
         req = self.factory.delete('/')
@@ -1051,24 +1023,26 @@ class TestReferFriendView(CustomTestCase):
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'Method "DELETE" not allowed.'
-        assert resp.status_code == 405, 'Should return Method ' \
-                                        'Not Allowed (405)'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
 
     def test_post_request_user_no_authenticated(self):
         req = self.factory.post('/')
         resp = views.ReferFriendView.as_view()(req)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Authentication credentials ' \
-                                      'were not provided.'
         assert resp.status_code == 401
+        assert resp.data['detail'] == (
+            'Authentication credentials were not provided.'
+        )
 
     def test_post_request_email_field_missing(self):
         req = self.factory.post('/', {})
         force_authenticate(req, user=self.get_user())
         resp = views.ReferFriendView.as_view()(req)
         assert 'email' in resp.data
-        assert 'This field is required.' in resp.data['email']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
+        assert 'This field is required.' in resp.data['email']
 
     def test_post_request_empty_email(self):
         data = {'email': ''}
@@ -1087,3 +1061,101 @@ class TestReferFriendView(CustomTestCase):
         assert 'email' in resp.data
         assert 'Enter a valid email address.' in resp.data['email']
         assert resp.status_code == 400, 'Should return Bad Request (400)'
+
+
+class TestUserFollowsListView(CustomTestCase):
+
+    def test_request_not_allowed(self):
+        req = self.factory.post('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserFollowsListView.as_view()(req)
+        assert resp.data['detail'] == 'Method "POST" not allowed.'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
+
+    def test_request_no_auth(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 201
+        req = self.factory.get('/')
+        resp = views.UserFollowsListView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+            
+        ]:
+            assert key in resp.data['results'][0]
+
+    def test_get_list(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 201
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowsListView.as_view()(req, pk=user.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+            'following'
+        ]:
+            assert key in resp.data['results'][0]
+        assert resp.data['results'][0]['following']
+
+
+class TestUserFollowedListView(CustomTestCase):
+
+    def test_request_not_allowed(self):
+        req = self.factory.post('/')
+        force_authenticate(req, user=self.get_user())
+        resp = views.UserFollowedListView.as_view()(req)
+        assert resp.data['detail'] == 'Method "POST" not allowed.'
+        assert resp.status_code == 405, (
+            'Should return Method Not Allowed (405)'
+        )
+
+    def test_request_no_auth(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(
+            req, pk=to_follow.pk)
+        assert resp.status_code == 201
+        req = self.factory.get('/')
+        resp = views.UserFollowedListView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+        ]:
+            assert key in resp.data['results'][0]
+        assert resp.data['results'][0]['id'] == user.id
+
+    def test_get_list(self):
+        to_follow = self.load_users_data().get_user(groups_id=1)
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowView.as_view()(
+            req, pk=to_follow.pk)
+        assert resp.status_code == 201
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.UserFollowedListView.as_view()(req, pk=to_follow.pk)
+        assert resp.status_code == 200
+        assert len(resp.data['results']) == 1
+        for key in [
+            'username', 'email', 'full_name', 'groups', 'id', 'image', 'label',
+            'following'
+        ]:
+            assert key in resp.data['results'][0]
+        assert resp.data['results'][0]['id'] == user.id

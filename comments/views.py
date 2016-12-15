@@ -1,8 +1,9 @@
 from django.db.models import Count
 from django.http import Http404
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, CreateAPIView
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -12,8 +13,9 @@ from TapVet.permissions import IsPetOwner
 from TapVet import messages
 from posts.models import Post
 
-from .models import Comment
-from .serializers import CommentSerializer, CommentVetSerializer
+from .models import Comment, Feedback
+from .serializers import (
+    CommentSerializer, CommentVetSerializer, FeedbackSerializer)
 
 from django.db.models import Case, Value, When, BooleanField
 
@@ -27,21 +29,29 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     POST
     """
     serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticated, IsPetOwner)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     pagination_class = StandardPagination
+    groups_ids = [1, 2]
 
     def get_queryset(self):
-        qs = Comment.objects.filter(
-            post_id=self.kwargs['pk'], user__groups_id__in=[1, 2]
-        ).annotate(
-            upvoters_count=Count('upvoters'),
-            upvoted=Case(
-                When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
+        annotate_params = {'upvoters_count': Count('upvoters')}
+        if self.request.user.is_authenticated():
+            annotate_params['upvoted'] = Case(
+                When(
+                    pk__in=self.request.user.upvotes.all(),
+                    then=Value(True)
+                ),
                 default=Value(False),
                 output_field=BooleanField(),
             )
-        ).select_related('user__groups').order_by(
-            '-upvoters_count', '-updated_at')
+        qs = Comment.objects.filter(
+            post_id=self.kwargs['pk'],
+            user__groups_id__in=self.groups_ids
+        ).annotate(
+            **annotate_params
+        ).select_related(
+            'user__groups'
+        ).order_by('-upvoters_count', '-updated_at')
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -66,15 +76,13 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
             dict(serializer.data, upvoters_count=0),
             status=status.HTTP_201_CREATED, headers=headers)
 
-    def get_post(self, pk):
-        qs = Post.objects.filter(
-            pk=pk
-        ).select_related('user__groups')
-        if not qs:
-            raise Http404()
-        aux = list(qs)
-        qs.update(updated_at=timezone.now())
-        return aux[0]
+    @staticmethod
+    def get_post(pk):
+        qs = Post.objects.filter(pk=pk).select_related('user__groups').first()
+        if qs:
+            qs.save()
+            return qs
+        raise Http404()
 
 
 class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
@@ -85,22 +93,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     GET
     POST
     """
-    permission_classes = (permissions.IsAuthenticated, )
     serializer_class = CommentVetSerializer
-
-    def get_queryset(self):
-        qs = Comment.objects.filter(
-            post_id=self.kwargs['pk'], user__groups_id__in=[3, 4, 5]
-        ).annotate(
-            upvoters_count=Count('upvoters'),
-            upvoted=Case(
-                When(pk__in=self.request.user.upvotes.all(), then=Value(True)),
-                default=Value(False),
-                output_field=BooleanField(),
-            )
-        ).select_related('user__groups').order_by(
-            '-upvoters_count', '-updated_at')
-        return qs
+    groups_ids = [3, 4, 5]
 
 
 class CommentVoteView(APIView):
@@ -131,3 +125,30 @@ class CommentVoteView(APIView):
         self.update_post(pk=comment.post.id)
         comment.upvoters.remove(request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FeedbackCreateView(CreateAPIView):
+    serializer_class = FeedbackSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    queryset = Feedback
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={
+                'user': request.user,
+                'comment': get_object_or_404(
+                    Comment, pk=kwargs.get('pk', None)
+                )
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+        except ValueError as e:
+            return Response(
+                messages.feedback_user, status=status.HTTP_400_BAD_REQUEST
+            )
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers)

@@ -263,7 +263,8 @@ class UserLoginSerializer(ModelSerializer):
             'label', 'token', 'settings', 'created_at'
         )
 
-    def get_settings(self, obj):
+    @staticmethod
+    def get_settings(obj):
         return {
             'blur_images': obj.blur_images,
             'interested_notification': obj.interested_notification,
@@ -271,3 +272,11 @@ class UserLoginSerializer(ModelSerializer):
             'comments_notification': obj.comments_notification,
             'comments_like_notification': obj.comments_like_notification
         }
+
+
+class UserFollowsSerializer(UserSerializers):
+    following = BooleanField(read_only=True)
+    label = CharField(source='get_label', read_only=True)
+
+    class Meta(UserSerializers.Meta):
+        fields = UserSerializers.Meta.fields + ('following',)

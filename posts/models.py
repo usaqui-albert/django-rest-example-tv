@@ -1,7 +1,9 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
-
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models.signals import post_save
+
+from .signals import post_reporting_signal
 
 min_max_range = [
     MinValueValidator(0),
@@ -125,3 +127,33 @@ class ActivePost(models.Model):
     post = models.ForeignKey('posts.Post', related_name='active_post_weight')
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Report(models.Model):
+    OFFENSIVE = 1
+    RELEVANT = 2
+    SPAM = 3
+    REPORT_TYPE = (
+        (OFFENSIVE, 'offensive'),
+        (RELEVANT, 'not relevant'),
+        (SPAM, 'spam'),
+    )
+
+    post = models.ForeignKey(Post, related_name='reports')
+    user = models.ForeignKey('users.User', related_name='reports')
+    type = models.PositiveSmallIntegerField(choices=REPORT_TYPE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post', 'type')
+
+    def get_type_as_string(self):
+        return [y for x, y in self.REPORT_TYPE if x == self.type][0]
+
+# Func to connect the signal on post save.
+post_save.connect(
+    post_reporting_signal,
+    sender=Report,
+    dispatch_uid="posts.models.report_post_save"
+)

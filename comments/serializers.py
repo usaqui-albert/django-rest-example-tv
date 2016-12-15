@@ -2,7 +2,7 @@ from rest_framework.serializers import (
     ModelSerializer, IntegerField, CharField, BooleanField,
     SerializerMethodField)
 
-from .models import Comment
+from .models import Comment, Feedback
 
 
 class CommentSerializer(ModelSerializer):
@@ -42,3 +42,21 @@ class CommentVetSerializer(CommentSerializer):
 
     def get_full_name(self, obj):
         return 'Veterinary Professional #%s' % (1000 + obj.user.id)
+
+
+class FeedbackSerializer(ModelSerializer):
+
+    class Meta:
+        model = Feedback
+        fields = ('was_helpful', 'description')
+
+    def create(self, validated_data):
+        feedback = Feedback(
+            **dict(
+                validated_data,
+                user=self.context['user'],
+                comment=self.context['comment']
+            )
+        )
+        feedback.save()
+        return feedback

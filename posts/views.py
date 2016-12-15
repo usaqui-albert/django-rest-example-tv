@@ -10,7 +10,7 @@ from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView, DestroyAPIView,
-    RetrieveUpdateDestroyAPIView, get_object_or_404
+    RetrieveUpdateDestroyAPIView, get_object_or_404, GenericAPIView
 )
 from rest_framework import permissions, status
 from rest_framework.views import APIView
@@ -18,12 +18,12 @@ from rest_framework.views import APIView
 from TapVet import messages
 from TapVet.permissions import IsVet
 from TapVet.pagination import StandardPagination, CardsPagination
-from pets.permissions import IsOwnerReadOnly
+from TapVet.permissions import IsOwnerOrReadOnly
 from .serializers import (
     PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
-    PaidPostSerializer
+    PaidPostSerializer, ReportTypeSerializer
 )
-from .models import Post, PaymentAmount, ImagePost, UserLikesPost
+from .models import Post, PaymentAmount, ImagePost, UserLikesPost, Report
 from .utils import (
     paid_post_handler, get_annotate_params, handler_images_order,
     prefetch_vet_comments, prefetch_owner_comments
@@ -149,25 +149,19 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     DELETE
     """
     serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwnerReadOnly)
-
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        images = instance.images.all()
-        map(lambda x: x.delete(), images)
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    permission_classes = (IsOwnerOrReadOnly,)
 
     def get_queryset(self):
         annotate_params = get_annotate_params('likes_count')
-        annotate_params['interested'] = Case(
-            When(
-                pk__in=self.request.user.likes.all(),
-                then=Value(True)
-            ),
-            default=Value(False),
-            output_field=BooleanField()
-        )
+        if self.request.user.is_authenticated():
+            annotate_params['interested'] = Case(
+                When(
+                    pk__in=self.request.user.likes.all(),
+                    then=Value(True)
+                ),
+                default=Value(False),
+                output_field=BooleanField()
+            )
         queryset = Post.objects.annotate(
             **annotate_params
         ).prefetch_related(
@@ -371,13 +365,42 @@ class PostPaidListView(ListAPIView):
     GET
     """
     pagination_class = CardsPagination
-    permission_classes = (IsVet, )
+    permission_classes = (IsVet,)
     serializer_class = PaidPostSerializer
 
     def get_queryset(self):
         qs = Post.objects.filter(
             visible_by_vet=True, visible_by_owner=True
         ).exclude(
-            comments__post__user_id=self.request.user.id
+            comments__user_id=self.request.user.id
         ).order_by('-updated_at')
         return qs
+
+
+class PostReportView(GenericAPIView):
+    """
+    Service for a user reports a post
+
+    :accepted methods:
+        POST
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = ReportTypeSerializer
+
+    def post(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        post = get_object_or_404(Post, pk=kwargs['pk'])
+        try:
+            Report.objects.create(
+                user=request.user,
+                post=post,
+                type=serializer.validated_data['type']
+            )
+        except IntegrityError:
+            return Response(
+                messages.post_already_reported,
+                status=status.HTTP_409_CONFLICT
+            )
+        else:
+            return Response(status=status.HTTP_201_CREATED)

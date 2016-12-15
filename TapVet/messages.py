@@ -1,5 +1,4 @@
 
-
 pet_no_pets = "This user doesn't have pets."
 
 admin_delete = "You need admin status to delete."
@@ -16,6 +15,8 @@ follow_permission = {
 }
 post_not_found = {"detail": "Post not found."}
 image_not_found = {"detail": "Image not found."}
+user_not_found = {"detail": "User not found."}
+
 request_successfully = {
     "detail": "Your request has been processed successfully "}
 inactive = {
@@ -24,4 +25,21 @@ inactive = {
 }
 already_liked = {
     "detail": "This post is already liked by you."
+}
+
+# COMMENTS
+feedback_user = {
+    "detail": "The feedback is only valid if it has been done " +
+    "by the post owner"
+}
+# END COMMENT
+post_already_reported = {
+    "detail": "Dear user, you can't report a post multiples times with "
+              "the same reason."
+}
+forbidden_action = {
+    "detail": "You are not allowed to do this action."
+}
+card_updated_successfully = {
+    "detail": "Your card has been updated successfully."
 }

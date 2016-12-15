@@ -1,6 +1,7 @@
 import stripe
 from stripe.error import CardError, InvalidRequestError, APIConnectionError
 
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Count, Value, Case, When, BooleanField
 from django.core.exceptions import ValidationError
@@ -12,22 +13,28 @@ from django.template.loader import render_to_string
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework import generics, permissions
+from rest_framework import permissions
+from rest_framework.generics import (
+    ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView,
+    GenericAPIView
+)
 from rest_framework.views import APIView
 from rest_framework import status
 
 from TapVet import messages
-from TapVet.settings import STRIPE_API_KEY
+from TapVet.pagination import StandardPagination
+from TapVet.permissions import IsOwnerOrReadOnly
 
-from .permissions import IsOwnerOrReadOnly
 from .models import User, Breeder, Veterinarian, AreaInterest
 from helpers.stripe_helpers import (
-    stripe_errors_handler, get_customer_in_stripe, card_list
+    stripe_errors_handler, get_customer_in_stripe, card_list,
+    get_first_card_token, add_card_to_customer, delete_card_from_customer
 )
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
-    UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer
+    UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer,
+    UserFollowsSerializer
 )
 from .tasks import send_mail, refer_a_friend_by_email
 
@@ -57,7 +64,7 @@ class UserAuth(ObtainAuthToken):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserView(generics.ListCreateAPIView):
+class UserView(ListCreateAPIView):
     """
     Service to create new users.
     Need authentication to list user
@@ -94,7 +101,7 @@ class UserView(generics.ListCreateAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             message = {
-                "detail": messages.user_login
+                'detail': messages.user_login
             }
             return Response(
                 message,
@@ -102,35 +109,7 @@ class UserView(generics.ListCreateAPIView):
             )
 
 
-class UserGetUpdateView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Service to update users.
-    PUT Method is used to update all required fields. Will responde in case
-    some is missing
-    PATCH Method is used to update any field, will not response in case
-    some required fill is missing
-
-    :accepted methods:
-    GET =  Dont need authentication
-    PUT = Need authentication
-    PATCH = Need authentication
-    """
-    serializer_class = UserSerializers
-    permission_classes = (IsOwnerOrReadOnly,)
-    allowed_methods = ('GET', 'PUT', 'PATCH', 'DELETE')
-    queryset = User.objects.all()
-
-    def delete(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            return Response(
-                {
-                    'detail': messages.admin_delete
-                },
-                status.HTTP_401_UNAUTHORIZED)
-        return self.destroy(request, *args, **kwargs)
-
-
-class GroupsListView(generics.ListAPIView):
+class GroupsListView(ListAPIView):
     """
     Service to list users groups.
 
@@ -143,7 +122,7 @@ class GroupsListView(generics.ListAPIView):
     allowed_methods = ('GET',)
 
 
-class BreederListCreateView(generics.ListCreateAPIView):
+class BreederListCreateView(ListCreateAPIView):
     """
     Service to create and list Breeder users. Need and authenticated user
 
@@ -171,7 +150,7 @@ class BreederListCreateView(generics.ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class VeterinarianListCreateView(generics.ListCreateAPIView):
+class VeterinarianListCreateView(ListCreateAPIView):
     """
     Service to create and list Veterinarians users. Need and authenticated user
 
@@ -199,7 +178,7 @@ class VeterinarianListCreateView(generics.ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class AuthorizeBreederView(generics.GenericAPIView):
+class AuthorizeBreederView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
     serializer_class = BreederSerializer
     allowed_methods = ('PATCH',)
@@ -212,7 +191,7 @@ class AuthorizeBreederView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
-class AuthorizeVetView(generics.GenericAPIView):
+class AuthorizeVetView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
     serializer_class = VeterinarianSerializer
     allowed_methods = ('PATCH',)
@@ -225,7 +204,7 @@ class AuthorizeVetView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
 
-class AreaInterestListView(generics.ListAPIView):
+class AreaInterestListView(ListAPIView):
     '''
     List for Area of Interest.
     Required:
@@ -238,7 +217,7 @@ class AreaInterestListView(generics.ListAPIView):
     queryset = AreaInterest.objects.all()
 
 
-class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
     '''
     One view to rule them all, one view to edit them.
 
@@ -256,7 +235,7 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     PUT = Modify the entire object, need the full instace
     PATCH = Modify only the needed fields
     '''
-    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
+    permission_classes = (IsOwnerOrReadOnly,)
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
 
@@ -297,6 +276,15 @@ class UserRetrieveUpdateView(generics.RetrieveUpdateAPIView):
         qs = self.queryset.annotate(**params)
         return qs.all()
 
+    def delete(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response(
+                {
+                    'detail': messages.admin_delete
+                },
+                status.HTTP_401_UNAUTHORIZED)
+        return self.destroy(request, *args, **kwargs)
+
 
 class StripeCustomerView(APIView):
     """Service to create a stripe customer for a TapVet user
@@ -308,7 +296,7 @@ class StripeCustomerView(APIView):
 
     def __init__(self, **kwargs):
         super(StripeCustomerView, self).__init__(**kwargs)
-        stripe.api_key = STRIPE_API_KEY
+        stripe.api_key = settings.STRIPE_API_KEY
 
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -322,36 +310,57 @@ class StripeCustomerView(APIView):
         """
         user = request.user
         if user.id == int(kwargs['pk']):
-            if 'token' in request.data:
-                token = request.data.get('token')
-                if token:
-                    if user.stripe_token:
-                        response_msg = {
-                            'detail': 'You already have a customer in stripe'}
+            token = request.data.get('token', None)
+            if token:
+                if user.stripe_token:
+                    customer = get_customer_in_stripe(user)
+                    if isinstance(customer, str):
+                        response_msg = customer
                     else:
-                        try:
-                            customer = stripe.Customer.create(
-                                source=token,
-                                description='Customer for %s' % user.__str__()
+                        card_token = get_first_card_token(
+                            customer.sources.data)
+                        added = add_card_to_customer(customer, token)
+                        if added is True:
+                            deleted = delete_card_from_customer(
+                                customer,
+                                card_token
                             )
-                        except (
-                            APIConnectionError, InvalidRequestError,
-                            CardError
-                        ) as err:
-                            response_msg = {
-                                'detail': stripe_errors_handler(err)}
+                            if deleted is True:
+                                return Response(
+                                    messages.card_updated_successfully,
+                                    status=status.HTTP_200_OK
+                                )
+                            else:
+                                response_msg = deleted
                         else:
-                            cus_token = customer.id
-                            user.stripe_token = cus_token
-                            user.save()
-                            return Response({'stripe': cus_token})
+                            response_msg = added
                 else:
-                    response_msg = {'detail': 'Token field can not be empty'}
+                    try:
+                        customer = stripe.Customer.create(
+                            source=token,
+                            description='Customer for %s' % user.__str__()
+                        )
+                    except (
+                        APIConnectionError, InvalidRequestError,
+                        CardError
+                    ) as err:
+                        response_msg = {
+                            'detail': stripe_errors_handler(err)}
+                    else:
+                        cus_token = customer.id
+                        user.stripe_token = cus_token
+                        user.save()
+                        return Response(
+                            {'stripe': cus_token},
+                            status=status.HTTP_201_CREATED
+                        )
             else:
                 response_msg = {'detail': 'Token field is required'}
             return Response(response_msg, status=status.HTTP_400_BAD_REQUEST)
-        response_msg = {'detail': 'You are not allowed to do this action'}
-        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            messages.forbidden_action,
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     @staticmethod
     def get(request, **kwargs):
@@ -363,16 +372,18 @@ class StripeCustomerView(APIView):
         """
         user = request.user
         if user.id == int(kwargs['pk']):
-            if user.stripe_token:
-                customer = get_customer_in_stripe(user)
-                cards = customer.sources.data
-                return Response(card_list(cards))
-            no_customer_response = {
-                'detail': 'There is no customer for this user'}
-            return Response(
-                no_customer_response, status=status.HTTP_404_NOT_FOUND)
-        response_msg = {'detail': 'You are not allowed to do this action'}
-        return Response(response_msg, status=status.HTTP_403_FORBIDDEN)
+            customer = get_customer_in_stripe(user)
+            if isinstance(customer, str):
+                return Response(
+                    {"detail": customer},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            cards = customer.sources.data
+            return Response(card_list(cards))
+        return Response(
+            messages.forbidden_action,
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class UserFollowView(APIView):
@@ -384,36 +395,39 @@ class UserFollowView(APIView):
     DELETE
     """
     allowed_methods = ('POST', 'DELETE')
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def forbidden(self):
-        return Response(
-            messages.follow_permission,
-            status=status.HTTP_403_FORBIDDEN
-        )
+    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, **kwargs):
-        user = get_object_or_404(User, pk=kwargs['pk'])
-        if request.user.has_perm('users.is_vet'):
-            if not user.is_vet():
-                return self.forbidden()
-            else:
-                try:
-                    if not user.veterinarian.verified:
-                        return self.forbidden()
-                except:
-                    return self.forbidden()
-        else:
-            if user.is_vet():
-                return self.forbidden()
-        request.user.follows.add(user.id)
-        return Response(status=status.HTTP_201_CREATED)
+        user = self.get_user(kwargs['pk'])
+        if user:
+            if request.user.has_perm('users.is_vet'):
+                if user.is_vet() and hasattr(
+                        user, 'veterinarian') and user.veterinarian.verified:
+                    return self.helper(user.id)
+            elif not user.is_vet():
+                return self.helper(user.id)
+            return Response(
+                messages.follow_permission,
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return Response(
+            messages.user_not_found,
+            status=status.HTTP_404_NOT_FOUND
+        )
 
     @staticmethod
     def delete(request, **kwargs):
         user = get_object_or_404(User, pk=kwargs['pk'])
         request.user.follows.remove(user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
+    def get_user(user_id):
+        return User.objects.filter(pk=user_id).select_related('groups').first()
+
+    def helper(self, user_id):
+        self.request.user.follows.add(user_id)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class UserFeedBackView(APIView):
@@ -423,10 +437,10 @@ class UserFeedBackView(APIView):
     :accepted methods:
     POST = The message will be receive on 'message'
     """
-    allowed_methods = ('POST', )
-    permission_classes = (permissions.IsAuthenticated, )
+    allowed_methods = ('POST',)
+    permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         message_title = "[TapVet] New Feedback"
         message_body = request.data.get('message', None)
         msg_html = render_to_string(
@@ -442,7 +456,7 @@ class UserFeedBackView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ReferFriendView(generics.GenericAPIView):
+class ReferFriendView(GenericAPIView):
     """
     Refer a friend endpoint
     :accepted methods:
@@ -459,3 +473,43 @@ class ReferFriendView(generics.GenericAPIView):
             request.user.full_name
         )
         return Response(messages.request_successfully)
+
+
+class UserFollowsListView(ListAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = UserFollowsSerializer
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
+        qs = user.follows.all()
+        if self.request.user.is_authenticated():
+            qs = qs.annotate(
+                following=Case(
+                    When(
+                        pk__in=self.request.user.follows.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+        return qs
+
+
+class UserFollowedListView(UserFollowsListView):
+    def get_queryset(self):
+        user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
+        qs = user.followed_by.all()
+        if self.request.user.is_authenticated():
+            qs = qs.annotate(
+                following=Case(
+                    When(
+                        pk__in=self.request.user.follows.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            )
+        return qs

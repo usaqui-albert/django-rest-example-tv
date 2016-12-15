@@ -403,7 +403,8 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
         resp = views.PostRetrieveUpdateDeleteView.as_view()(
             req, pk=post.pk)
         assert resp.status_code == 403
-        assert resp.data['detail'] == 'Error: You dont have permission to edit'
+        assert resp.data['detail'] == ('You do not have permission to perform '
+                                       'this action.')
 
 
 class TestImagePostDeleteView(CustomTestCase):

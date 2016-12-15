@@ -157,8 +157,10 @@ class Veterinarian(models.Model):
 
 # Func to connect the signal on post save.
 post_save.connect(
-    new_vet_signal, sender=Veterinarian,
-    dispatch_uid="users.models.veterinarian_post_save")
+    new_vet_signal,
+    sender=Veterinarian,
+    dispatch_uid="users.models.veterinarian_post_save"
+)
 
 
 class ProfileImage(models.Model):
