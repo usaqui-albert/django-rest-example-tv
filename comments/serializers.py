@@ -40,7 +40,8 @@ class CommentVetSerializer(CommentSerializer):
             'post': {'read_only': True}
         }
 
-    def get_full_name(self, obj):
+    @staticmethod
+    def get_full_name(obj):
         return 'Veterinary Professional #%s' % (1000 + obj.user.id)
 
 

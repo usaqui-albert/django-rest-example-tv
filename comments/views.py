@@ -9,7 +9,6 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 
 from TapVet.pagination import StandardPagination
-from TapVet.permissions import IsPetOwner
 from TapVet import messages
 from posts.models import Post
 
