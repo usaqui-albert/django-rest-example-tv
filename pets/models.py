@@ -9,25 +9,21 @@ PET_GENDER = (
 
 
 def get_current_year():
-    '''
-    Get the current year.
-    '''
+    """Get the current year."""
     return now().year
 
 
 def get_limit_year():
-    '''
-    Get the current year minus 100.
-    '''
+    """Get the current year minus 100."""
     return now().year - 100
 
 
 def uploads_path(instance, filename):
-    '''
+    """
     Function to organize the upload directory
     this way, every file is organized by username and management
     is a lot faster
-    '''
+    """
     return '/'.join(['uploads', instance.user.username, filename])
 
 
@@ -70,5 +66,4 @@ class Pet(models.Model):
 
     def save(self, *args, **kwargs):
         self.age_verify()
-
         return super(Pet, self).save(*args, **kwargs)
