@@ -1,11 +1,13 @@
 import stripe
+from operator import xor
 
 from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import (
-    Case, When, Value, IntegerField, F, BooleanField
+    Case, When, Value, IntegerField, F, BooleanField, Q
 )
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 from rest_framework.response import Response
 from rest_framework.generics import (
@@ -59,13 +61,21 @@ class PostListCreateView(ListCreateAPIView):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
+    def get(self, request, *args, **kwargs):
+        try:
+            return self.list(request, *args, **kwargs)
+        except ValidationError as err:
+            return Response(
+                {'detail': err.message},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     def get_queryset(self):
         user = self.request.user
         annotate_params = get_annotate_params(
             'one_day_recently',
             'likes_count'
         )
-        filters = {'visible_by_owner': True}
         if user.is_authenticated():
             annotate_params['case_1'] = Case(
                 When(
@@ -104,10 +114,23 @@ class PostListCreateView(ListCreateAPIView):
             annotate_params['interested'] = F('case_1')
             group_id = user.groups.id
             if group_id in [3, 4, 5]:
-                filters = {'visible_by_vet': True}
+                filters = Q(visible_by_vet=True)
                 # TODO: here is missing the validation for a verified vet
                 if group_id == 3:
-                    filters['visible_by_owner'] = True
+                    filters = filters | Q(visible_by_owner=True,
+                                          visible_by_vet=True)
+            else:
+                filters = Q(visible_by_owner=True)
+        else:
+            veterinarian = bool(self.request.query_params.get('vet', None))
+            pet_owner = bool(self.request.query_params.get('owner', None))
+            if xor(veterinarian, pet_owner):
+                if veterinarian:
+                    filters = Q(visible_by_vet=True)
+                else:
+                    filters = Q(visible_by_owner=True)
+            else:
+                raise ValidationError('Invalid query params')
         return self.helper(annotate_params, filters, user.is_authenticated())
 
     @staticmethod
@@ -121,7 +144,7 @@ class PostListCreateView(ListCreateAPIView):
             'images',
             prefetch_vet_comments,
             prefetch_owner_comments
-        ).filter(**filters)
+        ).filter(filters)
         if is_authenticated:
             posts = posts.order_by('-points', '-id')
         else:
