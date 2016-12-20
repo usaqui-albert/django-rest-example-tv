@@ -145,13 +145,14 @@ class FeedbackCreateView(CreateAPIView):
     queryset = Feedback
 
     def create(self, request, *args, **kwargs):
+        comment = self.get_comment(kwargs['pk'])
+        if not request.user.id == comment.post.user_id:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = self.serializer_class(
             data=request.data,
             context={
                 'user': request.user,
-                'comment': get_object_or_404(
-                    Comment, pk=kwargs.get('pk', None)
-                )
+                'comment': comment
             }
         )
         serializer.is_valid(raise_exception=True)
@@ -169,3 +170,11 @@ class FeedbackCreateView(CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @staticmethod
+    def get_comment(pk):
+        comment = Comment.objects.filter(pk=pk).select_related(
+            'post__user').first()
+        if comment:
+            return comment
+        raise Http404()
