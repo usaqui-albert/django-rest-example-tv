@@ -17,6 +17,7 @@ from .serializers import (
     CommentSerializer, CommentVetSerializer, FeedbackSerializer)
 
 from django.db.models import Case, Value, When, BooleanField
+from django.db import IntegrityError
 
 
 class CommentsPetOwnerListCreateView(ListCreateAPIView):
@@ -34,15 +35,27 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         annotate_params = {'upvoters_count': Count('upvoters')}
-        if self.request.user.is_authenticated():
+        user = self.request.user
+        if user.is_authenticated():
             annotate_params['upvoted'] = Case(
                 When(
-                    pk__in=self.request.user.upvotes.all(),
+                    pk__in=user.upvotes.all(),
                     then=Value(True)
                 ),
                 default=Value(False),
                 output_field=BooleanField(),
             )
+            post = self.get_post(self.kwargs['pk'])
+            is_owner = int(post.user.id) == int(user.id)
+            if post and is_owner:
+                annotate_params['has_feedback'] = Case(
+                    When(
+                        pk__in=user.feedbacks.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'],
             user__groups_id__in=self.groups_ids
@@ -144,7 +157,12 @@ class FeedbackCreateView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-        except ValueError as e:
+        except (ValueError, IntegrityError) as e:
+            if isinstance(e, IntegrityError):
+                return Response(
+                    messages.only_once_feedback,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             return Response(
                 messages.feedback_user, status=status.HTTP_400_BAD_REQUEST
             )
