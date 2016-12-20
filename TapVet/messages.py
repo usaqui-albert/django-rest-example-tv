@@ -32,6 +32,9 @@ feedback_user = {
     "detail": "The feedback is only valid if it has been done " +
     "by the post owner"
 }
+only_once_feedback = {
+    "detail": "You can give feedback of a comment only once."
+}
 # END COMMENT
 post_already_reported = {
     "detail": "Dear user, you can't report a post multiples times with "
