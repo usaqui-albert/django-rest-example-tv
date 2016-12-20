@@ -159,7 +159,7 @@ EMAIL_SUBJECT_PREFIX = "[TapVet]"
 DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
 
 ADMINS = [
-    ('Leopoldo Pimentel', 'leofaster@gmail.com'),
+    ('Leopoldo Pimentel', 'usaqui.albert@gmail.com'),
     ('Mayra Canas', 'mayrac@blanclabs.com'),
 ]
 
