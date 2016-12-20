@@ -15,7 +15,8 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = (
             'description', 'id', 'user', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'upvoted')
+            'upvoters_count', 'label', 'full_name', 'upvoted'
+        )
         extra_kwargs = {
             'user': {'read_only': True},
             'post': {'read_only': True}
@@ -29,12 +30,14 @@ class CommentSerializer(ModelSerializer):
 
 class CommentVetSerializer(CommentSerializer):
     full_name = SerializerMethodField(read_only=True)
+    has_feedback = BooleanField(read_only=True)
 
     class Meta:
         model = Comment
         fields = (
             'description', 'id', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'upvoted')
+            'upvoters_count', 'label', 'full_name', 'upvoted', 'has_feedback'
+        )
         extra_kwargs = {
             'user': {'read_only': True},
             'post': {'read_only': True}
