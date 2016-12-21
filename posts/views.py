@@ -317,7 +317,7 @@ class PostByUserListView(ListAPIView):
         GET
     """
     pagination_class = StandardPagination
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
     serializer_class = PostSerializer
 
     def get_queryset(self):
