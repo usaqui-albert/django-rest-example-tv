@@ -9,7 +9,6 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 
 from TapVet.pagination import StandardPagination
-from TapVet.permissions import IsPetOwner
 from TapVet import messages
 from posts.models import Post
 
@@ -18,6 +17,7 @@ from .serializers import (
     CommentSerializer, CommentVetSerializer, FeedbackSerializer)
 
 from django.db.models import Case, Value, When, BooleanField
+from django.db import IntegrityError
 
 
 class CommentsPetOwnerListCreateView(ListCreateAPIView):
@@ -35,15 +35,27 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         annotate_params = {'upvoters_count': Count('upvoters')}
-        if self.request.user.is_authenticated():
+        user = self.request.user
+        if user.is_authenticated():
             annotate_params['upvoted'] = Case(
                 When(
-                    pk__in=self.request.user.upvotes.all(),
+                    pk__in=user.upvotes.all(),
                     then=Value(True)
                 ),
                 default=Value(False),
                 output_field=BooleanField(),
             )
+            post = self.get_post(self.kwargs['pk'])
+            is_owner = int(post.user.id) == int(user.id)
+            if post and is_owner:
+                annotate_params['has_feedback'] = Case(
+                    When(
+                        pk__in=user.feedbacks.all(),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'],
             user__groups_id__in=self.groups_ids
@@ -133,22 +145,36 @@ class FeedbackCreateView(CreateAPIView):
     queryset = Feedback
 
     def create(self, request, *args, **kwargs):
+        comment = self.get_comment(kwargs['pk'])
+        if not request.user.id == comment.post.user_id:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = self.serializer_class(
             data=request.data,
             context={
                 'user': request.user,
-                'comment': get_object_or_404(
-                    Comment, pk=kwargs.get('pk', None)
-                )
+                'comment': comment
             }
         )
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()
-        except ValueError as e:
+        except (ValueError, IntegrityError) as e:
+            if isinstance(e, IntegrityError):
+                return Response(
+                    messages.only_once_feedback,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             return Response(
                 messages.feedback_user, status=status.HTTP_400_BAD_REQUEST
             )
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @staticmethod
+    def get_comment(pk):
+        comment = Comment.objects.filter(pk=pk).select_related(
+            'post__user').first()
+        if comment:
+            return comment
+        raise Http404()

@@ -17,8 +17,8 @@ class Comment(models.Model):
 
 
 class Feedback(models.Model):
-    comment = models.ForeignKey(Comment)
-    user = models.ForeignKey('users.user')
+    comment = models.OneToOneField(Comment)
+    user = models.ForeignKey('users.user', related_name='feedbacks')
     was_helpful = models.BooleanField()
     description = models.CharField(max_length=500, null=True, blank=True)
 
