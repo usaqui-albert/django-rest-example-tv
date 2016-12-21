@@ -407,7 +407,9 @@ class UserFollowView(APIView):
         if request.user.has_perm('users.is_vet'):
             if user.is_vet():
                 is_verified = hasattr(
-                    user, 'veterinarian') and user.veterinarian.verified
+                    request.user,
+                    'veterinarian'
+                ) and request.user.veterinarian.verified
                 if is_verified:
                     add_user = True
                 else:
