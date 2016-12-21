@@ -57,7 +57,7 @@ class PetCreateView(CreateAPIView):
 
 class PetRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = PetSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Pet.objects.all()
 
     def update(self, request, *args, **kwargs):
