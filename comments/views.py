@@ -1,7 +1,6 @@
 from django.db.models import Count
 from django.http import Http404
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
 
 from rest_framework.generics import ListCreateAPIView, CreateAPIView
 from rest_framework.views import APIView
