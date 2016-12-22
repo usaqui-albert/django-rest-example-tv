@@ -65,7 +65,13 @@ class UserAuth(ObtainAuthToken):
                 status=status.HTTP_403_FORBIDDEN
             )
         serializer = UserLoginSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        if user.is_vet():
+            data['is_verified'] = True if hasattr(
+                user,
+                'veterinarian'
+            ) and user.veterinarian.verified else False
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class UserView(ListCreateAPIView):
@@ -331,7 +337,7 @@ class StripeCustomerView(APIView):
                             )
                             if deleted is True:
                                 return Response(
-                                    messages.card_updated_successfully,
+                                    {'stripe': user.stripe_token},
                                     status=status.HTTP_200_OK
                                 )
                             else:
