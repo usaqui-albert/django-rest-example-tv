@@ -49,6 +49,3 @@ post_already_reported = {
 forbidden_action = {
     "detail": "You are not allowed to do this action."
 }
-card_updated_successfully = {
-    "detail": "Your card has been updated successfully."
-}
