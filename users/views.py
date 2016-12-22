@@ -410,7 +410,7 @@ class UserFollowView(APIView):
     def post(self, request, **kwargs):
         user = self.get_user(kwargs['pk'])
         add_user = False
-        if request.user.has_perm('users.is_vet'):
+        if request.user.is_vet():
             if user.is_vet():
                 is_verified = hasattr(
                     request.user,
@@ -505,34 +505,40 @@ class UserFollowsListView(ListAPIView):
 
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
-        qs = user.follows.all()
-        if self.request.user.is_authenticated():
+        qs = user.follows.select_related('image', 'groups')
+        request_user = self.request.user
+        if request_user.is_authenticated():
             qs = qs.annotate(
                 following=Case(
                     When(
-                        pk__in=self.request.user.follows.all(),
+                        pk__in=request_user.follows.all(),
                         then=Value(True)
                     ),
                     default=Value(False),
                     output_field=BooleanField()
                 )
-            )
-        return qs
+            ).exclude(pk=request_user.id)
+        return [
+            obj
+            for obj in qs
+            if hasattr(obj, 'veterinarian') and obj.veterinarian.verified
+        ] if user.is_vet() else qs
 
 
 class UserFollowedListView(UserFollowsListView):
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
-        qs = user.followed_by.all()
-        if self.request.user.is_authenticated():
+        qs = user.followed_by.select_related('image', 'groups')
+        request_user = self.request.user
+        if request_user.is_authenticated():
             qs = qs.annotate(
                 following=Case(
                     When(
-                        pk__in=self.request.user.follows.all(),
+                        pk__in=request_user.follows.all(),
                         then=Value(True)
                     ),
                     default=Value(False),
                     output_field=BooleanField()
                 )
-            )
+            ).exclude(pk=request_user.id)
         return qs
