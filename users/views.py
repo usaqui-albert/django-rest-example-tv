@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
 from django.template.loader import render_to_string
-
+from django.http import Http404
 
 from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -54,14 +54,24 @@ class UserAuth(ObtainAuthToken):
             serializer.is_valid(raise_exception=True)
         except:
             return Response(
-                messages.bad_login, status=status.HTTP_400_BAD_REQUEST)
+                messages.bad_login,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         user = serializer.validated_data['user']
         token = Token.objects.filter(user=user).first()
         if not token:
             return Response(
-                messages.inactive, status=status.HTTP_403_FORBIDDEN)
+                messages.inactive,
+                status=status.HTTP_403_FORBIDDEN
+            )
         serializer = UserLoginSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        if user.is_vet():
+            data['is_verified'] = True if hasattr(
+                user,
+                'veterinarian'
+            ) and user.veterinarian.verified else False
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class UserView(ListCreateAPIView):
@@ -327,7 +337,7 @@ class StripeCustomerView(APIView):
                             )
                             if deleted is True:
                                 return Response(
-                                    messages.card_updated_successfully,
+                                    {'stripe': user.stripe_token},
                                     status=status.HTTP_200_OK
                                 )
                             else:
@@ -399,20 +409,33 @@ class UserFollowView(APIView):
 
     def post(self, request, **kwargs):
         user = self.get_user(kwargs['pk'])
-        if user:
-            if request.user.has_perm('users.is_vet'):
-                if user.is_vet() and hasattr(
-                        user, 'veterinarian') and user.veterinarian.verified:
-                    return self.helper(user.id)
-            elif not user.is_vet():
-                return self.helper(user.id)
-            return Response(
-                messages.follow_permission,
-                status=status.HTTP_403_FORBIDDEN
-            )
+        add_user = False
+        if request.user.is_vet():
+            if user.is_vet():
+                is_verified = hasattr(
+                    request.user,
+                    'veterinarian'
+                ) and request.user.veterinarian.verified
+                if is_verified:
+                    add_user = True
+                else:
+                    return Response(
+                        messages.follow_forbidden_not_verified,
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+        elif not user.is_vet():
+            add_user = True
+        if add_user:
+            if user.id == request.user.id:
+                return Response(
+                    messages.follow_yourself_forbidden,
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            request.user.follows.add(user.id)
+            return Response(status=status.HTTP_201_CREATED)
         return Response(
-            messages.user_not_found,
-            status=status.HTTP_404_NOT_FOUND
+            messages.follow_permission,
+            status=status.HTTP_403_FORBIDDEN
         )
 
     @staticmethod
@@ -423,11 +446,10 @@ class UserFollowView(APIView):
 
     @staticmethod
     def get_user(user_id):
-        return User.objects.filter(pk=user_id).select_related('groups').first()
-
-    def helper(self, user_id):
-        self.request.user.follows.add(user_id)
-        return Response(status=status.HTTP_201_CREATED)
+        user = User.objects.filter(pk=user_id).select_related('groups').first()
+        if user:
+            return user
+        raise Http404()
 
 
 class UserFeedBackView(APIView):
@@ -440,7 +462,8 @@ class UserFeedBackView(APIView):
     allowed_methods = ('POST',)
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request, **kwargs):
+    @staticmethod
+    def post(request, **kwargs):
         message_title = "[TapVet] New Feedback"
         message_body = request.data.get('message', None)
         msg_html = render_to_string(
@@ -482,34 +505,40 @@ class UserFollowsListView(ListAPIView):
 
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
-        qs = user.follows.all()
-        if self.request.user.is_authenticated():
+        qs = user.follows.select_related('image', 'groups')
+        request_user = self.request.user
+        if request_user.is_authenticated():
             qs = qs.annotate(
                 following=Case(
                     When(
-                        pk__in=self.request.user.follows.all(),
+                        pk__in=request_user.follows.all(),
                         then=Value(True)
                     ),
                     default=Value(False),
                     output_field=BooleanField()
                 )
-            )
-        return qs
+            ).exclude(pk=request_user.id)
+        return [
+            obj
+            for obj in qs
+            if hasattr(obj, 'veterinarian') and obj.veterinarian.verified
+        ] if user.is_vet() else qs
 
 
 class UserFollowedListView(UserFollowsListView):
     def get_queryset(self):
         user = get_object_or_404(User, pk=self.kwargs.get('pk', None))
-        qs = user.followed_by.all()
-        if self.request.user.is_authenticated():
+        qs = user.followed_by.select_related('image', 'groups')
+        request_user = self.request.user
+        if request_user.is_authenticated():
             qs = qs.annotate(
                 following=Case(
                     When(
-                        pk__in=self.request.user.follows.all(),
+                        pk__in=request_user.follows.all(),
                         then=Value(True)
                     ),
                     default=Value(False),
                     output_field=BooleanField()
                 )
-            )
+            ).exclude(pk=request_user.id)
         return qs

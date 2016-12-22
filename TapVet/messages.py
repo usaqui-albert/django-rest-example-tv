@@ -7,11 +7,17 @@ admin_required = "Admin level is needed for this action."
 user_login = "Authentication credentials were not provided."
 bad_login = {"detail": "Your username and password do not match."}
 
-permission = "Error: You don't have permission to edit."
-one_image = "Error: A post needs at least one image."
-comment_permission = {"detail": "Error: You don't have permission to comment."}
+permission = "You don't have permission to edit."
+one_image = "A post needs at least one image."
+comment_permission = {"detail": "You don't have permission to comment."}
 follow_permission = {
-    "detail": "Error: You don't have permission to follow this user."
+    "detail": "You don't have permission to follow this user."
+}
+follow_yourself_forbidden = {
+    "detail": "You can't follow yourself."
+}
+follow_forbidden_not_verified = {
+    "detail": "You can't follow given you are not verified."
 }
 post_not_found = {"detail": "Post not found."}
 image_not_found = {"detail": "Image not found."}
@@ -42,7 +48,4 @@ post_already_reported = {
 }
 forbidden_action = {
     "detail": "You are not allowed to do this action."
-}
-card_updated_successfully = {
-    "detail": "Your card has been updated successfully."
 }
