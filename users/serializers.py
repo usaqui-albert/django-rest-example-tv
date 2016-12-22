@@ -258,9 +258,9 @@ class UserLoginSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'full_name', 'email', 'groups',
-            'created_at', 'stripe_token', 'image',
-            'label', 'token', 'settings', 'created_at'
+            'id', 'full_name', 'email', 'groups', 'created_at',
+            'stripe_token', 'image', 'label', 'token', 'settings',
+            'created_at'
         )
 
     @staticmethod
