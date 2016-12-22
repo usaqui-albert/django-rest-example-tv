@@ -331,7 +331,7 @@ class StripeCustomerView(APIView):
                             )
                             if deleted is True:
                                 return Response(
-                                    messages.card_updated_successfully,
+                                    {'stripe': user.stripe_token},
                                     status=status.HTTP_200_OK
                                 )
                             else:
