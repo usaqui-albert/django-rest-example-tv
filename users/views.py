@@ -195,6 +195,7 @@ class AuthorizeBreederView(GenericAPIView):
 
     def patch(self, request, *args, **kwargs):
         breeder = get_object_or_404(Breeder, id=kwargs['pk'])
+        # TODO: Check this service to adapt the new flow of verification.
         breeder.verified = request.POST.get('verified', False)
         breeder.save()
         serializer = self.serializer_class(breeder)
@@ -203,11 +204,11 @@ class AuthorizeBreederView(GenericAPIView):
 
 class AuthorizeVetView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
-    serializer_class = VeterinarianSerializer
     allowed_methods = ('PATCH',)
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self, request, **kwargs):
         vet = get_object_or_404(Veterinarian, id=kwargs['pk'])
+        # TODO: Check this service to adapt the new flow of verification.
         vet.verified = request.POST.get('verified', False)
         vet.save()
         serializer = self.serializer_class(vet)
