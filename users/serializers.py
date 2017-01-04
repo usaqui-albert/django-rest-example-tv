@@ -6,6 +6,8 @@ from rest_framework.serializers import (
     CharField, SerializerMethodField, IntegerField, BooleanField
 )
 from rest_framework.authtoken.models import Token
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
@@ -128,8 +130,7 @@ class VeterinarianSerializer(ModelSerializer):
         else:
             area_interest = validated_data.pop('area_interest')
             self.instance = self.create(validated_data)
-            for area in area_interest:
-                self.instance.area_interest.add(area)
+            self.instance.area_interest.set(area_interest)
 
             assert self.instance is not None, (
                 '`create()` did not return an object instance.'
@@ -202,11 +203,29 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
                 instance.breeder.save()
         elif instance.groups.id in [3, 4, 5]:
             if veterinarian_data:
-                area_interest = veterinarian_data.pop('area_interest', [])
-                instance.veterinarian.area_interest.set(area_interest)
-                for attr, value in veterinarian_data.items():
-                    setattr(instance.veterinarian, attr, value)
-                instance.veterinarian.save()
+                if hasattr(instance, 'veterinarian'):
+                    area_interest = veterinarian_data.pop(
+                        'area_interest',
+                        instance.veterinarian.area_interest.all()
+                    )
+                    instance.veterinarian.area_interest.set(area_interest)
+                    for attr, value in veterinarian_data.items():
+                        setattr(instance.veterinarian, attr, value)
+                    instance.veterinarian.save()
+                else:
+                    serializer = VeterinarianSerializer(
+                        data=veterinarian_data,
+                        context=self.context
+                    )
+                    serializer.is_valid(raise_exception=True)
+                    try:
+                        serializer.save()
+                    except (
+                        IntegrityError,
+                        ValueError,
+                        DjangoValidationError
+                    ) as err:
+                        raise ValidationError({'veterinarian': str(err)})
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -235,6 +254,17 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             user=user)
         profile_image.save()
 
+    @staticmethod
+    def validate_veterinarian(value):
+        if 'area_interest' in value:
+            areas = value['area_interest']
+            value['area_interest'] = [area.id for area in areas]
+        if 'country' in value:
+            value['country'] = value['country'].id
+        if 'state' in value:
+            value['state'] = value['state'].id
+        return value
+
 
 class ReferFriendSerializer(Serializer):
     email = EmailField(max_length=100)
@@ -243,7 +273,7 @@ class ReferFriendSerializer(Serializer):
 class TokenSerializer(ModelSerializer):
         class Meta:
             model = Token
-            fields = ('key')
+            fields = ('key',)
             extra_kwargs = {
                 'key': {'read_only': True},
             }
