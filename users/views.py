@@ -517,7 +517,7 @@ class UserFollowsListView(ListAPIView):
                     default=Value(False),
                     output_field=BooleanField()
                 )
-            ).exclude(pk=request_user.id)
+            )
         return [
             obj
             for obj in qs
@@ -540,5 +540,5 @@ class UserFollowedListView(UserFollowsListView):
                     default=Value(False),
                     output_field=BooleanField()
                 )
-            ).exclude(pk=request_user.id)
+            )
         return qs
