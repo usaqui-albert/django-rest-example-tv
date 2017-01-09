@@ -407,7 +407,7 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
                                        'this action.')
 
 
-class TestImagePostDeleteView(CustomTestCase):
+class TestImageDetailView(CustomTestCase):
     def test_delete(self):
         user = self.load_users_data().get_user(groups_id=1)
         tmp_file = get_test_image()
@@ -427,7 +427,7 @@ class TestImagePostDeleteView(CustomTestCase):
         )
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
-        resp2 = views.ImagePostDeleteView.as_view()(
+        resp2 = views.ImageDetailView.as_view()(
             req, pk=resp.data['images'][1]['id'])
         assert resp2.status_code == 204
 
@@ -450,9 +450,9 @@ class TestImagePostDeleteView(CustomTestCase):
         )
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
-        views.ImagePostDeleteView.as_view()(
+        views.ImageDetailView.as_view()(
             req, pk=resp.data['images'][1]['id'])
-        resp2 = views.ImagePostDeleteView.as_view()(
+        resp2 = views.ImageDetailView.as_view()(
             req, pk=resp.data['images'][0]['id'])
         assert resp2.status_code == 406
         assert resp2.data['detail'] == messages.one_image
@@ -475,7 +475,7 @@ class TestImagePostDeleteView(CustomTestCase):
             'Should return HTTP 201 CREATED'
         )
         req = self.factory.delete('/')
-        resp2 = views.ImagePostDeleteView.as_view()(
+        resp2 = views.ImageDetailView.as_view()(
             req, pk=resp.data['images'][1]['id'])
         assert resp2.status_code == 401
 
@@ -499,7 +499,7 @@ class TestImagePostDeleteView(CustomTestCase):
         )
         req = self.factory.delete('/')
         force_authenticate(req, user=user2)
-        resp2 = views.ImagePostDeleteView.as_view()(
+        resp2 = views.ImageDetailView.as_view()(
             req, pk=resp.data['images'][1]['id'])
         assert resp2.status_code == 401
 
