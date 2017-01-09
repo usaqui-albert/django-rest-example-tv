@@ -213,9 +213,17 @@ class ImageView(GenericAPIView):
                 # Faking a post serializer instance to use create_image_post
                 # method, shouldn't be like this by the way.
                 serializer = PostSerializer(post, data={}, partial=True)
-                serializer.create_image_post(new_image, post, image_number)
+                image_post = serializer.create_image_post(
+                    new_image,
+                    post,
+                    image_number
+                )
                 post.save()
-                return Response(status=status.HTTP_200_OK)
+                image_serializer = self.serializer_class(image_post)
+                return Response(
+                    image_serializer.data,
+                    status=status.HTTP_200_OK
+                )
             return Response(
                 messages.image_required,
                 status=status.HTTP_400_BAD_REQUEST
@@ -249,9 +257,13 @@ class ImageDetailView(DestroyAPIView):
                 # Faking a post serializer instance to use update_image_post
                 # method, shouldn't be like this by the way.
                 serializer = PostSerializer(post, data={}, partial=True)
-                serializer.update_image_post(new_image, image)
+                image_post = serializer.update_image_post(new_image, image)
                 post.save()
-                return Response(status=status.HTTP_200_OK)
+                image_serializer = self.serializer_class(image_post)
+                return Response(
+                    image_serializer.data,
+                    status=status.HTTP_200_OK
+                )
             return Response(
                 messages.image_required,
                 status=status.HTTP_400_BAD_REQUEST
