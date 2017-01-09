@@ -204,6 +204,7 @@ class AuthorizeBreederView(GenericAPIView):
 
 class AuthorizeVetView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
+    serializer_class = VeterinarianSerializer
     allowed_methods = ('PATCH',)
 
     def patch(self, request, **kwargs):

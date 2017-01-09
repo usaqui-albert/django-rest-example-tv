@@ -40,7 +40,7 @@ class TestPostListCreateView(CustomTestCase):
 
     def test_get_request_non_authenticated_user(self):
         self.load_feed_variables()
-        req = self.factory.get('/')
+        req = self.factory.get('/?owner=1')
         resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 200, 'Should return 200 OK'
 
@@ -272,23 +272,42 @@ class TestPaymentAmountDetail(CustomTestCase):
             'Shour return Bad Request (400)')
 
 
-class TestPostByuserListView(CustomTestCase):
+class TestPostByUserListView(CustomTestCase):
 
-    def test_no_auth(self):
-        req = self.factory.get('/')
-        resp = views.PostByUserListView.as_view()(req)
-        assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
-
-    def test_post(self):
+    def test_post_request_not_allowed(self):
         user = self.get_user()
         req = self.factory.post('/')
         force_authenticate(req, user=user)
         resp = views.PostByUserListView.as_view()(req)
         assert resp.status_code == 405, (
             'Should return Method Not Allowed (405)')
+
+    def test_put_request_not_allowed(self):
+        user = self.get_user()
+        req = self.factory.put('/')
+        force_authenticate(req, user=user)
+        resp = views.PostByUserListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "PUT" not allowed.'
+        assert resp.status_code == 405
+
+    def test_patch_request_not_allowed(self):
+        user = self.get_user()
+        req = self.factory.patch('/')
+        force_authenticate(req, user=user)
+        resp = views.PostByUserListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "PATCH" not allowed.'
+        assert resp.status_code == 405
+
+    def test_delete_request_not_allowed(self):
+        user = self.get_user()
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.PostByUserListView.as_view()(req)
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "DELETE" not allowed.'
+        assert resp.status_code == 405
 
     def test_get_only_post_by_user(self):
         self.load_users_data()
@@ -312,13 +331,12 @@ class TestPostByuserListView(CustomTestCase):
 
 class TestPostRetrieveUpdateDeleteView(CustomTestCase):
 
-    def test_get_no_auth(self):
-        req = self.factory.get('/')
+    def test_post_request_not_allowed(self):
+        req = self.factory.post('/')
         resp = views.PostByUserListView.as_view()(req)
-        assert resp.status_code == 401, (
-            'Should return Method Unauthorized (401) with a json ' +
-            '"detail": "Authentication credentials were not provided."'
-        )
+        assert 'detail' in resp.data
+        assert resp.data['detail'] == 'Method "POST" not allowed.'
+        assert resp.status_code == 405
 
     def test_get_post_full_fields(self):
         user = self.load_users_data().get_user(groups_id=1)
@@ -370,27 +388,6 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
             req, pk=post.pk)
         assert resp.data['description'] == 'New description'
 
-    def test_put_image(self):
-        tmp_file = get_test_image()
-        user = self.load_users_data().get_user(groups_id=1)
-        post = mixer.blend('posts.post', user=user)
-        data = {
-            'description': 'BLAh blah',
-            'image_1': tmp_file
-        }
-        tmp_file.seek(0)
-        req = self.factory.put('/', data=data)
-        force_authenticate(req, user=user)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(
-            req, pk=post.pk)
-        assert resp.status_code == 200
-        p = models.Post.objects.last()
-        image = p.images.first()
-        img_s = Image.open(image.standard)
-        img_t = Image.open(image.thumbnail)
-        assert img_s.size == (612, 612)
-        assert img_t.size == (150, 150)
-
     def test_put_no_owner(self):
         user = self.load_users_data().get_user(groups_id=1)
         user2 = self.get_user(groups_id=1)
@@ -428,7 +425,10 @@ class TestImageDetailView(CustomTestCase):
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
         resp2 = views.ImageDetailView.as_view()(
-            req, pk=resp.data['images'][1]['id'])
+            req,
+            pk_image=resp.data['images'][1]['id'],
+            pk_post=resp.data['id']
+        )
         assert resp2.status_code == 204
 
     def test_delete_more_than_should(self):
@@ -451,9 +451,15 @@ class TestImageDetailView(CustomTestCase):
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
         views.ImageDetailView.as_view()(
-            req, pk=resp.data['images'][1]['id'])
+            req,
+            pk_image=resp.data['images'][1]['id'],
+            pk_post=resp.data['id']
+        )
         resp2 = views.ImageDetailView.as_view()(
-            req, pk=resp.data['images'][0]['id'])
+            req,
+            pk_image=resp.data['images'][0]['id'],
+            pk_post=resp.data['id']
+        )
         assert resp2.status_code == 406
         assert resp2.data['detail'] == messages.one_image
 
@@ -500,7 +506,10 @@ class TestImageDetailView(CustomTestCase):
         req = self.factory.delete('/')
         force_authenticate(req, user=user2)
         resp2 = views.ImageDetailView.as_view()(
-            req, pk=resp.data['images'][1]['id'])
+            req,
+            pk_image=resp.data['images'][0]['id'],
+            pk_post=resp.data['id']
+        )
         assert resp2.status_code == 401
 
 
