@@ -9,6 +9,8 @@ bad_login = {"detail": "Your username and password do not match."}
 
 permission = "You don't have permission to edit."
 one_image = "A post needs at least one image."
+too_much_images = {"detail": "You can't have more than three images."}
+image_required = {"detail": "Image field required."}
 comment_permission = {"detail": "You don't have permission to comment."}
 follow_permission = {
     "detail": "You don't have permission to follow this user."
