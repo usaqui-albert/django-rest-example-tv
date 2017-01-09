@@ -191,7 +191,7 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         ).prefetch_related(
             prefetch_vet_comments,
             prefetch_owner_comments
-        )
+        ).exclude(active=False)
         return queryset.all()
 
 
