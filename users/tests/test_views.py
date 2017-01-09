@@ -933,6 +933,7 @@ class TestUserFollowView(CustomTestCase):
             'country': country,
             'state': state
         }
+        mixer.blend('users.Veterinarian', user=vet, verified=True, **data)
         mixer.blend('users.Veterinarian', user=vet1, verified=True, **data)
         req = self.factory.post('/')
         force_authenticate(req, user=vet)

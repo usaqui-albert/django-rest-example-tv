@@ -78,9 +78,10 @@ class TestPetListCreateView(CustomTestCase):
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.PetCreateView.as_view()(req)
+        year = self.get_current_year() - 100
         assert 'detail' in resp.data
         assert resp.data['detail'] == 'The pet year of birth cannot be ' \
-                                      'lower than 1916'
+                                      'lower than %d' % year
         assert resp.status_code == 400, 'Should return Bad Request (400)'
 
     def test_post_request_birth_year_into_the_future(self):
