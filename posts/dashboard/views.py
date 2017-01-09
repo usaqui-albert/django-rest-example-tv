@@ -1,4 +1,4 @@
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import SearchFilter, DjangoFilterBackend
 
@@ -21,3 +21,12 @@ class AdminPostView(ListAPIView):
     ).prefetch_related(
         'images'
     ).order_by('-id').distinct()
+
+
+class AdminPostDetailView(RetrieveAPIView):
+    serializer_class = AdminPostSerializer
+    permission_classes = (IsAdminUser,)
+
+    def get_queryset(self):
+        queryset = Post.objects.filter(pk=self.kwargs['pk'])
+        return queryset
