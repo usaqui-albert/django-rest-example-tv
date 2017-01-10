@@ -81,6 +81,7 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
             standard=standard, thumbnail=thumbnail,
             post=post, image_number=index)
         image_post.save()
+        return image_post
 
     def update_image_post(self, image_stream, image_post):
         """

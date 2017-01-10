@@ -145,7 +145,7 @@ class PostListCreateView(ListCreateAPIView):
             'images',
             prefetch_vet_comments,
             prefetch_owner_comments
-        ).filter(filters)
+        ).filter(filters).exclude(active=False)
         if is_authenticated:
             posts = posts.order_by('-points', '-id')
         else:
@@ -191,7 +191,7 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         ).prefetch_related(
             prefetch_vet_comments,
             prefetch_owner_comments
-        )
+        ).exclude(active=False)
         return queryset.all()
 
 
@@ -213,9 +213,20 @@ class ImageView(GenericAPIView):
                 # Faking a post serializer instance to use create_image_post
                 # method, shouldn't be like this by the way.
                 serializer = PostSerializer(post, data={}, partial=True)
-                serializer.create_image_post(new_image, post, image_number)
+                image_post = serializer.create_image_post(
+                    new_image,
+                    post,
+                    image_number
+                )
                 post.save()
-                return Response(status=status.HTTP_200_OK)
+                image_serializer = self.serializer_class(
+                    image_post,
+                    context={'request': request}
+                )
+                return Response(
+                    image_serializer.data,
+                    status=status.HTTP_200_OK
+                )
             return Response(
                 messages.image_required,
                 status=status.HTTP_400_BAD_REQUEST
@@ -249,9 +260,16 @@ class ImageDetailView(DestroyAPIView):
                 # Faking a post serializer instance to use update_image_post
                 # method, shouldn't be like this by the way.
                 serializer = PostSerializer(post, data={}, partial=True)
-                serializer.update_image_post(new_image, image)
+                image_post = serializer.update_image_post(new_image, image)
                 post.save()
-                return Response(status=status.HTTP_200_OK)
+                image_serializer = self.serializer_class(
+                    image_post,
+                    context={'request': request}
+                )
+                return Response(
+                    image_serializer.data,
+                    status=status.HTTP_200_OK
+                )
             return Response(
                 messages.image_required,
                 status=status.HTTP_400_BAD_REQUEST

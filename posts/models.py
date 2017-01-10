@@ -45,7 +45,7 @@ class Post(models.Model):
         related_name='likes',
         blank=True
     )
-
+    active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -100,7 +100,6 @@ class FeedVariable(models.Model):
     post_quantity = models.PositiveSmallIntegerField(
         validators=min_max_range
     )
-
     posts_user_has_liked = models.PositiveSmallIntegerField(
         validators=min_max_range
     )
@@ -125,7 +124,6 @@ class FeedVariable(models.Model):
 
 class ActivePost(models.Model):
     post = models.ForeignKey('posts.Post', related_name='active_post_weight')
-
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -150,6 +148,7 @@ class Report(models.Model):
 
     def get_type_as_string(self):
         return [y for x, y in self.REPORT_TYPE if x == self.type][0]
+
 
 # Func to connect the signal on post save.
 post_save.connect(

@@ -12,4 +12,11 @@ class AdminPostSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'description', 'images', 'is_paid', 'user',
-                  'created_at')
+                  'created_at', 'active')
+
+
+class AdminPostActiveDeactiveSerializer(ModelSerializer):
+
+    class Meta:
+        model = Post
+        fields = ('active',)
