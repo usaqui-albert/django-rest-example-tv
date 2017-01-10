@@ -219,7 +219,10 @@ class ImageView(GenericAPIView):
                     image_number
                 )
                 post.save()
-                image_serializer = self.serializer_class(image_post)
+                image_serializer = self.serializer_class(
+                    image_post,
+                    context={'request': request}
+                )
                 return Response(
                     image_serializer.data,
                     status=status.HTTP_200_OK
@@ -259,7 +262,10 @@ class ImageDetailView(DestroyAPIView):
                 serializer = PostSerializer(post, data={}, partial=True)
                 image_post = serializer.update_image_post(new_image, image)
                 post.save()
-                image_serializer = self.serializer_class(image_post)
+                image_serializer = self.serializer_class(
+                    image_post,
+                    context={'request': request}
+                )
                 return Response(
                     image_serializer.data,
                     status=status.HTTP_200_OK
