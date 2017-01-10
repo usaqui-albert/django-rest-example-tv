@@ -47,5 +47,4 @@ class AdminActiveDeactivePostView(UpdateAPIView):
 class AdminPostDetailView(RetrieveAPIView):
     serializer_class = AdminPostSerializer
     permission_classes = (IsAdminUser,)
-    allowed_methods = ('PATCH',)
-    queryset = Post.objects.all()
+    queryset = Post.objects.all().select_related('user__image')
