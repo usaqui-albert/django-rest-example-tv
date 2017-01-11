@@ -13,10 +13,8 @@ class AdminPostSerializer(ModelSerializer):
         model = Post
         fields = ('id', 'description', 'images', 'is_paid', 'user',
                   'created_at', 'active')
-
-
-class AdminPostActiveDeactiveSerializer(ModelSerializer):
-
-    class Meta:
-        model = Post
-        fields = ('active',)
+        extra_kwargs = {
+            'description': {'read_only': True},
+            'is_paid': {'read_only': True},
+            'created_at': {'read_only': True}
+        }
