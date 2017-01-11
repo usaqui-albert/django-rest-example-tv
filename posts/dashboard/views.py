@@ -1,4 +1,6 @@
-from rest_framework.generics import ListAPIView, UpdateAPIView
+from rest_framework.generics import (
+    ListAPIView, UpdateAPIView, RetrieveAPIView
+)
 from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import SearchFilter, DjangoFilterBackend
 
@@ -40,3 +42,9 @@ class AdminActiveDeactivePostView(UpdateAPIView):
     permission_classes = (IsAdminUser,)
     allowed_methods = ('PATCH',)
     queryset = Post.objects.all()
+
+
+class AdminPostDetailView(RetrieveAPIView):
+    serializer_class = AdminPostSerializer
+    permission_classes = (IsAdminUser,)
+    queryset = Post.objects.all().select_related('user__image')
