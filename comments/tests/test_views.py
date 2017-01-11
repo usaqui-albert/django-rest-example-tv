@@ -266,5 +266,4 @@ class TestFeedbackCreateView(CustomTestCase):
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.FeedbackCreateView.as_view()(req, pk=comment.pk)
-        assert resp.status_code == 400
-        assert resp.data['detail'] == messages.feedback_user['detail']
+        assert resp.status_code == 403

@@ -2,6 +2,7 @@ import stripe
 from operator import xor
 
 from django.conf import settings
+from django.http import Http404
 from django.db import IntegrityError
 from django.db.models import (
     Case, When, Value, IntegerField, F, BooleanField, Q
@@ -144,7 +145,7 @@ class PostListCreateView(ListCreateAPIView):
             'images',
             prefetch_vet_comments,
             prefetch_owner_comments
-        ).filter(filters)
+        ).filter(filters).exclude(active=False)
         if is_authenticated:
             posts = posts.order_by('-points', '-id')
         else:
@@ -190,21 +191,97 @@ class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         ).prefetch_related(
             prefetch_vet_comments,
             prefetch_owner_comments
-        )
+        ).exclude(active=False)
         return queryset.all()
 
 
-class ImagePostDeleteView(DestroyAPIView):
+class ImageView(GenericAPIView):
     serializer_class = ImagePostSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    def delete(self, request, *args, **kwargs):
-        image = self.get_queryset().first()
-        if not image:
+    def post(self, request, **kwargs):
+        post = self.get_post()
+        if request.user.id == post.user_id:
+            image_number = post.images.count() + 1
+            if image_number > 3:
+                return Response(
+                    messages.too_much_images,
+                    status=status.HTTP_406_NOT_ACCEPTABLE
+                )
+            new_image = request.data.get('image', None)
+            if new_image:
+                # Faking a post serializer instance to use create_image_post
+                # method, shouldn't be like this by the way.
+                serializer = PostSerializer(post, data={}, partial=True)
+                image_post = serializer.create_image_post(
+                    new_image,
+                    post,
+                    image_number
+                )
+                post.save()
+                image_serializer = self.serializer_class(
+                    image_post,
+                    context={'request': request}
+                )
+                return Response(
+                    image_serializer.data,
+                    status=status.HTTP_200_OK
+                )
             return Response(
-                messages.image_not_found,
-                status=status.HTTP_404_NOT_FOUND
+                messages.image_required,
+                status=status.HTTP_400_BAD_REQUEST
             )
+        return Response(
+            messages.forbidden_action,
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    def get_post(self):
+        post = Post.objects.filter(
+            pk=self.kwargs.get('pk', None)
+        ).select_related(
+            'user'
+        ).first()
+        if post:
+            return post
+        raise Http404()
+
+
+class ImageDetailView(DestroyAPIView):
+    serializer_class = ImagePostSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def put(self, request, **kwargs):
+        image = self.get_queryset()
+        post = image.post
+        if post.user == request.user or request.user.is_staff:
+            new_image = request.data.get('image', None)
+            if new_image:
+                # Faking a post serializer instance to use update_image_post
+                # method, shouldn't be like this by the way.
+                serializer = PostSerializer(post, data={}, partial=True)
+                image_post = serializer.update_image_post(new_image, image)
+                post.save()
+                image_serializer = self.serializer_class(
+                    image_post,
+                    context={'request': request}
+                )
+                return Response(
+                    image_serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            return Response(
+                messages.image_required,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        else:
+            response = {
+                'detail': messages.permission
+            }
+            return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request, *args, **kwargs):
+        image = self.get_queryset()
         post = image.post
         images = post.images.all()
         if post.user == request.user or request.user.is_staff:
@@ -230,8 +307,13 @@ class ImagePostDeleteView(DestroyAPIView):
             'post__user'
         ).prefetch_related(
             'post__images'
-        ).filter(pk=self.kwargs['pk'])
-        return queryset
+        ).filter(
+            pk=self.kwargs['pk_image'],
+            post=self.kwargs['pk_post']
+        ).first()
+        if queryset:
+            return queryset
+        raise Http404()
 
 
 class PaidPostView(APIView):

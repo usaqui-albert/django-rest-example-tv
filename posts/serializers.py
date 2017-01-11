@@ -62,21 +62,9 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
         return post
 
     def update(self, instance, validated_data):
-        image_1 = validated_data.pop('image_1', None)
-        image_2 = validated_data.pop('image_2', None)
-        image_3 = validated_data.pop('image_3', None)
-
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        for index, new_image in enumerate(
-            [image_1, image_2, image_3], start=1
-        ):
-            if new_image:
-                image = instance.images.filter(image_number=index).first()
-                if image:
-                    image.delete()
-                self.create_image_post(new_image, instance, index)
         return instance
 
     def create_image_post(self, image_stream, post, index):
@@ -93,6 +81,31 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
             standard=standard, thumbnail=thumbnail,
             post=post, image_number=index)
         image_post.save()
+        return image_post
+
+    def update_image_post(self, image_stream, image_post):
+        """
+        Method to update thumbnail and standard fields of an ImagePost
+        instance.
+
+        :param image_stream: streaming of the image
+        :param image_post: ImagePost instance
+        :return: ImagePost instance updated
+        """
+        img = Img.open(StringIO(image_stream.read()))
+        img_copy = img.copy()
+        image_post.standard = self.image_resize(
+            STANDARD_SIZE,
+            img,
+            image_stream
+        )
+        image_post.thumbnail = self.image_resize(
+            THUMBNAIL_SIZE,
+            img_copy,
+            image_stream
+        )
+        image_post.save()
+        return image_post
 
     @staticmethod
     def get_first_vet_comment(obj):

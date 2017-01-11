@@ -64,7 +64,7 @@ class UserAuth(ObtainAuthToken):
                 messages.inactive,
                 status=status.HTTP_403_FORBIDDEN
             )
-        serializer = UserLoginSerializer(user)
+        serializer = UserLoginSerializer(user, context={'request': request})
         data = serializer.data
         if user.is_vet():
             data['is_verified'] = True if hasattr(
@@ -204,6 +204,7 @@ class AuthorizeBreederView(GenericAPIView):
 
 class AuthorizeVetView(GenericAPIView):
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
+    serializer_class = VeterinarianSerializer
     allowed_methods = ('PATCH',)
 
     def patch(self, request, **kwargs):
