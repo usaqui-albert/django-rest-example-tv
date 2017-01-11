@@ -405,7 +405,7 @@ class PostByUserListView(ListAPIView):
     def get_queryset(self):
         qs = Post.objects.annotate(
             **get_annotate_params('likes_count')
-        ).filter(user_id=self.kwargs['pk'])
+        ).filter(user_id=self.kwargs['pk']).exclude(active=False)
         return qs
 
 
