@@ -118,8 +118,12 @@ class PostListCreateView(ListCreateAPIView):
                 filters = Q(visible_by_vet=True)
                 # TODO: here is missing the validation for a verified vet
                 if group_id == 3:
-                    filters = filters | Q(visible_by_owner=True,
-                                          visible_by_vet=True)
+                    if (
+                        hasattr(user, 'veterinarian') and
+                        user.veterinarian.verified
+                    ):
+                        filters = filters | Q(visible_by_owner=True,
+                                              visible_by_vet=True)
             else:
                 filters = Q(visible_by_owner=True)
         else:
