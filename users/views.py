@@ -188,34 +188,6 @@ class VeterinarianListCreateView(ListCreateAPIView):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class AuthorizeBreederView(GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
-    serializer_class = BreederSerializer
-    allowed_methods = ('PATCH',)
-
-    def patch(self, request, *args, **kwargs):
-        breeder = get_object_or_404(Breeder, id=kwargs['pk'])
-        # TODO: Check this service to adapt the new flow of verification.
-        breeder.verified = request.POST.get('verified', False)
-        breeder.save()
-        serializer = self.serializer_class(breeder)
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-
-
-class AuthorizeVetView(GenericAPIView):
-    permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser)
-    serializer_class = VeterinarianSerializer
-    allowed_methods = ('PATCH',)
-
-    def patch(self, request, **kwargs):
-        vet = get_object_or_404(Veterinarian, id=kwargs['pk'])
-        # TODO: Check this service to adapt the new flow of verification.
-        vet.verified = request.POST.get('verified', False)
-        vet.save()
-        serializer = self.serializer_class(vet)
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-
-
 class AreaInterestListView(ListAPIView):
     '''
     List for Area of Interest.

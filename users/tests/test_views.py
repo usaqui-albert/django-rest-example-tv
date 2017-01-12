@@ -3,7 +3,6 @@ import pytest
 from PIL import Image
 from django.test import RequestFactory
 
-from rest_framework.test import APIRequestFactory
 from rest_framework.test import force_authenticate
 
 from mixer.backend.django import mixer
@@ -687,110 +686,6 @@ class TestVeterinarianListCreateView:
         assert resp.status_code == 400, (
             'Should return HTTP 400 Bad Request'
         )
-
-
-class TestAuthorizeBreederView:
-    factory = APIRequestFactory()
-
-    def test_post_request(self):
-        user = mixer.blend(models.User, is_staff=True)
-        req = self.factory.post('/')
-        force_authenticate(req, user)
-        resp = views.AuthorizeBreederView.as_view()(req)
-        assert resp.status_code == 405, (
-            '"detail": "Method "POST" not allowed."')
-
-    def test_get_request(self):
-        req = self.factory.get('/')
-        user = mixer.blend(models.User, is_staff=True)
-        force_authenticate(req, user)
-        resp = views.AuthorizeBreederView.as_view()(req)
-        assert resp.status_code == 405, (
-            '"detail": "Method "POST" not allowed."')
-
-    def test_post_request_no_admin(self):
-        user = mixer.blend(models.User)
-        req = self.factory.post('/')
-        force_authenticate(req, user)
-        resp = views.AuthorizeBreederView.as_view()(req)
-        assert resp.status_code == 403, (
-            '"detail": "Forbidden. No access to non admin user"')
-
-    def test_get_request_no_admin(self):
-        req = self.factory.get('/')
-        user = mixer.blend(models.User)
-        force_authenticate(req, user)
-        resp = views.AuthorizeBreederView.as_view()(req)
-        assert resp.status_code == 403, (
-            '"detail": "Forbidden.  No access to non admin user"')
-
-    def test_patch_request(self):
-        user = mixer.blend(models.User, is_staff=True)
-        country = mixer.blend(models_c.Country)
-        state = mixer.blend(models_c.State, country=country)
-        breeder = mixer.blend(models.Breeder, country=country, state=state)
-        req = self.factory.patch('/', data={'verified': "True"})
-        force_authenticate(req, user=user)
-        resp = views.AuthorizeBreederView.as_view()(req, pk=breeder.pk)
-        assert resp.status_code == 202, (
-            'Should return all 202 and the breeder with verified field true')
-
-    def test_patch_request_no_admin(self):
-        user = mixer.blend(models.User)
-        country = mixer.blend(models_c.Country)
-        state = mixer.blend(models_c.State, country=country)
-        breeder = mixer.blend(models.Breeder, country=country, state=state)
-        req = self.factory.patch('/', data={'verified': "True"})
-        force_authenticate(req, user=user)
-        resp = views.AuthorizeBreederView.as_view()(req, pk=breeder.pk)
-        assert resp.status_code == 403, (
-            '"detail": "Forbidden.  No access to non admin user"')
-
-
-class TestAuthorizeVetView:
-    factory = APIRequestFactory()
-
-    def test_get_request(self):
-        user = mixer.blend(models.User, is_staff=True)
-        req = self.factory.get('/')
-        force_authenticate(req, user=user)
-        resp = views.AuthorizeVetView.as_view()(req)
-        assert resp.status_code == 405, (
-            '"detail": "Method "POST" not allowed."')
-
-    def test_post_request(self):
-        user = mixer.blend(models.User, is_staff=True)
-        req = self.factory.post('/')
-        force_authenticate(req, user=user)
-        resp = views.AuthorizeVetView.as_view()(req)
-        assert resp.status_code == 405, (
-            '"detail": "Method "POST" not allowed."')
-
-    def test_patch_request(self):
-        user = mixer.blend(models.User, is_staff=True)
-        country = mixer.blend(models_c.Country)
-        state = mixer.blend(models_c.State, country=country)
-        vet = mixer.blend(
-            models.Veterinarian, country=country, state=state,
-            graduating_year=2015)
-        req = self.factory.patch('/', data={'verified': "True"})
-        force_authenticate(req, user=user)
-        resp = views.AuthorizeVetView.as_view()(req, pk=vet.pk)
-        assert resp.status_code == 202, (
-            'Should return all 202 and the vet with verified field true')
-
-    def test_patch_request_no_admin(self):
-        user = mixer.blend(models.User)
-        country = mixer.blend(models_c.Country)
-        state = mixer.blend(models_c.State, country=country)
-        vet = mixer.blend(
-            models.Veterinarian, country=country, state=state,
-            graduating_year=2015)
-        req = self.factory.patch('/', data={'verified': "True"})
-        force_authenticate(req, user=user)
-        resp = views.AuthorizeVetView.as_view()(req, pk=vet.pk)
-        assert resp.status_code == 403, (
-            '"detail": "Forbidden.  No access to non admin user"')
 
 
 class TestAreaInterestListView:

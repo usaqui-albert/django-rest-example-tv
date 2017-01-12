@@ -3,7 +3,7 @@ import pytest
 from rest_framework.test import force_authenticate
 from rest_framework.authtoken.models import Token
 
-
+from mixer.backend.django import mixer
 from helpers.tests_helpers import CustomTestCase
 from users.dashboard import views
 
@@ -203,3 +203,48 @@ class TestAdminUserDeactive(CustomTestCase):
         assert resp.status_code == 403
         test_user.refresh_from_db()
         assert test_user.is_active
+
+
+class TestAdminVetVerificationView(CustomTestCase):
+
+    def test_get_request(self):
+        user = mixer.blend('users.User', is_staff=True)
+        req = self.factory.get('/')
+        force_authenticate(req, user=user)
+        resp = views.AdminVetVerificationView.as_view()(req)
+        assert resp.status_code == 405, (
+            '"detail": "Method "POST" not allowed."')
+
+    def test_post_request(self):
+        user = mixer.blend('users.User', is_staff=True)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.AdminVetVerificationView.as_view()(req)
+        assert resp.status_code == 405, (
+            '"detail": "Method "POST" not allowed."')
+
+    def test_patch_request(self):
+        user = mixer.blend('users.User', is_staff=True)
+        country = mixer.blend('countries.Country')
+        state = mixer.blend('countries.State', country=country)
+        vet = mixer.blend(
+            'users.Veterinarian', country=country, state=state,
+            graduating_year=2015)
+        req = self.factory.patch('/', data={'verified': "True"})
+        force_authenticate(req, user=user)
+        resp = views.AdminVetVerificationView.as_view()(req, pk=vet.pk)
+        assert resp.status_code == 202, (
+            'Should return all 202 and the vet with verified field true')
+
+    def test_patch_request_no_admin(self):
+        user = mixer.blend('users.User')
+        country = mixer.blend('countries.Country')
+        state = mixer.blend('countries.State', country=country)
+        vet = mixer.blend(
+            'users.Veterinarian', country=country, state=state,
+            graduating_year=2015)
+        req = self.factory.patch('/', data={'verified': "True"})
+        force_authenticate(req, user=user)
+        resp = views.AdminVetVerificationView.as_view()(req, pk=vet.pk)
+        assert resp.status_code == 403, (
+            '"detail": "Forbidden.  No access to non admin user"')

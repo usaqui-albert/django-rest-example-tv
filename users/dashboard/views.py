@@ -8,15 +8,15 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.views import APIView
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView
+    ListAPIView, RetrieveAPIView, GenericAPIView
 )
 
 from django_filters.rest_framework import DjangoFilterBackend
 
 from TapVet import messages
 from TapVet.pagination import StandardPagination
-from users.serializers import UserLoginSerializer
-from users.models import User
+from users.serializers import UserLoginSerializer, VeterinarianSerializer
+from users.models import User, Veterinarian
 from pets.views import PetListByUser
 
 from .serializers import AdminAuthTokenSerializer, AdminUserSerializer
@@ -150,3 +150,16 @@ class AdminUserDeactive(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class AdminVetVerificationView(GenericAPIView):
+    permission_classes = (IsAdminUser,)
+    serializer_class = VeterinarianSerializer
+    allowed_methods = ('PATCH',)
+
+    def patch(self, request, **kwargs):
+        vet = get_object_or_404(Veterinarian, id=kwargs['pk'])
+        vet.verified = request.POST.get('verified', False)
+        vet.save()
+        serializer = self.serializer_class(vet)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
