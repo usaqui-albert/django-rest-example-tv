@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -19,7 +20,9 @@ from users.serializers import UserLoginSerializer, VeterinarianSerializer
 from users.models import User, Veterinarian
 from pets.views import PetListByUser
 
-from .serializers import AdminAuthTokenSerializer, AdminUserSerializer
+from .serializers import (
+    AdminAuthTokenSerializer, AdminUserSerializer, AdminVerificationSerializer
+)
 
 
 class AdminAuth(ObtainAuthToken):
@@ -154,12 +157,22 @@ class AdminUserDeactive(APIView):
 
 class AdminVetVerificationView(GenericAPIView):
     permission_classes = (IsAdminUser,)
-    serializer_class = VeterinarianSerializer
+    serializer_class = AdminVerificationSerializer
     allowed_methods = ('PATCH',)
 
     def patch(self, request, **kwargs):
-        vet = get_object_or_404(Veterinarian, id=kwargs['pk'])
-        vet.verified = request.POST.get('verified', False)
-        vet.save()
-        serializer = self.serializer_class(vet)
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid()
+        vet = Veterinarian.objects.filter(
+            user=kwargs['pk']
+        ).first()
+        if vet:
+            vet.verified = serializer.validated_data['verified']
+            vet.locked = serializer.validated_data['locked']
+            vet.save()
+            vet_serializer = VeterinarianSerializer(vet)
+            return Response(
+                vet_serializer.data,
+                status=status.HTTP_202_ACCEPTED
+            )
+        raise Http404()

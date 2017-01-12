@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.serializers import ValidationError, ModelSerializer
+from rest_framework.serializers import (
+    ValidationError, ModelSerializer, Serializer, BooleanField
+)
 
 from users.models import User
 from users.serializers import (
@@ -46,3 +48,8 @@ class AdminUserSerializer(ModelSerializer):
             'username', 'email', 'full_name', 'groups', 'id', 'breeder',
             'veterinarian', 'images', 'is_active'
         )
+
+
+class AdminVerificationSerializer(Serializer):
+    verified = BooleanField(write_only=True)
+    locked = BooleanField(write_only=True)
