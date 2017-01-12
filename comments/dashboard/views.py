@@ -1,6 +1,7 @@
 from django.db.models import Count
+from django.http import Http404
 
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, DestroyAPIView
 from rest_framework import permissions
 
 from ..serializers import CommentSerializer, CommentVetSerializer
@@ -29,3 +30,17 @@ class PetOwnerCommentsView(ListAPIView):
 class VetCommentsView(PetOwnerCommentsView):
     serializer_class = CommentVetSerializer
     groups_ids = [3, 4, 5]
+
+
+class AdminCommentDetailView(DestroyAPIView):
+    queryset = Comment.objects.all()
+    permission_classes = (permissions.IsAdminUser,)
+
+    def get_object(self):
+        obj = self.queryset.filter(
+            pk=self.kwargs['pk_comment'],
+            post=self.kwargs['pk_post']
+        ).first()
+        if obj:
+            return obj
+        raise Http404()
