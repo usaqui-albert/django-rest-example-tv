@@ -116,7 +116,6 @@ class PostListCreateView(ListCreateAPIView):
             group_id = user.groups.id
             if group_id in [3, 4, 5]:
                 filters = Q(visible_by_vet=True)
-                # TODO: here is missing the validation for a verified vet
                 if group_id == 3:
                     if (
                         hasattr(user, 'veterinarian') and
