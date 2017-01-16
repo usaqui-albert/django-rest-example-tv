@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -8,18 +9,20 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.views import APIView
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView
+    ListAPIView, RetrieveAPIView, GenericAPIView
 )
 
 from django_filters.rest_framework import DjangoFilterBackend
 
 from TapVet import messages
 from TapVet.pagination import StandardPagination
-from users.serializers import UserLoginSerializer
-from users.models import User
+from users.serializers import UserLoginSerializer, VeterinarianSerializer
+from users.models import User, Veterinarian
 from pets.views import PetListByUser
 
-from .serializers import AdminAuthTokenSerializer, AdminUserSerializer
+from .serializers import (
+    AdminAuthTokenSerializer, AdminUserSerializer, AdminVerificationSerializer
+)
 
 
 class AdminAuth(ObtainAuthToken):
@@ -150,3 +153,26 @@ class AdminUserDeactive(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class AdminVetVerificationView(GenericAPIView):
+    permission_classes = (IsAdminUser,)
+    serializer_class = AdminVerificationSerializer
+    allowed_methods = ('PATCH',)
+
+    def patch(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid()
+        vet = Veterinarian.objects.filter(
+            user=kwargs['pk']
+        ).first()
+        if vet:
+            vet.verified = serializer.validated_data['verified']
+            vet.locked = serializer.validated_data['locked']
+            vet.save()
+            vet_serializer = VeterinarianSerializer(vet)
+            return Response(
+                vet_serializer.data,
+                status=status.HTTP_202_ACCEPTED
+            )
+        raise Http404()

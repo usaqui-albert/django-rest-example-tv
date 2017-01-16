@@ -112,6 +112,7 @@ class Veterinarian(models.Model):
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
     verified = models.BooleanField(default=False)
+    locked = models.BooleanField(default=False)
     user = models.OneToOneField(
         User, on_delete=models.CASCADE)
     veterinarian_type = models.CharField(
