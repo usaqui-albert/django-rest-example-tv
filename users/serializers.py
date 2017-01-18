@@ -205,14 +205,13 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
         elif instance.groups.id in [3, 4, 5]:
             if veterinarian_data:
                 if hasattr(instance, 'veterinarian'):
-                    area_interest = veterinarian_data.pop(
-                        'area_interest',
-                        instance.veterinarian.area_interest.all()
+                    serializer = VeterinarianSerializer(
+                        instance.veterinarian,
+                        data=veterinarian_data,
+                        partial=True
                     )
-                    instance.veterinarian.area_interest.set(area_interest)
-                    for attr, value in veterinarian_data.items():
-                        setattr(instance.veterinarian, attr, value)
-                    instance.veterinarian.save()
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
                 else:
                     serializer = VeterinarianSerializer(
                         data=veterinarian_data,
