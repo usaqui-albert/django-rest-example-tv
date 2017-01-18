@@ -199,9 +199,21 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
 
         if instance.groups.id == 2:
             if breeder_data:
-                for attr, value in breeder_data.items():
-                    setattr(instance.breeder, attr, value)
-                instance.breeder.save()
+                if hasattr(instance, 'breeder'):
+                    serializer = BreederSerializer(
+                        instance.breeder,
+                        data=breeder_data,
+                        partial=True
+                    )
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                else:
+                    serializer = BreederSerializer(
+                        data=breeder_data,
+                        context=self.context
+                    )
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
         elif instance.groups.id in [3, 4, 5]:
             if veterinarian_data:
                 if hasattr(instance, 'veterinarian'):
@@ -259,6 +271,14 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
         if 'area_interest' in value:
             areas = value['area_interest']
             value['area_interest'] = [area.id for area in areas]
+        if 'country' in value:
+            value['country'] = value['country'].id
+        if 'state' in value:
+            value['state'] = value['state'].id
+        return value
+
+    @staticmethod
+    def validate_breeder(value):
         if 'country' in value:
             value['country'] = value['country'].id
         if 'state' in value:

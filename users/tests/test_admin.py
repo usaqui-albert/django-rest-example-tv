@@ -224,15 +224,15 @@ class TestAdminVetVerificationView(CustomTestCase):
             '"detail": "Method "POST" not allowed."')
 
     def test_patch_request(self):
-        user = mixer.blend('users.User', is_staff=True)
+        user = self.get_user(is_staff=True)
         country = mixer.blend('countries.Country')
         state = mixer.blend('countries.State', country=country)
         vet = mixer.blend(
             'users.Veterinarian', country=country, state=state,
-            graduating_year=2015)
+            graduating_year=2015, user=user)
         req = self.factory.patch('/', data={'verified': "True"})
         force_authenticate(req, user=user)
-        resp = views.AdminVetVerificationView.as_view()(req, pk=vet.pk)
+        resp = views.AdminVetVerificationView.as_view()(req, pk=vet.user.pk)
         assert resp.status_code == 202, (
             'Should return all 202 and the vet with verified field true')
 
