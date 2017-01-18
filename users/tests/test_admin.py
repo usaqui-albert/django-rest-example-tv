@@ -232,7 +232,7 @@ class TestAdminVetVerificationView(CustomTestCase):
             graduating_year=2015, user=user)
         req = self.factory.patch('/', data={'verified': "True"})
         force_authenticate(req, user=user)
-        resp = views.AdminVetVerificationView.as_view()(req, pk=vet.user)
+        resp = views.AdminVetVerificationView.as_view()(req, pk=vet.user.pk)
         assert resp.status_code == 202, (
             'Should return all 202 and the vet with verified field true')
 
