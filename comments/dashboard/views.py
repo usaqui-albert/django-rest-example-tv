@@ -54,15 +54,55 @@ class AdminCommentDetailView(DestroyAPIView):
 
 
 class AdminFeedbackListView(ListAPIView):
+    '''
+    View for the admin dashboard. This view will paginate users by 20 per
+    page.
+
+    Will allow to change the amount of users per page by sending 'page_size'
+    queryparam
+
+    ORDERING FIELDS:
+        * is_active
+        * username
+        * email
+        * full_name
+        * created_at
+
+    SEARCH FIELDS:
+        * username
+        * email
+        * full_name
+        * is_active
+        * groups
+        * veterinarian__verified
+
+    EXAMPLES
+    * ORDERING:
+        -- api/v1/dashboard/users?ordering=was_helpful
+        -- api/v1/dashboard/users?ordering=-was_helpful (Reverse of the above)
+    * FILTERING:
+       -- api/v1/dashboard/users?was_helpful=True
+    * SEARCHING:
+        -- api/v1/dashboard/users?search=<###>
+        Search Fields:
+        'user full_name', 'vet full_name',
+        'user email', 'vet email',
+        'user username', 'vet username',
+    * PAGE SIZE:
+        -- api/v1/dashboard/users?page_size=40
+
+    '''
     serializer_class = AdminFeedbackSerializer
     pagination_class = StandardPagination
     permission_classes = (permissions.IsAdminUser,)
-    filter_backends = (SearchFilter, )
+    filter_backends = (SearchFilter, DjangoFilterBackend, OrderingFilter)
     search_fields = (
         'user__full_name', 'comment__user__full_name',
         'user__email', 'comment__user__email',
         'user__username', 'comment__user__username',
     )
+    ordering_fields = ('was_helpful', )
+    filter_fields = ('was_helpful', )
     queryset = Feedback.objects.select_related(
         'user',
         'comment__user__veterinarian',
