@@ -5,8 +5,6 @@ from rest_framework.test import force_authenticate
 
 from mixer.backend.django import mixer
 
-from TapVet import messages
-
 from .. import views
 from .. import models
 
