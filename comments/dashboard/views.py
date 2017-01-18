@@ -62,34 +62,27 @@ class AdminFeedbackListView(ListAPIView):
     queryparam
 
     ORDERING FIELDS:
-        * is_active
-        * username
-        * email
-        * full_name
-        * created_at
+        * was_helpful
 
     SEARCH FIELDS:
-        * username
-        * email
-        * full_name
-        * is_active
-        * groups
-        * veterinarian__verified
+        * user full_name
+        * user email
+        * user username
+        * vet full_name
+        * vet email
+        * vet username
 
     EXAMPLES
     * ORDERING:
-        -- api/v1/dashboard/users?ordering=was_helpful
-        -- api/v1/dashboard/users?ordering=-was_helpful (Reverse of the above)
+        -- api/v1/dashboard/feedback?ordering=was_helpful
+        -- api/v1/dashboard/feedback?ordering=-was_helpful
+        (Reverse of the above)
     * FILTERING:
-       -- api/v1/dashboard/users?was_helpful=True
+       -- api/v1/dashboard/feedback?was_helpful=True
     * SEARCHING:
-        -- api/v1/dashboard/users?search=<###>
-        Search Fields:
-        'user full_name', 'vet full_name',
-        'user email', 'vet email',
-        'user username', 'vet username',
+        -- api/v1/dashboard/feedback?search=<###>
     * PAGE SIZE:
-        -- api/v1/dashboard/users?page_size=40
+        -- api/v1/dashboard/feedback?page_size=40
 
     '''
     serializer_class = AdminFeedbackSerializer
