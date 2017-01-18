@@ -1,10 +1,11 @@
 from django.db.models import Count
 from django.http import Http404
 
-from rest_framework.generics import ListAPIView, DestroyAPIView
+from rest_framework.generics import (
+    ListAPIView, DestroyAPIView, RetrieveAPIView
+)
 from rest_framework import permissions
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.response import Response
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -13,7 +14,7 @@ from TapVet.pagination import StandardPagination
 from ..serializers import CommentSerializer, CommentVetSerializer
 from ..models import Comment, Feedback
 
-from .serializers import AdminFeedbackSerializer
+from .serializers import AdminFeedbackListSerializer, AdminFeedbackSerializer
 
 
 class PetOwnerCommentsView(ListAPIView):
@@ -85,7 +86,7 @@ class AdminFeedbackListView(ListAPIView):
         -- api/v1/dashboard/feedback?page_size=40
 
     '''
-    serializer_class = AdminFeedbackSerializer
+    serializer_class = AdminFeedbackListSerializer
     pagination_class = StandardPagination
     permission_classes = (permissions.IsAdminUser,)
     filter_backends = (SearchFilter, DjangoFilterBackend, OrderingFilter)
@@ -101,3 +102,14 @@ class AdminFeedbackListView(ListAPIView):
         'comment__user__veterinarian',
         'user__image'
     ).order_by('-id')
+
+
+class AdminFeedbackView(RetrieveAPIView):
+    queryset = Feedback.objects.select_related(
+        'user',
+        'comment__user__veterinarian',
+        'user__image',
+        'comment__post'
+    )
+    permission_classes = (permissions.IsAdminUser,)
+    serializer_class = AdminFeedbackSerializer
