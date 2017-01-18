@@ -3,10 +3,17 @@ from django.http import Http404
 
 from rest_framework.generics import ListAPIView, DestroyAPIView
 from rest_framework import permissions
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
+
+from django_filters.rest_framework import DjangoFilterBackend
+
+from TapVet.pagination import StandardPagination
 
 from ..serializers import CommentSerializer, CommentVetSerializer
-from ..models import Comment
-from TapVet.pagination import StandardPagination
+from ..models import Comment, Feedback
+
+from .serializers import AdminFeedbackSerializer
 
 
 class PetOwnerCommentsView(ListAPIView):
@@ -44,3 +51,20 @@ class AdminCommentDetailView(DestroyAPIView):
         if obj:
             return obj
         raise Http404()
+
+
+class AdminFeedbackListView(ListAPIView):
+    serializer_class = AdminFeedbackSerializer
+    pagination_class = StandardPagination
+    permission_classes = (permissions.IsAdminUser,)
+    filter_backends = (SearchFilter, )
+    search_fields = (
+        'user__full_name', 'comment__user__full_name',
+        'user__email', 'comment__user__email',
+        'user__username', 'comment__user__username',
+    )
+    queryset = Feedback.objects.select_related(
+        'user',
+        'comment__user__veterinarian',
+        'user__image'
+    ).order_by('-id')
