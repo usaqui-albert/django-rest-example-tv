@@ -30,6 +30,10 @@ urlpatterns = [
         r'^api/v1/dashboard/posts/',
         include('posts.dashboard.urls', namespace='dashboard_posts')
     ),
+    url(
+        r'^api/v1/dashboard/feedbacks/',
+        include('comments.dashboard.urls', namespace='dashboard_feedback')
+    ),
     url(r'^api/v1/users/', include('users.urls', namespace='users')),
     url(r'^api/v1/pets/', include('pets.urls', namespace='pets')),
     url(r'^api/v1/posts/', include('posts.urls', namespace='posts')),
