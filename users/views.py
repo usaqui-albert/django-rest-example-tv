@@ -71,6 +71,10 @@ class UserAuth(ObtainAuthToken):
                 user,
                 'veterinarian'
             ) and user.veterinarian.verified else False
+            data['is_locked'] = True if hasattr(
+                user,
+                'veterinarian'
+            ) and user.veterinarian.locked else False
         return Response(data, status=status.HTTP_200_OK)
 
 
