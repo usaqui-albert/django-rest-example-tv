@@ -12,8 +12,8 @@ class Activity(models.Model):
     ACTIVITY_CHOICES = (
         (COMMENT, 'New Comment.'),
         (LIKE, 'New Like.'),
-        (UPVOTE, 'New Upvote.')
-        (UPVOTE, 'New User follow.')
+        (UPVOTE, 'New Upvote.'),
+        (FOLLOW, 'New User follow.')
     )
 
     user = models.ForeignKey('users.User', related_name='activities')
