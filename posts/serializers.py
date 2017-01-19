@@ -164,3 +164,20 @@ class PaidPostSerializer(ModelSerializer):
 
 class ReportTypeSerializer(Serializer):
     type = ChoiceField(choices=Report.REPORT_TYPE)
+
+
+class PostSmallSerializer(ModelSerializer):
+    images = ImagePostSerializer(many=True, read_only=True)
+    is_paid = BooleanField(read_only=True)
+    user_detail = UserSerializers(read_only=True, source='user')
+
+    class Meta:
+        model = Post
+        fields = (
+            'description', 'pet', 'user', 'id', 'images',
+            'created_at', 'user_detail', 'is_paid', 'active'
+        )
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'id': {'read_only': True},
+        }
