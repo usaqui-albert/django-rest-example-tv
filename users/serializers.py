@@ -129,9 +129,10 @@ class VeterinarianSerializer(ModelSerializer):
                 '`update()` did not return an object instance.'
             )
         else:
-            area_interest = validated_data.pop('area_interest')
+            area_interest = validated_data.pop('area_interest', [])
             self.instance = self.create(validated_data)
-            self.instance.area_interest.set(area_interest)
+            if area_interest:
+                self.instance.area_interest.set(area_interest)
 
             assert self.instance is not None, (
                 '`create()` did not return an object instance.'
