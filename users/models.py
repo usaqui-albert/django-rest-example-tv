@@ -65,6 +65,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_vet(self):
         return self.groups.id in [3, 4, 5] if self.groups else False
 
+    def is_vet_student(self):
+        return self.groups.id == 4 if self.groups else False
+
     def get_label(self):
         return settings.APP_LABEL.get(self.groups.id, '')
 
@@ -108,7 +111,7 @@ post_save.connect(
 
 
 class Veterinarian(models.Model):
-    area_interest = models.ManyToManyField(AreaInterest)
+    area_interest = models.ManyToManyField(AreaInterest, blank=True, null=True)
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
     verified = models.BooleanField(default=False)
@@ -143,7 +146,7 @@ class Veterinarian(models.Model):
                 )
             if self.country != self.state.country:
                 raise ValueError(
-                    "The state provided is not from the country provided.")
+                    "The state does not belong to the selected country.")
         else:
             if self.graduating_year < get_limit_year():
                 raise ValueError(
