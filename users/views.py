@@ -202,7 +202,18 @@ class AreaInterestListView(ListAPIView):
     '''
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = AreaInterestSerializer
-    queryset = AreaInterest.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = AreaInterest.objects.all()
+        if user.is_vet_student():
+            queryset = self.filter_student_areas(queryset)
+        return queryset
+
+    @staticmethod
+    def filter_student_areas(areas_interest):
+        student_areas = ['Small Animal', 'Large Animal', 'Other']
+        return [area for area in areas_interest if area.name in student_areas]
 
 
 class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
