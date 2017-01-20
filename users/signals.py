@@ -38,7 +38,7 @@ def new_vet_signal(sender, instance=None, created=False, **kwargs):
 def follows_changed(sender, action=None, pk_set=None, **kwargs):
     if action == 'post_add':
         activity = Activity(
-            follows=pk_set.pop(),
+            follows_id=pk_set.pop(),
             action=Activity.FOLLOW,
             user=kwargs['instance']
         )
