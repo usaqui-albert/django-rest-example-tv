@@ -54,7 +54,7 @@ class Activity(models.Model):
                     "A comment is needed."
                 )
         elif self.action == self.FOLLOW:
-            if not self.follow:
+            if not self.follows:
                 raise ValueError(
                     "The user followed is needed."
                 )
