@@ -25,7 +25,7 @@ from TapVet import messages
 from TapVet.pagination import StandardPagination
 from TapVet.permissions import IsOwnerOrReadOnly
 
-from .models import User, Breeder, Veterinarian, AreaInterest
+from .models import User, Breeder, Veterinarian, AreaInterest, VerificationCode
 from helpers.stripe_helpers import (
     stripe_errors_handler, get_customer_in_stripe, card_list,
     get_first_card_token, add_card_to_customer, delete_card_from_customer
@@ -34,7 +34,8 @@ from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
     UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer,
-    UserFollowsSerializer
+    UserFollowsSerializer, EmailToResetPasswordSerializer,
+    RestorePasswordSerializer
 )
 from .tasks import send_mail, refer_a_friend_by_email
 
@@ -535,3 +536,48 @@ class UserFollowedListView(UserFollowsListView):
                 )
             )
         return qs
+
+
+class EmailToResetPasswordView(GenericAPIView):
+    serializer_class = EmailToResetPasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['email']
+        verification_code, created = VerificationCode.objects.get_or_create(
+            user=user)
+        # TODO: Send an email using SendGrid with the verification code in it.
+        return Response(messages.request_successfully)
+
+
+class RestorePasswordView(GenericAPIView):
+    serializer_class = RestorePasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            verification_code = VerificationCode.objects.filter(
+                code=serializer.validated_data['verification_code']
+            ).select_related('user').first()
+            if verification_code:
+                has_expired = verification_code.has_expired()
+                verification_code.delete()
+                if has_expired:
+                    return self.bad_request(messages.code_has_expired)
+                user = verification_code.user
+                user.set_password(serializer.validated_data['new_password'])
+                user.save()
+                return Response(messages.request_successfully)
+            return self.bad_request(messages.invalid_code)
+        error_message = serializer.errors.get('non_field_errors', None)
+        error_data = {
+            'detail': error_message[0]
+        } if error_message else serializer.errors
+        return self.bad_request(error_data)
+
+    @staticmethod
+    def bad_request(data):
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
