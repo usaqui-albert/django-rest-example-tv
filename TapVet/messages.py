@@ -51,3 +51,11 @@ post_already_reported = {
 forbidden_action = {
     "detail": "You are not allowed to do this action."
 }
+
+invalid_code = {
+    'detail': 'Invalid verification code.'
+}
+
+code_has_expired = {
+    'detail': 'Your verification code has expired.'
+}
