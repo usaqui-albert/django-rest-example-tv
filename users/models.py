@@ -3,6 +3,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db.models.signals import post_save
+from uuid import uuid4
+from django.utils import timezone
 
 from pets.models import get_current_year, get_limit_year, uploads_path
 
@@ -179,3 +181,16 @@ class ProfileImage(models.Model):
 
     def __str__(self):
         return u'Profile pic for: %s' % self.user.username
+
+
+class VerificationCode(models.Model):
+    code = models.CharField(max_length=6)
+    user = models.OneToOneField(User, related_name='verification_code')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.code = str(uuid4().get_hex().upper()[0:6])
+        super(VerificationCode, self).save(*args, **kwargs)
+
+    def has_expired(self):
+        return self.created_at <= timezone.now() - timezone.timedelta(days=1)
