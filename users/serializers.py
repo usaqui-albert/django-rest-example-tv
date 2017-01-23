@@ -331,3 +331,25 @@ class UserFollowsSerializer(UserSerializers):
 
     class Meta(UserSerializers.Meta):
         fields = UserSerializers.Meta.fields + ('following',)
+
+
+class EmailToResetPasswordSerializer(Serializer):
+    email = EmailField(write_only=True)
+
+    @staticmethod
+    def validate_email(value):
+        user = User.objects.filter(email=value).first()
+        if user:
+            return user
+        raise ValidationError('Email not registered.')
+
+
+class RestorePasswordSerializer(Serializer):
+    verification_code = CharField(max_length=6, write_only=True, min_length=6)
+    new_password = CharField(write_only=True)
+    confirm_password = CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise ValidationError('Passwords do not match.')
+        return attrs
