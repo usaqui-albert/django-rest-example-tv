@@ -299,7 +299,8 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
 
     @staticmethod
     def get_verified_and_locked_out(data):
-        if 'veterinarian' in data:
+        veterinarian_data = data.pop('veterinarian', None)
+        if veterinarian_data:
             data['is_verified'] = data['veterinarian'].pop('verified')
             data['is_locked'] = data['veterinarian'].pop('locked')
         return data
