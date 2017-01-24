@@ -29,6 +29,11 @@ class UserLikesPost(models.Model):
     class Meta:
         unique_together = ('user', 'post')
 
+    def __unicode__(self):
+        return u'User: %s likes Post_id: %s' % (
+            self.user.username, self.post.id
+        )
+
 
 # Func to connect the signal on post save.
 post_save.connect(
