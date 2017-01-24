@@ -3,7 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save
 
-from .signals import post_reporting_signal
+from .signals import post_reporting_signal, new_post_like_signal
 
 min_max_range = [
     MinValueValidator(0),
@@ -28,6 +28,19 @@ class UserLikesPost(models.Model):
 
     class Meta:
         unique_together = ('user', 'post')
+
+    def __unicode__(self):
+        return u'User: %s likes Post_id: %s' % (
+            self.user.username, self.post.id
+        )
+
+
+# Func to connect the signal on post save.
+post_save.connect(
+    new_post_like_signal,
+    sender=UserLikesPost,
+    dispatch_uid="users.models.userlikespost_post_save"
+)
 
 
 class Post(models.Model):

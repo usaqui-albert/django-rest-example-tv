@@ -1,14 +1,17 @@
+from uuid import uuid4
+
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser, UserManager
-from django.db.models.signals import post_save
-from uuid import uuid4
+from django.db.models.signals import post_save, m2m_changed
 from django.utils import timezone
 
 from pets.models import get_current_year, get_limit_year, uploads_path
 
-from .signals import create_auth_token, new_breeder_signal, new_vet_signal
+from .signals import (
+    create_auth_token, new_breeder_signal, new_vet_signal, follows_changed
+)
 from .mixins import PermissionsMixin
 
 
@@ -80,6 +83,9 @@ post_save.connect(
     sender=User,
     dispatch_uid="users.models.user_post_save"
 )
+
+m2m_changed.connect(
+    follows_changed, sender=User.follows.through)
 
 
 class Breeder(models.Model):

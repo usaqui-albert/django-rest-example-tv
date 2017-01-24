@@ -2,6 +2,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from users.tasks import send_mail
+from activities.models import Activity
 
 
 def post_reporting_signal(sender, instance=None, created=False, **kwargs):
@@ -17,3 +18,13 @@ def post_reporting_signal(sender, instance=None, created=False, **kwargs):
         )
         send_mail.delay(
             message_title, message_body, msg_html, True)
+
+
+def new_post_like_signal(sender, instance=None, created=False, **kwargs):
+    if created:
+        activity = Activity(
+            user=instance.user,
+            action=Activity.LIKE,
+            post=instance.post
+        )
+        activity.save()

@@ -2,6 +2,8 @@ from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.template.loader import render_to_string
 
+from activities.models import Activity
+
 from .tasks import send_mail
 
 
@@ -31,3 +33,13 @@ def new_vet_signal(sender, instance=None, created=False, **kwargs):
             'users/partials/email/vet.html', {'vet': instance})
         send_mail.delay(
             message_title, message_body, msg_html, True)
+
+
+def follows_changed(sender, action=None, pk_set=None, **kwargs):
+    if action == 'post_add':
+        activity = Activity(
+            follows_id=pk_set.pop(),
+            action=Activity.FOLLOW,
+            user=kwargs['instance']
+        )
+        activity.save()
