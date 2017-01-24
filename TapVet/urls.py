@@ -48,4 +48,5 @@ urlpatterns = [
         PaymentAmountDetail.as_view()
     ),
     url(r'^docs/', include('rest_framework_docs.urls')),
+    url(r'^api/v1/dashboard/app-texts/', include('apptexts.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

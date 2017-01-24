@@ -129,9 +129,10 @@ class VeterinarianSerializer(ModelSerializer):
                 '`update()` did not return an object instance.'
             )
         else:
-            area_interest = validated_data.pop('area_interest')
+            area_interest = validated_data.pop('area_interest', [])
             self.instance = self.create(validated_data)
-            self.instance.area_interest.set(area_interest)
+            if area_interest:
+                self.instance.area_interest.set(area_interest)
 
             assert self.instance is not None, (
                 '`create()` did not return an object instance.'
@@ -330,3 +331,25 @@ class UserFollowsSerializer(UserSerializers):
 
     class Meta(UserSerializers.Meta):
         fields = UserSerializers.Meta.fields + ('following',)
+
+
+class EmailToResetPasswordSerializer(Serializer):
+    email = EmailField(write_only=True)
+
+    @staticmethod
+    def validate_email(value):
+        user = User.objects.filter(email=value).first()
+        if user:
+            return user
+        raise ValidationError('Email not registered.')
+
+
+class RestorePasswordSerializer(Serializer):
+    verification_code = CharField(max_length=6, write_only=True, min_length=6)
+    new_password = CharField(write_only=True)
+    confirm_password = CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise ValidationError('Passwords do not match.')
+        return attrs

@@ -6,7 +6,7 @@ from posts.views import PostByUserListView
 from .views import (
     UserAuth, UserView, VeterinarianListCreateView,
     BreederListCreateView, GroupsListView, UserFeedBackView,
-    AreaInterestListView,
+    AreaInterestListView, EmailToResetPasswordView, RestorePasswordView,
     UserRetrieveUpdateView, StripeCustomerView, UserFollowView,
     ReferFriendView, UserFollowsListView, UserFollowedListView
 )
@@ -27,4 +27,6 @@ urlpatterns = [
     url(r'^refer/$', ReferFriendView.as_view()),
     url(r'^veterinarians/$', VeterinarianListCreateView.as_view()),
     url(r'^veterinarians/areas-of-interest/$', AreaInterestListView.as_view()),
+    url(r'^reset-password/$', EmailToResetPasswordView.as_view()),
+    url(r'^restore-password/$', RestorePasswordView.as_view())
 ]

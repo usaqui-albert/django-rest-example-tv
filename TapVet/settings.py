@@ -44,7 +44,8 @@ INTERNAL_APPS = (
     'pets',
     'posts',
     'comments',
-    'activities'
+    'activities',
+    'apptexts'
 )
 
 THIRD_PARTY_APPS = (

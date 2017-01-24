@@ -6,7 +6,8 @@ from rest_framework.serializers import (
 
 from users.models import User
 from users.serializers import (
-    BreederSerializer, VeterinarianSerializer, ProfileImageSerializer
+    BreederSerializer, VeterinarianSerializer, ProfileImageSerializer,
+    UserUpdateSerializer
 )
 
 
@@ -48,6 +49,55 @@ class AdminUserSerializer(ModelSerializer):
             'username', 'email', 'full_name', 'groups', 'id', 'breeder',
             'veterinarian', 'images', 'is_active'
         )
+
+
+class AdminUserUpdateSerializer(ModelSerializer):
+    breeder = BreederSerializer(required=False)
+    veterinarian = VeterinarianSerializer(required=False)
+
+    class Meta:
+        model = User
+        fields = (
+            'full_name', 'veterinarian', 'breeder'
+        )
+
+    def update(self, instance, validated_data):
+        breeder_data = validated_data.pop('breeder', None)
+        veterinarian_data = validated_data.pop('veterinarian', None)
+
+        if instance.groups.id == 2 and breeder_data:
+            if hasattr(instance, 'breeder'):
+                serializer = BreederSerializer(
+                    instance.breeder,
+                    data=breeder_data,
+                    partial=True
+                )
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
+        elif instance.groups.id in [3, 4, 5] and veterinarian_data:
+            if hasattr(instance, 'veterinarian'):
+                serializer = VeterinarianSerializer(
+                    instance.veterinarian,
+                    data=veterinarian_data,
+                    partial=True
+                )
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        return instance
+
+    @staticmethod
+    def validate_veterinarian(value):
+        return UserUpdateSerializer.validate_veterinarian(value)
+
+    @staticmethod
+    def validate_breeder(value):
+        return UserUpdateSerializer.validate_breeder(value)
 
 
 class AdminVerificationSerializer(Serializer):

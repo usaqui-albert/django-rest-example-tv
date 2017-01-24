@@ -36,9 +36,11 @@ pytest==3.0.2
 pytest-cov==2.3.1
 pytest-django==3.0.0
 python-dateutil==2.5.3
+python-http-client==2.2.1
 pytz==2016.7
 redis==2.10.5
 requests==2.11.1
+sendgrid==3.6.3
 simplegeneric==0.8.1
 simplejson==3.8.2
 six==1.10.0

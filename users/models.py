@@ -1,8 +1,11 @@
+from uuid import uuid4
+
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 from django.db.models.signals import post_save, m2m_changed
+from django.utils import timezone
 
 from pets.models import get_current_year, get_limit_year, uploads_path
 
@@ -67,6 +70,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_vet(self):
         return self.groups.id in [3, 4, 5] if self.groups else False
 
+    def is_vet_student(self):
+        return self.groups.id == 4 if self.groups else False
+
     def get_label(self):
         return settings.APP_LABEL.get(self.groups.id, '')
 
@@ -113,7 +119,7 @@ post_save.connect(
 
 
 class Veterinarian(models.Model):
-    area_interest = models.ManyToManyField(AreaInterest)
+    area_interest = models.ManyToManyField(AreaInterest, blank=True, null=True)
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
     verified = models.BooleanField(default=False)
@@ -148,7 +154,7 @@ class Veterinarian(models.Model):
                 )
             if self.country != self.state.country:
                 raise ValueError(
-                    "The state provided is not from the country provided.")
+                    "The state does not belong to the selected country.")
         else:
             if self.graduating_year < get_limit_year():
                 raise ValueError(
@@ -181,3 +187,16 @@ class ProfileImage(models.Model):
 
     def __str__(self):
         return u'Profile pic for: %s' % self.user.username
+
+
+class VerificationCode(models.Model):
+    code = models.CharField(max_length=6)
+    user = models.OneToOneField(User, related_name='verification_code')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.code = str(uuid4().get_hex().upper()[0:6])
+        super(VerificationCode, self).save(*args, **kwargs)
+
+    def has_expired(self):
+        return self.created_at <= timezone.now() - timezone.timedelta(days=1)
