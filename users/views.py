@@ -35,7 +35,7 @@ from .serializers import (
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
     UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer,
     UserFollowsSerializer, EmailToResetPasswordSerializer,
-    RestorePasswordSerializer
+    RestorePasswordSerializer, AuthTokenMailSerializer
 )
 from .tasks import send_mail, refer_a_friend_by_email
 
@@ -47,6 +47,7 @@ class UserAuth(ObtainAuthToken):
     :accepted methods:
         POST
     """
+    serializer_class = AuthTokenMailSerializer
     allowed_methods = ('POST',)
 
     def post(self, request, *args, **kwargs):
