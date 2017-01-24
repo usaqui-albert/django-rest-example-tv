@@ -1,13 +1,16 @@
 from PIL import Image as Img
 from StringIO import StringIO
 
+from django.db import IntegrityError
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 from rest_framework.serializers import (
     ModelSerializer, ValidationError, ImageField, Serializer, EmailField,
     CharField, SerializerMethodField, IntegerField, BooleanField
 )
 from rest_framework.authtoken.models import Token
-from django.db import IntegrityError
-from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
@@ -353,4 +356,46 @@ class RestorePasswordSerializer(Serializer):
     def validate(self, attrs):
         if attrs['new_password'] != attrs['confirm_password']:
             raise ValidationError('Passwords do not match.')
+        return attrs
+
+
+class AuthTokenMailSerializer(AuthTokenSerializer):
+    email = EmailField(label="Email", required=False)
+    username = CharField(label="Username", required=False)
+    msg = 'Unable to log in with provided credentials.'
+    msg_email_pass = 'Must include "email" and "password".'
+    msg_username_pass = 'Must include "username" and "password".'
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+        email = attrs.get('email')
+        if email:
+            if email and password:
+                qs = User.objects.filter(
+                    email=email).values('username').first()
+                if qs:
+                    username = qs.get('username', None)
+                    user = authenticate(username=username, password=password)
+                    if not user:
+                        raise ValidationError(self.msg, code='authorization')
+                else:
+                    raise ValidationError(self.msg, code='authorization')
+
+            else:
+                raise ValidationError(
+                    self.msg_email_pass, code='authorization'
+                )
+        else:
+            if username and password:
+                user = authenticate(username=username, password=password)
+
+                if not user:
+                    raise ValidationError(self.msg, code='authorization')
+
+            else:
+                raise ValidationError(
+                    self.msg_username_pass, code='authorization')
+
+        attrs['user'] = user
         return attrs
