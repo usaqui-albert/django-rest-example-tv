@@ -57,5 +57,20 @@ class ActivityListView(ListAPIView):
             Q(
                 post__in=user.likes.all(), action=Activity.COMMENT
             )
-        ).exclude(user=user)
+        ).exclude(user=user).select_related(
+            'user',
+            'user__groups',
+            'user__image',
+            'post',
+            'post__user',
+            'post__pet',
+            'post__user__groups',
+            'post__user__image',
+            'comment',
+            'comment__user',
+            'comment__user__groups',
+            'comment__user__image',
+        ).prefetch_related(
+            'post__images',
+        )
         return qs.all()
