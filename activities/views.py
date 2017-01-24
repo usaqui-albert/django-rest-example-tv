@@ -18,7 +18,23 @@ class UserLikedPostListView(ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
-        qs = qs.filter(user=user, action=Activity.LIKE)
+        qs = qs.filter(user=user, action=Activity.LIKE).select_related(
+            'user',
+            'user__groups',
+            'user__image',
+            'post',
+            'post__user',
+            'post__pet',
+            'post__user__groups',
+            'post__user__image',
+            'comment',
+            'comment__user',
+            'comment__user__groups',
+            'comment__user__image',
+        ).prefetch_related(
+            'post__images',
+        )
+
         return qs.all()
 
 
@@ -31,7 +47,23 @@ class UserCommentPostListView(ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
-        qs = qs.filter(user=user, action=Activity.COMMENT)
+        qs = qs.filter(user=user, action=Activity.COMMENT).select_related(
+            'user',
+            'user__groups',
+            'user__image',
+            'post',
+            'post__user',
+            'post__pet',
+            'post__user__groups',
+            'post__user__image',
+            'comment',
+            'comment__user',
+            'comment__user__groups',
+            'comment__user__image',
+        ).prefetch_related(
+            'post__images',
+        )
+
         return qs.all()
 
 
