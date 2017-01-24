@@ -18,15 +18,15 @@ class Activity(models.Model):
 
     user = models.ForeignKey('users.User', related_name='activities')
     action = models.CharField(choices=ACTIVITY_CHOICES, max_length=50)
-    post = models.OneToOneField('posts.post', null=True, blank=True)
-    comment = models.OneToOneField('comments.comment', null=True, blank=True)
-    follows = models.OneToOneField('users.user', null=True, blank=True)
+    post = models.ForeignKey('posts.post', null=True, blank=True)
+    comment = models.ForeignKey('comments.comment', null=True, blank=True)
+    follows = models.ForeignKey('users.user', null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Activity"
-        verbose_name_plural = "Activitiess"
+        verbose_name_plural = "Activities"
 
     def __unicode__(self):
         return u'user: %s //action: %s' % (
