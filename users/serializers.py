@@ -168,6 +168,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     interest_count = IntegerField(read_only=True)
     upvotes_count = IntegerField(read_only=True)
     followed = BooleanField(read_only=True)
+    label = CharField(source='get_label', read_only=True)
 
     class Meta:
         model = User
@@ -177,7 +178,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             'interested_notification', 'vet_reply_notification',
             'comments_notification', 'comments_like_notification',
             'follows_count', 'followed_by_count', 'comments_count',
-            'interest_count', 'upvotes_count'
+            'interest_count', 'upvotes_count', 'label'
         )
         extra_kwargs = {
             'password': {'write_only': True},
