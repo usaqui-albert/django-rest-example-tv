@@ -239,6 +239,13 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(
+            self.get_verified_and_locked_out(serializer.data)
+        )
+
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -288,6 +295,13 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
                 },
                 status.HTTP_401_UNAUTHORIZED)
         return self.destroy(request, *args, **kwargs)
+
+    @staticmethod
+    def get_verified_and_locked_out(data):
+        if 'veterinarian' in data:
+            data['is_verified'] = data['veterinarian'].pop('verified')
+            data['is_locked'] = data['veterinarian'].pop('locked')
+        return data
 
 
 class StripeCustomerView(APIView):
