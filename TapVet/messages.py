@@ -26,7 +26,7 @@ image_not_found = {"detail": "Image not found."}
 user_not_found = {"detail": "User not found."}
 
 request_successfully = {
-    "detail": "Your request has been processed successfully "}
+    "detail": "Your request has been processed successfully."}
 inactive = {
     "detail": "You have been marked as inactive inactive by the TapVet " +
     "administration"
@@ -50,4 +50,12 @@ post_already_reported = {
 }
 forbidden_action = {
     "detail": "You are not allowed to do this action."
+}
+
+invalid_code = {
+    'detail': 'Invalid verification code.'
+}
+
+code_has_expired = {
+    'detail': 'Your verification code has expired.'
 }

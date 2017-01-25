@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models.signals import post_save, m2m_changed
+
+from .signals import new_comment_signal, upvoters_changed
 
 
 class Comment(models.Model):
@@ -14,6 +17,16 @@ class Comment(models.Model):
 
     def __unicode__(self):
         return u'comment: %s - created: %s' % (self.id, self.created_at)
+
+
+# Func to connect the signal on post save.
+post_save.connect(
+    new_comment_signal,
+    sender=Comment,
+    dispatch_uid="users.models.userlikespost_post_save"
+)
+m2m_changed.connect(
+    upvoters_changed, sender=Comment.upvoters.through)
 
 
 class Feedback(models.Model):

@@ -34,9 +34,10 @@ urlpatterns = [
         r'^api/v1/dashboard/feedbacks/',
         include('comments.dashboard.urls', namespace='dashboard_feedback')
     ),
-    url(r'^api/v1/users/', include('users.urls', namespace='users')),
+    url(r'^api/v1/activities/', include('activities.urls', namespace='users')),
     url(r'^api/v1/pets/', include('pets.urls', namespace='pets')),
     url(r'^api/v1/posts/', include('posts.urls', namespace='posts')),
+    url(r'^api/v1/users/', include('users.urls', namespace='users')),
     url(
         r'^api/v1/countries/',
         include('countries.urls', namespace='countries')
@@ -47,4 +48,5 @@ urlpatterns = [
         PaymentAmountDetail.as_view()
     ),
     url(r'^docs/', include('rest_framework_docs.urls')),
+    url(r'^api/v1/dashboard/app-texts/', include('apptexts.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

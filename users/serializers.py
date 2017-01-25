@@ -1,13 +1,16 @@
 from PIL import Image as Img
 from StringIO import StringIO
 
+from django.db import IntegrityError
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 from rest_framework.serializers import (
     ModelSerializer, ValidationError, ImageField, Serializer, EmailField,
     CharField, SerializerMethodField, IntegerField, BooleanField
 )
 from rest_framework.authtoken.models import Token
-from django.db import IntegrityError
-from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 
@@ -129,9 +132,10 @@ class VeterinarianSerializer(ModelSerializer):
                 '`update()` did not return an object instance.'
             )
         else:
-            area_interest = validated_data.pop('area_interest')
+            area_interest = validated_data.pop('area_interest', [])
             self.instance = self.create(validated_data)
-            self.instance.area_interest.set(area_interest)
+            if area_interest:
+                self.instance.area_interest.set(area_interest)
 
             assert self.instance is not None, (
                 '`create()` did not return an object instance.'
@@ -167,6 +171,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     interest_count = IntegerField(read_only=True)
     upvotes_count = IntegerField(read_only=True)
     followed = BooleanField(read_only=True)
+    label = CharField(source='get_label', read_only=True)
 
     class Meta:
         model = User
@@ -176,7 +181,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             'interested_notification', 'vet_reply_notification',
             'comments_notification', 'comments_like_notification',
             'follows_count', 'followed_by_count', 'comments_count',
-            'interest_count', 'upvotes_count'
+            'interest_count', 'upvotes_count', 'label'
         )
         extra_kwargs = {
             'password': {'write_only': True},
@@ -330,3 +335,67 @@ class UserFollowsSerializer(UserSerializers):
 
     class Meta(UserSerializers.Meta):
         fields = UserSerializers.Meta.fields + ('following',)
+
+
+class EmailToResetPasswordSerializer(Serializer):
+    email = EmailField(write_only=True)
+
+    @staticmethod
+    def validate_email(value):
+        user = User.objects.filter(email=value).first()
+        if user:
+            return user
+        raise ValidationError('Email not registered.')
+
+
+class RestorePasswordSerializer(Serializer):
+    verification_code = CharField(max_length=6, write_only=True, min_length=6)
+    new_password = CharField(write_only=True)
+    confirm_password = CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise ValidationError('Passwords do not match.')
+        return attrs
+
+
+class AuthTokenMailSerializer(AuthTokenSerializer):
+    email = EmailField(label="Email", required=False)
+    username = CharField(label="Username", required=False)
+    msg = 'Unable to log in with provided credentials.'
+    msg_email_pass = 'Must include "email" and "password".'
+    msg_username_pass = 'Must include "username" and "password".'
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+        email = attrs.get('email')
+        if email:
+            if email and password:
+                qs = User.objects.filter(
+                    email=email).values('username').first()
+                if qs:
+                    username = qs.get('username', None)
+                    user = authenticate(username=username, password=password)
+                    if not user:
+                        raise ValidationError(self.msg, code='authorization')
+                else:
+                    raise ValidationError(self.msg, code='authorization')
+
+            else:
+                raise ValidationError(
+                    self.msg_email_pass, code='authorization'
+                )
+        else:
+            if username and password:
+                user = authenticate(username=username, password=password)
+
+                if not user:
+                    raise ValidationError(self.msg, code='authorization')
+
+            else:
+                raise ValidationError(
+                    self.msg_username_pass, code='authorization')
+
+        attrs['user'] = user
+        return attrs

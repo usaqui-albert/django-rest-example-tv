@@ -291,13 +291,13 @@ class TestUserDetailView(CustomTestCase):
         assert resp.status_code == 404, 'Should return Unauthorized (401)'
 
     def test_get_request_non_authenticated_user_and_object_exist(self):
-        user = self.get_user()
+        user = self.load_users_data().get_user()
         req = self.factory.get('/')
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
         assert resp.status_code == 200, 'Should return OK 200()'
 
     def test_get_request_with_authentication(self):
-        user = self.get_user()
+        user = self.load_users_data().get_user()
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.pk)
@@ -688,7 +688,7 @@ class TestVeterinarianListCreateView:
         )
 
 
-class TestAreaInterestListView:
+class TestAreaInterestListView(CustomTestCase):
     factory = RequestFactory()
 
     def test_get_request_no_auth(self):
@@ -698,7 +698,7 @@ class TestAreaInterestListView:
             'Authentication credentials were not provided')
 
     def test_get_request(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user()
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.AreaInterestListView.as_view()(req)
@@ -706,7 +706,7 @@ class TestAreaInterestListView:
             'Should return OK (200) with the list of all Area of interest')
 
     def test_post_request(self):
-        user = mixer.blend(models.User)
+        user = self.get_user()
         req = self.factory.post('/')
         force_authenticate(req, user=user)
         resp = views.AreaInterestListView.as_view()(req)

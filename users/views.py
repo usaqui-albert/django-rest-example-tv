@@ -25,7 +25,7 @@ from TapVet import messages
 from TapVet.pagination import StandardPagination
 from TapVet.permissions import IsOwnerOrReadOnly
 
-from .models import User, Breeder, Veterinarian, AreaInterest
+from .models import User, Breeder, Veterinarian, AreaInterest, VerificationCode
 from helpers.stripe_helpers import (
     stripe_errors_handler, get_customer_in_stripe, card_list,
     get_first_card_token, add_card_to_customer, delete_card_from_customer
@@ -34,7 +34,8 @@ from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
     UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer,
-    UserFollowsSerializer
+    UserFollowsSerializer, EmailToResetPasswordSerializer,
+    RestorePasswordSerializer, AuthTokenMailSerializer
 )
 from .tasks import send_mail, refer_a_friend_by_email
 
@@ -46,6 +47,7 @@ class UserAuth(ObtainAuthToken):
     :accepted methods:
         POST
     """
+    serializer_class = AuthTokenMailSerializer
     allowed_methods = ('POST',)
 
     def post(self, request, *args, **kwargs):
@@ -202,7 +204,18 @@ class AreaInterestListView(ListAPIView):
     '''
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = AreaInterestSerializer
-    queryset = AreaInterest.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = AreaInterest.objects.all()
+        if user.is_vet_student():
+            queryset = self.filter_student_areas(queryset)
+        return queryset
+
+    @staticmethod
+    def filter_student_areas(areas_interest):
+        student_areas = ['Small Animal', 'Large Animal', 'Other']
+        return [area for area in areas_interest if area.name in student_areas]
 
 
 class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
@@ -226,6 +239,13 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
     permission_classes = (IsOwnerOrReadOnly,)
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(
+            self.get_verified_and_locked_out(serializer.data)
+        )
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -276,6 +296,14 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
                 },
                 status.HTTP_401_UNAUTHORIZED)
         return self.destroy(request, *args, **kwargs)
+
+    @staticmethod
+    def get_verified_and_locked_out(data):
+        veterinarian_data = data.pop('veterinarian', None)
+        if veterinarian_data:
+            data['is_verified'] = data['veterinarian'].pop('verified')
+            data['is_locked'] = data['veterinarian'].pop('locked')
+        return data
 
 
 class StripeCustomerView(APIView):
@@ -524,3 +552,48 @@ class UserFollowedListView(UserFollowsListView):
                 )
             )
         return qs
+
+
+class EmailToResetPasswordView(GenericAPIView):
+    serializer_class = EmailToResetPasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['email']
+        verification_code, created = VerificationCode.objects.get_or_create(
+            user=user)
+        # TODO: Send an email using SendGrid with the verification code in it.
+        return Response(messages.request_successfully)
+
+
+class RestorePasswordView(GenericAPIView):
+    serializer_class = RestorePasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            verification_code = VerificationCode.objects.filter(
+                code=serializer.validated_data['verification_code']
+            ).select_related('user').first()
+            if verification_code:
+                has_expired = verification_code.has_expired()
+                verification_code.delete()
+                if has_expired:
+                    return self.bad_request(messages.code_has_expired)
+                user = verification_code.user
+                user.set_password(serializer.validated_data['new_password'])
+                user.save()
+                return Response(messages.request_successfully)
+            return self.bad_request(messages.invalid_code)
+        error_message = serializer.errors.get('non_field_errors', None)
+        error_data = {
+            'detail': error_message[0]
+        } if error_message else serializer.errors
+        return self.bad_request(error_data)
+
+    @staticmethod
+    def bad_request(data):
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)

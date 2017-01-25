@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.views import APIView
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView, GenericAPIView
+    ListAPIView, RetrieveUpdateAPIView, GenericAPIView
 )
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -21,7 +21,8 @@ from users.models import User, Veterinarian
 from pets.views import PetListByUser
 
 from .serializers import (
-    AdminAuthTokenSerializer, AdminUserSerializer, AdminVerificationSerializer
+    AdminAuthTokenSerializer, AdminUserSerializer, AdminVerificationSerializer,
+    AdminUserUpdateSerializer
 )
 
 
@@ -105,15 +106,29 @@ class AdminUsersListView(ListAPIView):
     )
 
 
-class AdminUserDetailView(RetrieveAPIView):
+class AdminUserDetailView(RetrieveUpdateAPIView):
     pagination_class = StandardPagination
     permission_classes = (IsAdminUser,)
     serializer_class = AdminUserSerializer
     queryset = User.objects.all().select_related(
         'image',
         'veterinarian__country', 'veterinarian__state',
-        'breeder__country', 'breeder__state'
+        'breeder__country', 'breeder__state', 'groups'
     )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        if instance.is_staff:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        serializer = AdminUserUpdateSerializer(
+            instance,
+            data=request.data,
+            partial=partial
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
 
 class AdminPetView(PetListByUser):
