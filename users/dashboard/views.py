@@ -24,6 +24,7 @@ from .serializers import (
     AdminAuthTokenSerializer, AdminUserSerializer, AdminVerificationSerializer,
     AdminUserUpdateSerializer
 )
+from users.tasks import vet_verify_mail
 
 
 class AdminAuth(ObtainAuthToken):
@@ -186,6 +187,8 @@ class AdminVetVerificationView(GenericAPIView):
             vet.locked = serializer.validated_data['locked']
             vet.save()
             vet_serializer = VeterinarianSerializer(vet)
+            if serializer.validated_data['verified']:
+                vet_verify_mail.delay(vet.user, vet.veterinarian_type)
             return Response(
                 vet_serializer.data,
                 status=status.HTTP_202_ACCEPTED
