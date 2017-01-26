@@ -37,7 +37,7 @@ from .serializers import (
     UserFollowsSerializer, EmailToResetPasswordSerializer,
     RestorePasswordSerializer, AuthTokenMailSerializer
 )
-from .tasks import send_mail, refer_a_friend_by_email
+from .tasks import send_mail, refer_a_friend_by_email, password_reset
 
 
 class UserAuth(ObtainAuthToken):
@@ -564,7 +564,7 @@ class EmailToResetPasswordView(GenericAPIView):
         user = serializer.validated_data['email']
         verification_code, created = VerificationCode.objects.get_or_create(
             user=user)
-        # TODO: Send an email using SendGrid with the verification code in it.
+        password_reset.delay(user, verification_code)
         return Response(messages.request_successfully)
 
 
