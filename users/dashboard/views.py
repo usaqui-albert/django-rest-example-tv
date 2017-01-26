@@ -92,7 +92,7 @@ class AdminUsersListView(ListAPIView):
         'image',
         'veterinarian__country', 'veterinarian__state',
         'breeder__country', 'breeder__state'
-    )
+    ).exclude(is_staff=True)
     permission_classes = (IsAdminUser,)
     serializer_class = AdminUserSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
