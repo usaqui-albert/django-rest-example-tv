@@ -4,12 +4,13 @@ from django.template.loader import render_to_string
 
 from activities.models import Activity
 
-from .tasks import send_mail
+from .tasks import send_mail, welcome_mail
 
 
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+        welcome_mail(instance)
 
 
 def new_breeder_signal(sender, instance=None, created=False, **kwargs):

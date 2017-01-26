@@ -1,10 +1,23 @@
-from celery.task import task
+import os
 
 from django.core.mail import mail_admins
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
 from django.conf import settings
+
+from celery.task import task
+
+import sendgrid
+from sendgrid.helpers.mail import (
+    Attachment,
+    Category,
+    Content,
+    Email,
+    Mail,
+    Personalization,
+    Substitution
+)
 
 
 @task(ignore_result=True)
@@ -26,3 +39,22 @@ def refer_a_friend_by_email(receiver, sender_user):
     msg = EmailMultiAlternatives(subject, '', from_email, [to])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
+
+
+def welcome_mail(user):
+    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+    mail = Mail()
+    mail.set_template_id(settings.SENDGRID_WELCOME_TEMPLATE)
+    mail.set_from(Email(settings.DEFAULT_FROM_EMAIL, 'Tapvet Team'))
+    personalization = Personalization()
+    personalization.add_to(Email(user.email))
+    personalization.set_subject(
+        settings.EMAIL_SUBJECT_PREFIX + ' Welcome -username-')
+    mail.add_content(Content("text/plain", 'hello'))
+    mail.add_content(Content("text/html", 'hello'))
+    personalization.add_substitution(Substitution('-name-', user.full_name))
+    personalization.add_substitution(Substitution('-username-', user.username))
+    personalization.add_substitution(Substitution('-email-', user.email))
+    mail.add_personalization(personalization)
+    response = sg.client.mail.send.post(request_body=mail.get())
+    print(response.status_code)
