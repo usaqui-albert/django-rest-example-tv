@@ -161,8 +161,8 @@ EMAIL_SUBJECT_PREFIX = "[TapVet]"
 DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
 
 ADMINS = [
-    ('Leopoldo Pimentel', 'usaqui.albert@gmail.com'),
     ('Mayra Canas', 'mayrac@blanclabs.com'),
+    ('Leopoldo Pimentel', 'usaqui.albert@gmail.com'),
 ]
 
 REPORT_MESSAGE_ADMIN_TITLE = " New Report Pending"
