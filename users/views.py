@@ -564,7 +564,7 @@ class EmailToResetPasswordView(GenericAPIView):
         user = serializer.validated_data['email']
         verification_code, created = VerificationCode.objects.get_or_create(
             user=user)
-        password_reset.delay(user, verification_code)
+        password_reset.delay(user, verification_code.code)
         return Response(messages.request_successfully)
 
 
