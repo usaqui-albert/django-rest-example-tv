@@ -188,7 +188,7 @@ class AdminVetVerificationView(GenericAPIView):
             vet.save()
             vet_serializer = VeterinarianSerializer(vet)
             if serializer.validated_data['verified']:
-                vet_verify_mail.delay(vet.user, vet.veterinarian_type)
+                vet_verify_mail(vet.user, vet.veterinarian_type)
             return Response(
                 vet_serializer.data,
                 status=status.HTTP_202_ACCEPTED

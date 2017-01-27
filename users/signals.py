@@ -9,7 +9,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
         if not instance.is_vet():
-            welcome_mail.delay(instance, 'OWNER_BREEDER')
+            welcome_mail(instance, 'OWNER_BREEDER')
 
 
 def vet_signal(sender, instance=None, created=False, **kwargs):
@@ -19,7 +19,7 @@ def vet_signal(sender, instance=None, created=False, **kwargs):
             instance.save()
             vet_verify_mail.delay(instance, instance.veterinarian_type)
 
-        welcome_mail.delay(instance, 'VET_TECH_STUDENT')
+        welcome_mail(instance, 'VET_TECH_STUDENT')
 
 
 def follows_changed(sender, action=None, pk_set=None, **kwargs):

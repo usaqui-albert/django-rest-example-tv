@@ -491,7 +491,7 @@ class ReferFriendView(GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        refer_a_friend_by_email.delay(
+        refer_a_friend_by_email(
             serializer.validated_data['email'],
             request.user
         )
@@ -554,7 +554,7 @@ class EmailToResetPasswordView(GenericAPIView):
         user = serializer.validated_data['email']
         verification_code, created = VerificationCode.objects.get_or_create(
             user=user)
-        password_reset.delay(user, verification_code.code)
+        password_reset(user, verification_code.code)
         return Response(messages.request_successfully)
 
 
