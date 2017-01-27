@@ -8,7 +8,6 @@ from celery.task import task
 
 import sendgrid
 from sendgrid.helpers.mail import (
-    Content,
     Email,
     Mail,
     Personalization,
@@ -39,67 +38,59 @@ def refer_a_friend_by_email(receiver, sender_user):
 
 @task(ignore_result=True)
 def welcome_mail(user, group=None):
-    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-    mail = Mail()
-    mail.set_template_id(settings.SENDGRID_WELCOME.get(group))
-    mail.set_from(Email(settings.DEFAULT_FROM_EMAIL, 'Tapvet Team'))
-    personalization = Personalization()
-    personalization.add_to(Email(user.email))
-    personalization.set_subject(
-        settings.EMAIL_SUBJECT_PREFIX + ' Welcome -username-')
-    mail.add_content(Content("text/plain", 'hello'))
-    mail.add_content(Content("text/html", 'hello'))
-    personalization.add_substitution(Substitution('-name-', user.full_name))
-    personalization.add_substitution(Substitution('-username-', user.username))
-    personalization.add_substitution(Substitution('-email-', user.email))
-    mail.add_personalization(personalization)
-    sg.client.mail.send.post(request_body=mail.get())
+    sendgrid_api(
+        obtain_mail(
+            personalization=obtain_personalization(user),
+            template=settings.SENDGRID_WELCOME.get(group)
+        ))
 
 
 @task(ignore_result=True)
 def password_reset(user, verification_code):
-    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-    mail = Mail()
-    mail.set_template_id(settings.SENDGRID_PASSWORD_RESET)
-    mail.set_from(Email(settings.DEFAULT_FROM_EMAIL, 'Tapvet Team'))
-    personalization = Personalization()
-    personalization.add_to(Email(user.email))
-    personalization.set_subject(
-        settings.EMAIL_SUBJECT_PREFIX + ' Password Reset -username-')
-    mail.add_content(Content("text/plain", 'hello'))
-    mail.add_content(Content("text/html", 'hello'))
-    personalization.add_substitution(Substitution('-name-', user.full_name))
-    personalization.add_substitution(Substitution('-code-', verification_code))
-    personalization.add_substitution(Substitution('-username-', user.username))
-    personalization.add_substitution(Substitution('-email-', user.email))
-    mail.add_personalization(personalization)
-    sg.client.mail.send.post(request_body=mail.get())
+    substitutions = [Substitution('-code-', verification_code)]
+    sendgrid_api(
+        obtain_mail(
+            personalization=obtain_personalization(user, substitutions),
+            template=settings.SENDGRID_PASSWORD_RESET
+        ))
 
 
 @task(ignore_result=True)
 def vet_verify_mail(user, veterinarian_type):
-    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-    mail = Mail()
-
+    template = ''
     if veterinarian_type == 3:
-        mail.set_template_id(
-            settings.SENDGRID_VALIDATED.get('VETERINARIAN')
-        )
-
+        template = settings.SENDGRID_VALIDATED.get('VETERINARIAN')
     else:
-        mail.set_template_id(
-            settings.SENDGRID_VALIDATED.get('TECHNICIAN_STUDENT')
-        )
+        template = settings.SENDGRID_VALIDATED.get('TECHNICIAN_STUDENT')
+    sendgrid_api(
+        obtain_mail(
+            personalization=obtain_personalization(user),
+            template=template
+        ))
 
-    mail.set_from(Email(settings.DEFAULT_FROM_EMAIL, 'Tapvet Team'))
+
+def obtain_personalization(user, substitutions=None):
     personalization = Personalization()
     personalization.add_to(Email(user.email))
-    personalization.set_subject(
-        settings.EMAIL_SUBJECT_PREFIX + ' Password Reset -username-')
-    mail.add_content(Content("text/plain", 'hello'))
-    mail.add_content(Content("text/html", 'hello'))
     personalization.add_substitution(Substitution('-name-', user.full_name))
     personalization.add_substitution(Substitution('-username-', user.username))
     personalization.add_substitution(Substitution('-email-', user.email))
+    if substitutions:
+        for substitution in substitutions:
+            personalization.add_substitution(substitution)
+    return personalization
+
+
+def obtain_mail(personalization, template):
+    mail = Mail()
+    mail.set_template_id(template)
+    mail.set_from(Email(settings.DEFAULT_FROM_EMAIL, 'Tapvet Team'))
     mail.add_personalization(personalization)
-    sg.client.mail.send.post(request_body=mail.get())
+    return mail.get()
+
+
+def sendgrid_api(mail):
+    sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
+    sg.client.mail.send.post(
+        request_body=mail
+    )
