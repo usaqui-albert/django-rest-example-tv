@@ -7,7 +7,6 @@ from django.db.models import Count, Value, Case, When, BooleanField
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
-from django.template.loader import render_to_string
 from django.http import Http404
 
 from rest_framework.response import Response
@@ -37,7 +36,7 @@ from .serializers import (
     UserFollowsSerializer, EmailToResetPasswordSerializer,
     RestorePasswordSerializer, AuthTokenMailSerializer
 )
-from .tasks import send_mail, refer_a_friend_by_email
+from .tasks import refer_a_friend_by_email, password_reset, send_feedback
 
 
 class UserAuth(ObtainAuthToken):
@@ -474,17 +473,8 @@ class UserFeedBackView(APIView):
 
     @staticmethod
     def post(request, **kwargs):
-        message_title = "[TapVet] New Feedback"
         message_body = request.data.get('message', None)
-        msg_html = render_to_string(
-            'users/partials/email/feedback.html',
-            {
-                'user': request.user,
-                'message': message_body
-            }
-        )
-        send_mail.delay(
-            message_title, message_body, msg_html, True)
+        send_feedback(request.user, message_body)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -501,9 +491,9 @@ class ReferFriendView(GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        refer_a_friend_by_email.delay(
+        refer_a_friend_by_email(
             serializer.validated_data['email'],
-            request.user.full_name
+            request.user
         )
         return Response(messages.request_successfully)
 
@@ -564,7 +554,7 @@ class EmailToResetPasswordView(GenericAPIView):
         user = serializer.validated_data['email']
         verification_code, created = VerificationCode.objects.get_or_create(
             user=user)
-        # TODO: Send an email using SendGrid with the verification code in it.
+        password_reset(user, verification_code.code)
         return Response(messages.request_successfully)
 
 

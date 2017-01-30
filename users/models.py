@@ -10,7 +10,7 @@ from django.utils import timezone
 from pets.models import get_current_year, get_limit_year, uploads_path
 
 from .signals import (
-    create_auth_token, new_breeder_signal, new_vet_signal, follows_changed
+    create_auth_token, vet_signal, follows_changed
 )
 from .mixins import PermissionsMixin
 
@@ -110,16 +110,8 @@ class Breeder(models.Model):
         super(Breeder, self).save(*args, **kwargs)
 
 
-# Func to connect the signal on post save.
-post_save.connect(
-    new_breeder_signal,
-    sender=Breeder,
-    dispatch_uid="users.models.breeder_post_save"
-)
-
-
 class Veterinarian(models.Model):
-    area_interest = models.ManyToManyField(AreaInterest, blank=True, null=True)
+    area_interest = models.ManyToManyField(AreaInterest, blank=True)
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
     verified = models.BooleanField(default=False)
@@ -169,7 +161,7 @@ class Veterinarian(models.Model):
 
 # Func to connect the signal on post save.
 post_save.connect(
-    new_vet_signal,
+    vet_signal,
     sender=Veterinarian,
     dispatch_uid="users.models.veterinarian_post_save"
 )

@@ -2,6 +2,13 @@
 
 # TapVet Backend
 
+### Prerequisites ###
+You will need redis and mysql installed in your system.
+
+To install redis please refer to this manual:
+    
+    https://www.digitalocean.com/community/tutorials/how-to-install-and-use-redis
+
 ### Installation: ###
 
 Run the following commands to install some dependencies and virtualenv:
@@ -63,8 +70,8 @@ BROKER_URL =  Example: redis://localhost:6379/0
 
 CELERY_RESULT_BACKEND = Example: redis://localhost:6379/1
 
-STRIPE_API_KEY = Strike api Key
-
+STRIPE_API_KEY = Strike API Key
+SENDGRID_API_KEY = Sendgrid API Key
 
 ### Running ###
 
