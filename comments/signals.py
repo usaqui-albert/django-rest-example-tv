@@ -17,6 +17,7 @@ def upvoters_changed(sender, action=None, pk_set=None, **kwargs):
         activity = Activity(
             user_id=pk_set.pop(),
             action=Activity.UPVOTE,
-            comment=kwargs['instance']
+            comment=kwargs['instance'],
+            post=kwargs['instance'].post
         )
         activity.save()
