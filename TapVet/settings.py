@@ -161,17 +161,32 @@ EMAIL_SUBJECT_PREFIX = "[TapVet]"
 DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
 
 ADMINS = [
-    ('Leopoldo Pimentel', 'usaqui.albert@gmail.com'),
     ('Mayra Canas', 'mayrac@blanclabs.com'),
+    ('Leopoldo Pimentel', 'usaqui.albert@gmail.com'),
 ]
 
 REPORT_MESSAGE_ADMIN_TITLE = " New Report Pending"
 BREADER_MESSAGE_ADMIN_TITLE = "New Breeeder Pending"
 VET_MESSAGE_ADMIN_TITLE = "New Vet Pending"
 PAID_POST_AMOUNT = '100'
-
 # Stripe data
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+
+# SENDGRID
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+# SENDGRID TEMPLATES
+SENDGRID_PASSWORD_RESET = '731dda44-2dec-4647-9672-48a0dc904f68'
+SENDGRID_WELCOME = {
+    'VET_TECH_STUDENT': '2b402715-84ef-40e6-8393-cfd895f34955',
+    'OWNER_BREEDER': '0e0073e4-daa0-48fe-b2d9-06742b026b50'
+}
+SENDGRID_VALIDATED = {
+    'TECHNICIAN_STUDENT': '50dcb8b5-d421-4210-9110-f5651ac1e0ac',
+    'VETERINARIAN': '6b082281-3940-4d9e-86aa-abe940243abf'
+}
+SENDGRID_REFER_FRIEND = '3fcd81f6-c87b-43d7-bf0a-5a22c454f6ea'
+SENDGRID_FEEDBACK = 'da40d977-0e09-470e-b803-a096bd6ee95d'
+SENDGRID_REPORT = '25f4f2c1-0b64-4631-8df3-95de3d1f6a04'
 
 # APP LABELS
 APP_LABEL = {
