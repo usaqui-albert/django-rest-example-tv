@@ -24,6 +24,7 @@ from .serializers import (
     AdminAuthTokenSerializer, AdminUserSerializer, AdminVerificationSerializer,
     AdminUserUpdateSerializer
 )
+from users.tasks import vet_verify_mail
 
 
 class AdminAuth(ObtainAuthToken):
@@ -119,8 +120,6 @@ class AdminUserDetailView(RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        if instance.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = AdminUserUpdateSerializer(
             instance,
             data=request.data,
@@ -186,6 +185,8 @@ class AdminVetVerificationView(GenericAPIView):
             vet.locked = serializer.validated_data['locked']
             vet.save()
             vet_serializer = VeterinarianSerializer(vet)
+            if serializer.validated_data['verified']:
+                vet_verify_mail(vet.user, vet.veterinarian_type)
             return Response(
                 vet_serializer.data,
                 status=status.HTTP_202_ACCEPTED
