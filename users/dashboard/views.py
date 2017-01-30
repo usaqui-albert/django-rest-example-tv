@@ -120,8 +120,6 @@ class AdminUserDetailView(RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        if instance.is_staff:
-            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = AdminUserUpdateSerializer(
             instance,
             data=request.data,
