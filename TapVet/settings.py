@@ -54,6 +54,7 @@ THIRD_PARTY_APPS = (
     'rest_framework.authtoken',
     'corsheaders',
     'rest_framework_docs',
+    'push_notifications'
 )
 
 INSTALLED_APPS = DJANGO_APPS + INTERNAL_APPS + THIRD_PARTY_APPS
@@ -194,4 +195,9 @@ APP_LABEL = {
     3: 'Veterinarian',
     4: 'Student',
     5: 'Technician'
+}
+
+PUSH_NOTIFICATIONS_SETTINGS = {
+    "GCM_API_KEY": os.environ.get('GCM_API_KEY'),
+    "APNS_CERTIFICATE": os.environ.get('PATH_TO_CERTIFICATE')
 }
