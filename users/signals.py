@@ -19,7 +19,7 @@ def vet_signal(sender, instance=None, created=False, **kwargs):
             instance.save()
             vet_verify_mail.delay(instance, instance.veterinarian_type)
 
-        welcome_mail(instance, 'VET_TECH_STUDENT')
+        welcome_mail(instance.user, 'VET_TECH_STUDENT')
 
 
 def follows_changed(sender, action=None, pk_set=None, **kwargs):

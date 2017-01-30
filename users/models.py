@@ -111,7 +111,7 @@ class Breeder(models.Model):
 
 
 class Veterinarian(models.Model):
-    area_interest = models.ManyToManyField(AreaInterest, blank=True, null=True)
+    area_interest = models.ManyToManyField(AreaInterest, blank=True)
     veterinary_school = models.CharField(max_length=50)
     graduating_year = models.IntegerField()
     verified = models.BooleanField(default=False)
