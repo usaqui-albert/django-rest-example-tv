@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework.serializers import (
     ModelSerializer, ValidationError, ImageField, Serializer, EmailField,
-    CharField, SerializerMethodField, IntegerField, BooleanField
+    CharField, SerializerMethodField, IntegerField, BooleanField, ChoiceField
 )
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -399,3 +399,12 @@ class AuthTokenMailSerializer(AuthTokenSerializer):
 
         attrs['user'] = user
         return attrs
+
+
+class DeviceSerializer(Serializer):
+    IOS = 'ios'
+    ANDROID = 'android'
+    PLATFORMS = (IOS, ANDROID)
+
+    device_token = CharField(max_length=255)
+    platform = ChoiceField(choices=PLATFORMS)

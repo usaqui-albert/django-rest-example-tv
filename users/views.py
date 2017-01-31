@@ -1,5 +1,6 @@
 import stripe
 from stripe.error import CardError, InvalidRequestError, APIConnectionError
+from push_notifications.models import APNSDevice, GCMDevice
 
 from django.conf import settings
 from django.db import IntegrityError
@@ -34,7 +35,7 @@ from .serializers import (
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
     UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer,
     UserFollowsSerializer, EmailToResetPasswordSerializer,
-    RestorePasswordSerializer, AuthTokenMailSerializer
+    RestorePasswordSerializer, AuthTokenMailSerializer, DeviceSerializer
 )
 from .tasks import refer_a_friend_by_email, password_reset, send_feedback
 
@@ -587,3 +588,22 @@ class RestorePasswordView(GenericAPIView):
     @staticmethod
     def bad_request(data):
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeviceView(GenericAPIView):
+    serializer_class = DeviceSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        device = {
+            "user": request.user,
+            "registration_id": data['device_token']
+        }
+        if data['platform'] == serializer.IOS:
+            APNSDevice.objects.create(**device)
+        else:
+            GCMDevice.objects.create(**device)
+        return Response(messages.request_successfully)
