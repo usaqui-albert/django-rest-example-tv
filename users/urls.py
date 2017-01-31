@@ -8,7 +8,7 @@ from .views import (
     BreederListCreateView, GroupsListView, UserFeedBackView,
     AreaInterestListView, EmailToResetPasswordView, RestorePasswordView,
     UserRetrieveUpdateView, StripeCustomerView, UserFollowView,
-    ReferFriendView, UserFollowsListView, UserFollowedListView
+    ReferFriendView, UserFollowsListView, UserFollowedListView, DeviceView
 )
 
 urlpatterns = [
@@ -28,5 +28,7 @@ urlpatterns = [
     url(r'^veterinarians/$', VeterinarianListCreateView.as_view()),
     url(r'^veterinarians/areas-of-interest/$', AreaInterestListView.as_view()),
     url(r'^reset-password/$', EmailToResetPasswordView.as_view()),
-    url(r'^restore-password/$', RestorePasswordView.as_view())
+    url(r'^restore-password/$', RestorePasswordView.as_view()),
+    url(r'^devices/$', DeviceView.as_view())
+
 ]
