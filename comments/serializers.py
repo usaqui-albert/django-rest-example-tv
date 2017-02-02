@@ -29,7 +29,6 @@ class CommentSerializer(ModelSerializer):
 
 
 class CommentVetSerializer(CommentSerializer):
-    full_name = SerializerMethodField(read_only=True)
     has_feedback = BooleanField(read_only=True)
 
     class Meta:
@@ -42,6 +41,10 @@ class CommentVetSerializer(CommentSerializer):
             'user': {'read_only': True},
             'post': {'read_only': True}
         }
+
+
+class CommentVetNamelessSerializer(CommentVetSerializer):
+    full_name = SerializerMethodField(read_only=True)
 
     @staticmethod
     def get_full_name(obj):
