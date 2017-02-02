@@ -13,7 +13,9 @@ from posts.models import Post
 
 from .models import Comment, Feedback
 from .serializers import (
-    CommentSerializer, CommentVetSerializer, FeedbackSerializer)
+    CommentSerializer, CommentVetSerializer, FeedbackSerializer,
+    CommentVetNamelessSerializer
+)
 
 from django.db.models import Case, Value, When, BooleanField
 from django.db import IntegrityError
@@ -104,8 +106,14 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     GET
     POST
     """
-    serializer_class = CommentVetSerializer
+    serializer_class = CommentVetNamelessSerializer
     groups_ids = [3, 4, 5]
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            if request.user.is_vet():
+                self.serializer_class = CommentVetSerializer
+        return self.list(request, *args, **kwargs)
 
 
 class CommentVoteView(APIView):
