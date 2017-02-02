@@ -68,10 +68,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.full_name
 
     def is_vet(self):
-        return self.groups.id in [3, 4, 5] if self.groups else False
+        if hasattr(self, 'groups'):
+            return self.groups.id in [3, 4, 5]
+        else:
+            return False
 
     def is_vet_student(self):
-        return self.groups.id == 4 if self.groups else False
+        if hasattr(self, 'groups'):
+            return self.groups.id == 4
+        else:
+            return False
 
     def get_label(self):
         return settings.APP_LABEL.get(self.groups.id, '')
