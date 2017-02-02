@@ -16,35 +16,40 @@ class TestAdminFeedbackListView(CustomTestCase):
 
     def test_put_request_admin_not_allowed(self):
         req = self.factory.put('/', {})
-        force_authenticate(req, user=self.get_user(is_staff=True))
+        user = self.load_users_data().get_user(is_staff=True, groups_id=6)
+        force_authenticate(req, user=user)
         resp = views.AdminFeedbackListView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.status_code == 405
 
     def test_put_request_not_allowed(self):
         req = self.factory.put('/', {})
-        force_authenticate(req, user=self.get_user())
+        user = self.load_users_data().get_user(groups_id=6)
+        force_authenticate(req, user=user)
         resp = views.AdminFeedbackListView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.status_code == 403
 
     def test_post_request_not_allowed(self):
         req = self.factory.post('/', {})
-        force_authenticate(req, user=self.get_user())
+        user = self.load_users_data().get_user(is_staff=False)
+        force_authenticate(req, user=user)
         resp = views.AdminFeedbackListView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.status_code == 403
 
     def test_get_not_allowed(self):
         req = self.factory.get('/')
-        force_authenticate(req, user=self.get_user())
+        user = self.load_users_data().get_user(is_staff=False)
+        force_authenticate(req, user=user)
         resp = views.AdminFeedbackListView.as_view()(req)
         assert 'detail' in resp.data
         assert resp.status_code == 403
 
     def test_get_allowed(self):
         req = self.factory.get('/')
-        force_authenticate(req, user=self.get_user(is_staff=True))
+        user = self.load_users_data().get_user(is_staff=True)
+        force_authenticate(req, user=user)
         resp = views.AdminFeedbackListView.as_view()(req)
         assert resp.status_code == 200
 
