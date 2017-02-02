@@ -13,7 +13,8 @@ class AdminPostView(ListAPIView):
     '''
     Admin Post View
     Search Fields = "username", "full_name", "email", "description"
-    Filter Fields = "reports_type", "active"
+    Filter Fields = "reports_type", "active", "visible_by_vet",
+    "visible_by_owner"
     Method Allowed:
     GET
     '''
@@ -21,9 +22,12 @@ class AdminPostView(ListAPIView):
     permission_classes = (IsAdminUser,)
     pagination_class = StandardPagination
     filter_backends = (SearchFilter, DjangoFilterBackend)
-    search_fields = ('user__username', 'user__full_name', 'user__email',
-                     'description')
-    filter_fields = ('reports__type', 'active')
+    search_fields = (
+        'user__username', 'user__full_name', 'user__email', 'description'
+    )
+    filter_fields = (
+        'reports__type', 'active', 'visible_by_vet', 'visible_by_owner'
+    )
     queryset = Post.objects.all().select_related(
         'user__groups',
         'user__image',
