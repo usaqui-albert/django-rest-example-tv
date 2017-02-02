@@ -110,9 +110,8 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
     groups_ids = [3, 4, 5]
 
     def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
-            if request.user.is_vet():
-                self.serializer_class = CommentVetSerializer
+        if request.user.is_authenticated() and request.user.is_vet():
+            self.serializer_class = CommentVetSerializer
         return self.list(request, *args, **kwargs)
 
 
