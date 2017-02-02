@@ -40,7 +40,7 @@ class PetType(models.Model):
 
 class Pet(models.Model):
     name = models.CharField(max_length=50)
-    fixed = models.BooleanField(default=False)
+    fixed = models.NullBooleanField(null=True, blank=True, default=None)
     image = models.ImageField(null=True, blank=True, upload_to=uploads_path)
     birth_year = models.IntegerField()  # We just need the year
     pet_type = models.ForeignKey(PetType)
