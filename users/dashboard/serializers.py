@@ -47,7 +47,7 @@ class AdminUserSerializer(ModelSerializer):
         model = User
         fields = (
             'username', 'email', 'full_name', 'groups', 'id', 'breeder',
-            'veterinarian', 'images', 'is_active', 'is_staff'
+            'veterinarian', 'images', 'is_active', 'is_staff', 'created_at'
         )
 
 
