@@ -607,3 +607,26 @@ class DeviceView(GenericAPIView):
         else:
             GCMDevice.objects.create(**device)
         return Response(messages.request_successfully)
+
+
+class UserDeactive(GenericAPIView):
+    '''
+    Service to manage the user sessions.
+    METHODS
+    DELETE
+    * Delete the auth token for the self user.
+    '''
+
+    permission_classes = (permissions.IsAuthenticated,)
+    allowed_methods = ('DELETE', )
+
+    @staticmethod
+    def delete(request, **kwargs):
+        user = request.user
+        if not (user.is_superuser or user.is_staff):
+            user.is_active = False
+            user.save()
+            Token.objects.filter(user=user).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
