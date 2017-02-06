@@ -38,6 +38,7 @@ from .serializers import (
     RestorePasswordSerializer, AuthTokenMailSerializer, DeviceSerializer
 )
 from .tasks import refer_a_friend_by_email, password_reset, send_feedback
+from posts.utils import get_user_devices
 
 
 class UserAuth(ObtainAuthToken):
@@ -597,13 +598,23 @@ class DeviceView(GenericAPIView):
     def post(self, request, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         data = serializer.validated_data
-        device = {
-            "user": request.user,
-            "registration_id": data['device_token']
-        }
-        if data['platform'] == serializer.IOS:
-            APNSDevice.objects.create(**device)
-        else:
-            GCMDevice.objects.create(**device)
+        gcm_device, apns_device = get_user_devices(request.user.id)
+
+        if not gcm_device and not apns_device:
+            device = {
+                "user": request.user,
+                "registration_id": data['device_token']
+            }
+            if data['platform'] == serializer.IOS:
+                try:
+                    APNSDevice.objects.create(**device)
+                except IntegrityError:
+                    pass
+            else:
+                try:
+                    GCMDevice.objects.create(**device)
+                except IntegrityError:
+                    pass
         return Response(messages.request_successfully)
