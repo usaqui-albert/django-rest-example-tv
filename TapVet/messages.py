@@ -61,3 +61,5 @@ code_has_expired = {
 }
 
 liking_post = 'Someone is interested in your post.'
+commenting_post = 'Someone has commented your post.'
+upvoting_post = 'Someone has upvoted your comment.'
