@@ -108,7 +108,7 @@ class VeterinarianSerializer(ModelSerializer):
         fields = (
             'user', 'area_interest', 'veterinary_school', 'graduating_year',
             'verified', 'veterinarian_type', 'id', 'country', 'state',
-            'locked'
+            'locked', 'license_number'
         )
         read_only_fields = ('user', 'id')
 

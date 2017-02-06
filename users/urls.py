@@ -7,7 +7,7 @@ from .views import (
     UserAuth, UserView, VeterinarianListCreateView,
     BreederListCreateView, GroupsListView, UserFeedBackView,
     AreaInterestListView, EmailToResetPasswordView, RestorePasswordView,
-    UserRetrieveUpdateView, StripeCustomerView, UserFollowView,
+    UserRetrieveUpdateView, StripeCustomerView, UserFollowView, UserDeactive,
     ReferFriendView, UserFollowsListView, UserFollowedListView, DeviceView
 )
 
@@ -20,7 +20,9 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/payments/$', StripeCustomerView.as_view()),
     url(r'^(?P<pk>\d+)/pets/$', PetListByUser.as_view()),
     url(r'^(?P<pk>\d+)/posts/$', PostByUserListView.as_view()),
+    url(r'^(?P<pk>\d+)/sessions/$', UserDeactive.as_view()),
     url(r'^breeders/$', BreederListCreateView.as_view()),
+    url(r'^devices/$', DeviceView.as_view()),
     url(r'^feedback/$', UserFeedBackView.as_view()),
     url(r'^groups/$', GroupsListView.as_view()),
     url(r'^login/$', UserAuth.as_view()),
@@ -29,6 +31,5 @@ urlpatterns = [
     url(r'^veterinarians/areas-of-interest/$', AreaInterestListView.as_view()),
     url(r'^reset-password/$', EmailToResetPasswordView.as_view()),
     url(r'^restore-password/$', RestorePasswordView.as_view()),
-    url(r'^devices/$', DeviceView.as_view())
 
 ]

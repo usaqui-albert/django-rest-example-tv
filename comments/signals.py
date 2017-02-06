@@ -1,8 +1,13 @@
+from TapVet.utils import send_notification_message
 from activities.models import Activity
+from TapVet.messages import commenting_post
 
 
 def new_comment_signal(sender, instance=None, created=False, **kwargs):
     if created:
+        post_owner_id = instance.post.user_id
+        send_notification_message(post_owner_id, commenting_post)
+
         activity = Activity(
             user=instance.user,
             action=Activity.COMMENT,

@@ -68,10 +68,16 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.full_name
 
     def is_vet(self):
-        return self.groups.id in [3, 4, 5] if self.groups else False
+        if hasattr(self, 'groups'):
+            return self.groups.id in [3, 4, 5]
+        else:
+            return False
 
     def is_vet_student(self):
-        return self.groups.id == 4 if self.groups else False
+        if hasattr(self, 'groups'):
+            return self.groups.id == 4
+        else:
+            return False
 
     def get_label(self):
         return settings.APP_LABEL.get(self.groups.id, '')
@@ -112,14 +118,15 @@ class Breeder(models.Model):
 
 class Veterinarian(models.Model):
     area_interest = models.ManyToManyField(AreaInterest, blank=True)
-    veterinary_school = models.CharField(max_length=50)
-    graduating_year = models.IntegerField()
+    veterinary_school = models.CharField(max_length=50, null=True, blank=True)
+    graduating_year = models.IntegerField(null=True, blank=True)
     verified = models.BooleanField(default=False)
     locked = models.BooleanField(default=False)
     user = models.OneToOneField(
         User, on_delete=models.CASCADE)
     veterinarian_type = models.CharField(
         choices=VETERINARIAN_TYPES, max_length=50)
+    license_number = models.CharField(max_length=150, null=True, blank=True)
     country = models.ForeignKey('countries.Country', blank=True, null=True)
     state = models.ForeignKey('countries.State', blank=True, null=True)
 
@@ -131,15 +138,14 @@ class Veterinarian(models.Model):
         return u'%s %s' % (self.user.full_name, self.veterinarian_type)
 
     def save(self, *args, **kwargs):
+        if (
+            hasattr(self.user, 'groups') and
+            int(self.veterinarian_type) != self.user.groups.id
+        ):
+            raise ValidationError(
+                "Group error"
+            )
         if self.veterinarian_type != '4':
-            if self.graduating_year > get_current_year():
-                raise ValueError(
-                    'The graduating year cannot be higher than ' +
-                    'the current year')
-            if self.graduating_year < get_limit_year():
-                raise ValueError(
-                    'The graduating year cannot be lower than ' +
-                    str(get_limit_year()))
             if self.country is None or self.state is None:
                 raise ValidationError(
                     "Country and state are required"
@@ -148,6 +154,14 @@ class Veterinarian(models.Model):
                 raise ValueError(
                     "The state does not belong to the selected country.")
         else:
+            if not self.graduating_year:
+                raise ValueError(
+                    'Graduating year is needed'
+                )
+            if not self.veterinary_school:
+                raise ValueError(
+                    'Veterinarian School is needed'
+                )
             if self.graduating_year < get_limit_year():
                 raise ValueError(
                     'The graduating year cannot be lower than ' +

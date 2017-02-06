@@ -545,14 +545,14 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_year(self):
-        user = mixer.blend(models.User)
+        user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': get_limit_year() - 10,
-            'veterinarian_type': '5',
+            'veterinarian_type': '4',
             'area_interest': area_interest.pk,
             'country': country.id,
             'state': state.id
@@ -566,14 +566,14 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_year_high(self):
-        user = mixer.blend(models.User)
+        user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
         data = {
             'veterinary_school': 'CharField',
-            'graduating_year': get_current_year() + 20,
-            'veterinarian_type': '5',
+            'graduating_year': get_current_year() + 22,
+            'veterinarian_type': 4,
             'area_interest': area_interest.pk,
             'country': country.id,
             'state': state.id
@@ -781,7 +781,7 @@ class TestStripeCustomerView(CustomTestCase):
 
         resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
         assert 'detail' in resp.data
-        assert resp.data['detail'] == 'There is no stripe customer available ' \
+        assert resp.data['detail'] == 'There is no stripe customer available '\
                                       'for this user'
         assert resp.status_code == 404, 'Should return Not Found (404)'
 
@@ -817,7 +817,7 @@ class TestUserFollowView(CustomTestCase):
 
     def test_vet_follow_vet(self):
         vet = self.load_users_data().get_user(groups_id=3)
-        vet1 = self.get_user(groups_id=4)
+        vet1 = self.get_user(groups_id=3)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
@@ -826,7 +826,8 @@ class TestUserFollowView(CustomTestCase):
             'veterinarian_type': 5,
             'area_interest': area_interest,
             'country': country,
-            'state': state
+            'state': state,
+            'veterinarian_type': '3'
         }
         mixer.blend('users.Veterinarian', user=vet, verified=True, **data)
         mixer.blend('users.Veterinarian', user=vet1, verified=True, **data)
@@ -1055,3 +1056,39 @@ class TestUserFollowedListView(CustomTestCase):
         ]:
             assert key in resp.data['results'][0]
         assert resp.data['results'][0]['id'] == user.id
+
+
+class TestUserDeactive(CustomTestCase):
+
+    def test_no_auth(self):
+        req = self.factory.delete('')
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 401
+
+    def test_method_not_allowed(self):
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 405
+
+    def test_method_allowed(self):
+        user = self.get_user(groups_id=1)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 204
+
+    def test_delete_staff(self):
+        user = self.get_user(is_staff=True)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 403
+
+    def test_delete_superadmin(self):
+        user = self.get_user(is_superuser=True)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 403
