@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from django.db.models import Count, Case, When, IntegerField, Value, Prefetch
+from push_notifications.models import APNSDevice, GCMDevice
 
 from stripe.error import APIConnectionError, InvalidRequestError, CardError
 from helpers.stripe_helpers import stripe_errors_handler
@@ -76,3 +77,8 @@ prefetch_owner_comments = Prefetch(
     queryset=owner_comments_queryset,
     to_attr='owner_comments_queryset'
 )
+
+def get_user_devices(user_id):
+    gcm_device = GCMDevice.objects.filter(user=user_id).first()
+    apns_device = APNSDevice.objects.filter(user=user_id).first()
+    return gcm_device, apns_device
