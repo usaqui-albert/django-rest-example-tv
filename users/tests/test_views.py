@@ -1055,3 +1055,39 @@ class TestUserFollowedListView(CustomTestCase):
         ]:
             assert key in resp.data['results'][0]
         assert resp.data['results'][0]['id'] == user.id
+
+
+class TestUserDeactive(CustomTestCase):
+
+    def test_no_auth(self):
+        req = self.factory.delete('')
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 401
+
+    def test_method_not_allowed(self):
+        user = self.get_user(groups_id=1)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 405
+
+    def test_method_allowed(self):
+        user = self.get_user(groups_id=1)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 204
+
+    def test_delete_staff(self):
+        user = self.get_user(is_staff=True)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 403
+
+    def test_delete_superadmin(self):
+        user = self.get_user(is_superuser=True)
+        req = self.factory.delete('/')
+        force_authenticate(req, user=user)
+        resp = views.UserDeactive.as_view()(req)
+        assert resp.status_code == 403
