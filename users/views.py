@@ -38,6 +38,7 @@ from .serializers import (
     RestorePasswordSerializer, AuthTokenMailSerializer, DeviceSerializer
 )
 from .tasks import refer_a_friend_by_email, password_reset, send_feedback
+from TapVet.utils import get_user_devices
 
 
 class UserAuth(ObtainAuthToken):
@@ -597,15 +598,43 @@ class DeviceView(GenericAPIView):
     def post(self, request, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         data = serializer.validated_data
+        gcm_device, apns_device = get_user_devices(request.user.id)
         device = {
             "user": request.user,
             "registration_id": data['device_token']
         }
-        if data['platform'] == serializer.IOS:
-            APNSDevice.objects.create(**device)
-        else:
-            GCMDevice.objects.create(**device)
+
+        if not gcm_device and not apns_device:
+            try:
+                if data['platform'] == serializer.IOS:
+                    APNSDevice.objects.create(**device)
+                else:
+                    GCMDevice.objects.create(**device)
+            except IntegrityError:
+                pass
+        elif gcm_device:
+            try:
+                if data['platform'] == serializer.IOS:
+                    APNSDevice.objects.create(**device)
+                    gcm_device.delete()
+                else:
+                    gcm_device.registration_id = data['device_token']
+                    gcm_device.save()
+            except IntegrityError:
+                pass
+        elif apns_device:
+            try:
+                if data['platform'] == serializer.ANDROID:
+                    GCMDevice.objects.create(**device)
+                    apns_device.delete()
+                else:
+                    apns_device.registration_id = data['device_token']
+                    apns_device.save()
+            except IntegrityError:
+                pass
+
         return Response(messages.request_successfully)
 
 
