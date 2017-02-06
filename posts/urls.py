@@ -4,7 +4,7 @@ from comments.views import (
     CommentsPetOwnerListCreateView, CommentsVetListCreateView)
 
 from .views import (
-    PostListCreateView, PaidPostView, PostRetrieveUpdateDeleteView,
+    PostListCreateView, PaidPostView, PostRetrieveUpdateView,
     ImageDetailView, PostPaidListView, PostVoteView, PostReportView,
     ImageView
 )
@@ -12,7 +12,7 @@ from .views import (
 urlpatterns = [
     url(r'^$', PostListCreateView.as_view()),
     url(r'^paids/$', PostPaidListView.as_view()),
-    url(r'^(?P<pk>[0-9]+)/$', PostRetrieveUpdateDeleteView.as_view()),
+    url(r'^(?P<pk>[0-9]+)/$', PostRetrieveUpdateView.as_view()),
     url(r'^(?P<pk>[0-9]+)/paid/$', PaidPostView.as_view()),
     url(r'^(?P<pk>[0-9]+)/vote/$', PostVoteView.as_view()),
     url(

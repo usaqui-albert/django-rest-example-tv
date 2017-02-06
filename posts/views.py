@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView, DestroyAPIView,
-    RetrieveUpdateDestroyAPIView, get_object_or_404, GenericAPIView
+    get_object_or_404, GenericAPIView
 )
 from rest_framework import permissions, status
 from rest_framework.views import APIView
@@ -165,7 +165,7 @@ class PostListCreateView(ListCreateAPIView):
         return posts_ids or [0]
 
 
-class PostRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+class PostRetrieveUpdateView(RetrieveUpdateAPIView):
     """
     Service to delete  posts.
 
