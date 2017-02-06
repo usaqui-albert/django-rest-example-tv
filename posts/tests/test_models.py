@@ -56,19 +56,21 @@ class TestPost(CustomTestCase):
         mixer.blend(
             'users.veterinarian', user=user, verified=True,
             graduating_year=get_current_year() - 11,
-            country=country, state=state)
+            country=country, state=state, veterinarian_type=3)
         obj = mixer.blend('posts.post', user=user)
         assert obj.visible_by_vet
         assert not obj.visible_by_owner
 
     def test_post_if_student(self):
-        user = self.load_users_data().get_user(groups_id=3)
+        user = self.load_users_data().get_user(groups_id=4)
         country = mixer.blend('countries.country')
         state = mixer.blend('countries.state', country=country)
         mixer.blend(
             'users.veterinarian', user=user, verified=True,
             graduating_year=get_current_year() - 11,
-            country=country, state=state)
+            country=country, state=state, veterinary_school='School',
+            veterinarian_type=4
+        )
         obj = mixer.blend('posts.post', user=user)
         assert obj.visible_by_vet
         assert not obj.visible_by_owner
