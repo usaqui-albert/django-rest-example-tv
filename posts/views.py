@@ -116,13 +116,6 @@ class PostListCreateView(ListCreateAPIView):
             group_id = user.groups.id
             if group_id in [3, 4, 5]:
                 filters = Q(visible_by_vet=True)
-                if group_id == 3:
-                    if (
-                        hasattr(user, 'veterinarian') and
-                        user.veterinarian.verified
-                    ):
-                        filters = filters | Q(visible_by_owner=True,
-                                              visible_by_vet=True)
             else:
                 filters = Q(visible_by_owner=True)
         else:
