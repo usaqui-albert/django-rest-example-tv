@@ -1,4 +1,8 @@
+from urllib2 import URLError
+from ssl import SSLError
+
 from push_notifications.models import GCMDevice, APNSDevice
+from push_notifications import NotificationError
 
 
 def get_user_devices(user_id):
@@ -9,7 +13,10 @@ def get_user_devices(user_id):
 def send_notification_message(user_id, message):
     gcm_device, apns_device = get_user_devices(user_id)
 
-    if gcm_device:
-        gcm_device.send_message(message)
-    if apns_device:
-        apns_device.send_message(message)
+    try:
+        if gcm_device:
+            gcm_device.send_message(message)
+        if apns_device:
+            apns_device.send_message(message)
+    except (NotificationError, URLError, SSLError):
+        pass
