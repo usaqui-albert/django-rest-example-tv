@@ -59,3 +59,5 @@ invalid_code = {
 code_has_expired = {
     'detail': 'Your verification code has expired.'
 }
+
+liking_post = 'Someone is interested in your post.'
