@@ -11,8 +11,9 @@ def post_reporting_signal(sender, instance=None, created=False, **kwargs):
 
 def new_post_like_signal(sender, instance=None, created=False, **kwargs):
     if created:
-        post_owner_id = instance.post.user_id
-        send_notification_message(post_owner_id, liking_post)
+        post_owner = instance.post.user
+        if post_owner.interested_notification:
+            send_notification_message(post_owner.id, liking_post)
 
         activity = Activity(
             user=instance.user,
