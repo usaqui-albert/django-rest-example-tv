@@ -171,7 +171,7 @@
     "pk": null,
     "fields": {
         "username": "jdoe",
-        "email": "johndoe@gmail.com",
+        "email": "albertu@blanclabs.com",
         "password": "pbkdf2_sha256$30000$FFsUeo9GXepS$Z99p26ciWvrt9TutVceoMJQcnUTmCgRlLIaQRdUA4NY=",
         "full_name": "John Doe",
         "stripe_token": "cus_9MxiDVoXiJ4myS",
@@ -185,7 +185,7 @@
     "pk": null,
     "fields": {
         "username": "owner",
-        "email": "owner@gmail.com",
+        "email": "maribelr@blanclabs.com",
         "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
         "full_name": "owner Doe",
         "stripe_token": null,
@@ -199,7 +199,7 @@
     "pk": null,
     "fields": {
         "username": "breeder",
-        "email": "breeder@gmail.com",
+        "email": "primm@blanclabs.com",
         "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
         "full_name": "breeder Doe",
         "stripe_token": null,
@@ -213,7 +213,7 @@
     "pk": null,
     "fields": {
         "username": "vet",
-        "email": "veterinarian@gmail.com",
+        "email": "mostafac@blanclabs.com",
         "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
         "full_name": "veterinarian Doe",
         "stripe_token": null,
@@ -227,7 +227,7 @@
     "pk": null,
     "fields": {
         "username": "student",
-        "email": "studen@gmail.com",
+        "email": "adolfop@blanclabs.com",
         "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
         "full_name": "student Doe",
         "stripe_token": null,
@@ -241,7 +241,7 @@
     "pk": null,
     "fields": {
         "username": "tech",
-        "email": "tech@gmail.com",
+        "email": "andresc@blanclabs.com",
         "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
         "full_name": "tech Doe",
         "stripe_token": null,
@@ -258,7 +258,7 @@
         "is_superuser": true,
         "groups": 1,
         "username": "tapvet",
-        "email": "blanclink.test@gmail.com",
+        "email": "leopoldop@blanclabs.com",
         "full_name": "TapVet Administrator",
         "is_active": true,
         "is_staff": true,
@@ -276,7 +276,7 @@
         "is_superuser": false,
         "groups": 1,
         "username": "admin",
-        "email": "blanclink.admin@gmail.com",
+        "email": "ghesns@blanclabs.com",
         "full_name": "TapVet Admin",
         "is_active": true,
         "is_staff": true,
