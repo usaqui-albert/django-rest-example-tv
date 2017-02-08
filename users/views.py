@@ -635,7 +635,22 @@ class DeviceView(GenericAPIView):
             except IntegrityError:
                 pass
 
-        return Response(messages.request_successfully)
+        return Response(
+            messages.request_successfully,
+            status=status.HTTP_201_CREATED
+        )
+
+    @staticmethod
+    def delete(request, **kwargs):
+        gcm_device, apns_device = get_user_devices(request.user.id)
+        if gcm_device:
+            gcm_device.delete()
+        if apns_device:
+            apns_device.delete()
+        return Response(
+            messages.request_successfully,
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class UserDeactive(GenericAPIView):
