@@ -635,7 +635,10 @@ class DeviceView(GenericAPIView):
             except IntegrityError:
                 pass
 
-        return Response(messages.request_successfully)
+        return Response(
+            messages.request_successfully,
+            status=status.HTTP_201_CREATED
+        )
 
     @staticmethod
     def delete(request, **kwargs):
