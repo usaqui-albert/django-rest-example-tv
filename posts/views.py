@@ -115,17 +115,17 @@ class PostListCreateView(ListCreateAPIView):
             annotate_params['interested'] = F('case_1')
             group_id = user.groups.id
             if group_id in [3, 4, 5]:
-                filters = Q(visible_by_vet=True)
+                filters = Q(visible_by_vet=True, visible_by_owner=False)
             else:
-                filters = Q(visible_by_owner=True)
+                filters = Q(visible_by_owner=True, visible_by_vet=True)
         else:
             veterinarian = bool(self.request.query_params.get('vet', None))
             pet_owner = bool(self.request.query_params.get('owner', None))
             if xor(veterinarian, pet_owner):
                 if veterinarian:
-                    filters = Q(visible_by_vet=True)
+                    filters = Q(visible_by_vet=True, visible_by_owner=False)
                 else:
-                    filters = Q(visible_by_owner=True)
+                    filters = Q(visible_by_owner=True, visible_by_vet=True)
             else:
                 raise ValidationError('Invalid query params')
         return self.helper(annotate_params, filters, user.is_authenticated())
