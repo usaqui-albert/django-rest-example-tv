@@ -61,7 +61,7 @@ def handler_images_order(queryset, image_id):
 
 # Queries to prefetch
 vet_comments_queryset = Comment.objects.select_related(
-    'user__groups').filter(user__groups_id__in=[3])
+    'user__groups').filter(user__groups_id=3)
 owner_comments_queryset = Comment.objects.select_related(
     'user__groups').filter(user__groups_id__in=[1, 2])
 
