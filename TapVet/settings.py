@@ -201,3 +201,4 @@ PUSH_NOTIFICATIONS_SETTINGS = {
     "GCM_API_KEY": os.environ.get('GCM_API_KEY'),
     "APNS_CERTIFICATE": os.environ.get('PATH_TO_CERTIFICATE')
 }
+SEND_MAILS = True
