@@ -40,7 +40,14 @@ urlpatterns = [
         include('apptexts.dashboard.urls')
     ),
     # API
-    url(r'^api/v1/activities/', include('activities.urls', namespace='users')),
+    url(
+        r'^api/v1/activities/',
+        include('activities.urls', namespace='activities')
+    ),
+    url(
+        r'^api/v1/app-texts/',
+        include('apptexts.urls', namespace='app-texts')
+    ),
     url(r'^api/v1/pets/', include('pets.urls', namespace='pets')),
     url(r'^api/v1/posts/', include('posts.urls', namespace='posts')),
     url(r'^api/v1/users/', include('users.urls', namespace='users')),
