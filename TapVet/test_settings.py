@@ -1,4 +1,4 @@
-from .settings import *
+from .settings import *  #noqa
 
 DATABASES = {
     'default': {
@@ -8,3 +8,5 @@ DATABASES = {
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+SEND_MAILS = False
