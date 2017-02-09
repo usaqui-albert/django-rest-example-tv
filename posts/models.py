@@ -80,12 +80,13 @@ class Post(models.Model):
         return self.images.count()
 
     def save(self, *args, **kwargs):
-        if self.user.is_vet():
-            try:
-                self.visible_by_vet = self.user.veterinarian.verified
-            except ObjectDoesNotExist:
-                self.visible_by_vet = False
-            self.visible_by_owner = False
+        if self.pk is None:
+            if self.user.is_vet():
+                try:
+                    self.visible_by_vet = self.user.veterinarian.verified
+                except ObjectDoesNotExist:
+                    self.visible_by_vet = False
+                self.visible_by_owner = False
         super(Post, self).save(*args, **kwargs)
 
 
