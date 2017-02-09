@@ -1,5 +1,5 @@
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
-from rest_framework.permissions import IsAdminUser
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
 
 from .serializers import AppTextSerializer
 from .models import AppText
@@ -7,11 +7,5 @@ from .models import AppText
 
 class AppTextView(ListAPIView):
     serializer_class = AppTextSerializer
-    permission_classes = (IsAdminUser,)
-    queryset = AppText.objects.all()
-
-
-class AppTextDetailView(RetrieveUpdateAPIView):
-    serializer_class = AppTextSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (AllowAny,)
     queryset = AppText.objects.all()
