@@ -118,6 +118,7 @@ def obtain_mail(personalization, template):
 
 def sendgrid_api(mail):
     sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-    sg.client.mail.send.post(
-        request_body=mail
-    )
+    if settings.SEND_MAILS:
+        sg.client.mail.send.post(
+            request_body=mail
+        )
