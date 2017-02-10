@@ -26,7 +26,7 @@ from .serializers import (
 )
 from users.tasks import vet_verify_mail
 
-from .filters import ProductFilter
+from .filters import UserFilter
 
 
 class AdminAuth(ObtainAuthToken):
@@ -110,7 +110,7 @@ class AdminUsersListView(ListAPIView):
     ordering_fields = (
         'is_active', 'username', 'email', 'full_name', 'created_at'
     )
-    filter_class = ProductFilter
+    filter_class = UserFilter
 
 
 class AdminUserDetailView(RetrieveUpdateAPIView):

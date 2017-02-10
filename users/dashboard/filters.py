@@ -3,7 +3,7 @@ from django_filters.rest_framework import FilterSet, BooleanFilter
 from ..models import User
 
 
-class ProductFilter(FilterSet):
+class UserFilter(FilterSet):
     locked = BooleanFilter(name='veterinarian__locked')
     verified = BooleanFilter(name='veterinarian__verified')
 
