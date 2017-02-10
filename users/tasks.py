@@ -1,7 +1,5 @@
 from django.conf import settings
 
-from celery.task import task
-
 import sendgrid
 from sendgrid.helpers.mail import (
     Email,
@@ -11,7 +9,6 @@ from sendgrid.helpers.mail import (
 )
 
 
-@task(ignore_result=True)
 def refer_a_friend_by_email(receiver_email, sender_user):
     mail = [Email(receiver_email)]
     sendgrid_api(
@@ -22,7 +19,6 @@ def refer_a_friend_by_email(receiver_email, sender_user):
     )
 
 
-@task(ignore_result=True)
 def welcome_mail(user, group=None):
     sendgrid_api(
         obtain_mail(
@@ -32,7 +28,6 @@ def welcome_mail(user, group=None):
     )
 
 
-@task(ignore_result=True)
 def password_reset(user, verification_code):
     substitutions = [Substitution('-code-', verification_code)]
     sendgrid_api(
@@ -43,7 +38,6 @@ def password_reset(user, verification_code):
     )
 
 
-@task(ignore_result=True)
 def vet_verify_mail(user, veterinarian_type):
     template = ''
     if veterinarian_type == 3:
@@ -58,7 +52,6 @@ def vet_verify_mail(user, veterinarian_type):
     )
 
 
-@task(ignore_result=True)
 def send_feedback(user, message):
     substitutions = [Substitution('-message-', message)]
     sendgrid_api(
@@ -70,7 +63,6 @@ def send_feedback(user, message):
     )
 
 
-@task(ignore_result=True)
 def send_report(user, report):
     substitutions = [
         Substitution('-post-', report.post.id),
