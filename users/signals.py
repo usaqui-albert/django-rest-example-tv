@@ -10,7 +10,6 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         Token.objects.create(user=instance)
         if not kwargs.get('raw', False):  # No loaddata trigger
             if not instance.is_vet():
-                print "BIEN"
                 welcome_mail(instance, 'OWNER_BREEDER')
 
 
