@@ -83,6 +83,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
                     return Response(
                         messages.comment_permission,
                         status=status.HTTP_403_FORBIDDEN)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         serializer.save(post=post)
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -93,7 +94,6 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     def get_post(pk):
         qs = Post.objects.filter(pk=pk).select_related('user__groups').first()
         if qs:
-            qs.save()
             return qs
         raise Http404()
 
