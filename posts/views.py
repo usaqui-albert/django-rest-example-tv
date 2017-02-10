@@ -117,7 +117,7 @@ class PostListCreateView(ListCreateAPIView):
             if group_id in [3, 4, 5]:
                 filters = Q(visible_by_vet=True, visible_by_owner=False)
             else:
-                filters = Q(visible_by_owner=True, visible_by_vet=False)
+                filters = Q(visible_by_owner=True)
         else:
             veterinarian = bool(self.request.query_params.get('vet', None))
             pet_owner = bool(self.request.query_params.get('owner', None))
@@ -125,7 +125,7 @@ class PostListCreateView(ListCreateAPIView):
                 if veterinarian:
                     filters = Q(visible_by_vet=True, visible_by_owner=False)
                 else:
-                    filters = Q(visible_by_owner=True, visible_by_vet=False)
+                    filters = Q(visible_by_owner=True)
             else:
                 raise ValidationError('Invalid query params')
         return self.helper(annotate_params, filters, user.is_authenticated())
