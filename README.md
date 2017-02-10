@@ -75,6 +75,10 @@ SENDGRID_API_KEY = Sendgrid API Key
 
 ### Running ###
 
+For the first time running you should load the necessary data
+
+    python manage.py loaddata users posts pets countries apptexts
+
 To lift the server you can run:
 
     python manage.py runserver <port_number>
