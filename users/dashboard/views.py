@@ -78,6 +78,8 @@ class AdminUsersListView(ListAPIView):
         * groups
         * veterinarian__verified
         * veterinarian__locked
+        * locked
+        * verified
 
     EXAMPLES
     * ORDERING:
