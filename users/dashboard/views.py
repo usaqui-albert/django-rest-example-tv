@@ -26,6 +26,8 @@ from .serializers import (
 )
 from users.tasks import vet_verify_mail
 
+from .filters import UserFilter
+
 
 class AdminAuth(ObtainAuthToken):
     """
@@ -75,6 +77,9 @@ class AdminUsersListView(ListAPIView):
         * is_active
         * groups
         * veterinarian__verified
+        * veterinarian__locked
+        * locked
+        * verified
 
     EXAMPLES
     * ORDERING:
@@ -100,11 +105,12 @@ class AdminUsersListView(ListAPIView):
     search_fields = ('username', 'full_name', 'email')
     filter_fields = (
         'username', 'email', 'full_name', 'is_active', 'groups',
-        'veterinarian__verified'
+        'veterinarian__verified', 'veterinarian__locked'
     )
     ordering_fields = (
         'is_active', 'username', 'email', 'full_name', 'created_at'
     )
+    filter_class = UserFilter
 
 
 class AdminUserDetailView(RetrieveUpdateAPIView):
