@@ -8,18 +8,20 @@ from .tasks import welcome_mail, vet_verify_mail
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-        if not instance.is_vet():
-            welcome_mail(instance, 'OWNER_BREEDER')
+        if not kwargs.get('raw', False):  # No loaddata trigger
+            if not instance.is_vet():
+                welcome_mail(instance, 'OWNER_BREEDER')
 
 
 def vet_signal(sender, instance=None, created=False, **kwargs):
     if created:
-        if instance.veterinarian_type == '4':
-            instance.verified = True
-            instance.save()
-            vet_verify_mail.delay(instance, instance.veterinarian_type)
+        if not kwargs.get('raw', False):  # No loaddata trigger
+            if instance.veterinarian_type == '4':
+                instance.verified = True
+                instance.save()
+                vet_verify_mail(instance, instance.veterinarian_type)
 
-        welcome_mail(instance.user, 'VET_TECH_STUDENT')
+            welcome_mail(instance.user, 'VET_TECH_STUDENT')
 
 
 def follows_changed(sender, action=None, pk_set=None, **kwargs):
