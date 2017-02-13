@@ -1,107 +1,125 @@
 [
-{
-    "model": "users.profileimage",
-    "pk": 1,
-    "fields": {
-        "user": 2,
-        "standard": "uploads/owner/owner.jpg",
-        "thumbnail": "uploads/owner/owner-t.jpg"
+    {
+        "model": "users.profileimage",
+        "pk": 1,
+        "fields": {
+            "user": 2,
+            "standard": "uploads/owner/owner.jpg",
+            "thumbnail": "uploads/owner/owner-t.jpg"
+        }
+    },
+    {
+        "model": "users.profileimage",
+        "pk": 2,
+        "fields": {
+            "user": 3,
+            "standard": "uploads/breeder/breeder.jpg",
+            "thumbnail": "uploads/breeder/breeder-t.jpg"
+        }
+    },
+    {
+        "model": "users.profileimage",
+        "pk": 3,
+        "fields": {
+            "user": 4,
+            "standard": "uploads/vet/vet.jpg",
+            "thumbnail": "uploads/vet/vet-t.jpg"
+        }
+    },
+    {
+        "model": "users.profileimage",
+        "pk": 4,
+        "fields": {
+            "user": 5,
+            "standard": "uploads/student/student.jpg",
+            "thumbnail": "uploads/student/student-t.jpg"
+        }
+    },
+    {
+        "model": "users.profileimage",
+        "pk": 5,
+        "fields": {
+            "user": 6,
+            "standard": "uploads/tech/tec.jpg",
+            "thumbnail": "uploads/tech/tec-t.jpg"
+        }
+    },
+    {
+        "model": "users.breeder",
+        "pk": 1,
+        "fields": {
+            "breeder_type": "Breeder",
+            "business_name": "Breeder CA",
+            "business_website": "http://www.google.com",
+            "user": 3,
+            "country": 1,
+            "state": 2
+        }
+    },
+    {
+        "model": "users.veterinarian",
+        "pk": 1,
+        "fields": {
+            "veterinary_school": "New york",
+            "graduating_year": 1980,
+            "verified": true,
+            "user": 4,
+            "veterinarian_type": "3",
+            "country": 1,
+            "state": 4,
+            "area_interest": [
+                1
+            ]
+        }
+    },
+    {
+        "model": "users.veterinarian",
+        "pk": 2,
+        "fields": {
+            "veterinary_school": "New york",
+            "graduating_year": 1988,
+            "verified": false,
+            "user": 6,
+            "veterinarian_type": "5",
+            "country": 1,
+            "state": 2,
+            "area_interest": [
+                2
+            ]
+        }
+    },
+    {
+        "model": "users.veterinarian",
+        "pk": 3,
+        "fields": {
+            "veterinary_school": "San Diego",
+            "graduating_year": 2016,
+            "verified": true,
+            "user": 5,
+            "veterinarian_type": "4",
+            "country": 1,
+            "state": 5,
+            "area_interest": [
+                6
+            ]
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": null,
+        "fields": {
+            "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+            "is_superuser": true,
+            "groups": 1,
+            "username": "tapvet",
+            "email": "yourteam@tapvet.com",
+            "full_name": "TapVet Administrator",
+            "is_active": true,
+            "is_staff": true,
+            "stripe_token": null,
+            "add_paid_post": true,
+            "created_at": "2016-10-04T22:06:07.660Z",
+            "updated_at": "2016-10-11T20:20:41.564Z"
+        }
     }
-},
-{
-    "model": "users.profileimage",
-    "pk": 2,
-    "fields": {
-        "user": 3,
-        "standard": "uploads/breeder/breeder.jpg",
-        "thumbnail": "uploads/breeder/breeder-t.jpg"
-    }
-},
-{
-    "model": "users.profileimage",
-    "pk": 3,
-    "fields": {
-        "user": 4,
-        "standard": "uploads/vet/vet.jpg",
-        "thumbnail": "uploads/vet/vet-t.jpg"
-    }
-},
-{
-    "model": "users.profileimage",
-    "pk": 4,
-    "fields": {
-        "user": 5,
-        "standard": "uploads/student/student.jpg",
-        "thumbnail": "uploads/student/student-t.jpg"
-    }
-},
-{
-    "model": "users.profileimage",
-    "pk": 5,
-    "fields": {
-        "user": 6,
-        "standard": "uploads/tech/tec.jpg",
-        "thumbnail": "uploads/tech/tec-t.jpg"
-    }
-},
-{
-    "model": "users.breeder",
-    "pk": 1,
-    "fields": {
-        "breeder_type": "Breeder",
-        "business_name": "Breeder CA",
-        "business_website": "http://www.google.com",
-        "user": 3,
-        "country": 1,
-        "state": 2
-    }
-},
-{
-    "model": "users.veterinarian",
-    "pk": 1,
-    "fields": {
-        "veterinary_school": "New york",
-        "graduating_year": 1980,
-        "verified": true,
-        "user": 4,
-        "veterinarian_type": "3",
-        "country": 1,
-        "state": 4,
-        "area_interest": [
-            1
-        ]
-    }
-},
-{
-    "model": "users.veterinarian",
-    "pk": 2,
-    "fields": {
-        "veterinary_school": "New york",
-        "graduating_year": 1988,
-        "verified": false,
-        "user": 6,
-        "veterinarian_type": "5",
-        "country": 1,
-        "state": 2,
-        "area_interest": [
-            2
-        ]
-    }
-},
-{
-    "model": "users.veterinarian",
-    "pk": 3,
-    "fields": {
-        "veterinary_school": "San Diego",
-        "graduating_year": 2016,
-        "verified": true,
-        "user": 5,
-        "veterinarian_type": "4",
-        "country": 1,
-        "state": 5,
-        "area_interest": [
-            6
-        ]
-    }
-}
 ]
