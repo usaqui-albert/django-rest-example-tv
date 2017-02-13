@@ -55,6 +55,7 @@ class TestCommentsPetOwnerListCreateView(CustomTestCase):
         req = self.factory.post('/', data=data)
         force_authenticate(req, user=user)
         resp = views.CommentsPetOwnerListCreateView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 201
         assert resp.data['description'] == data['description']
 
     def test_post_create_vet_comment(self):
