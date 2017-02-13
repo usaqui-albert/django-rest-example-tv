@@ -3,7 +3,7 @@
     "model": "apptexts.apptext",
     "pk": 1,
     "fields": {
-        "key": "signupVerification",
+        "key": "auth.signupVerification.veterinarian.message",
         "description": "To complete your registration we have to verify your information below. This should take us less than 6 hours, in the meantime you can look around and create posts but they won\u2019t be visible to others until verification is complete.",
         "created_at": "2017-01-23T19:11:32.199Z",
         "updated_at": "2017-01-24T13:53:55.882Z"
@@ -13,7 +13,7 @@
     "model": "apptexts.apptext",
     "pk": 2,
     "fields": {
-        "key": "sendPostMessage",
+        "key": "main.post.confirmPost.sendPost",
         "description": "Your post will appear in the general feed to receive comments from Pet Owners and Breeders.",
         "created_at": "2017-01-23T19:12:50.074Z",
         "updated_at": "2017-01-24T14:01:37.004Z"
@@ -23,7 +23,7 @@
     "model": "apptexts.apptext",
     "pk": 3,
     "fields": {
-        "key": "sendVetMessage",
+        "key": "main.post.confirmPost.sendVet",
         "description": "Send to vets for comments",
         "created_at": "2017-01-23T19:17:04.527Z",
         "updated_at": "2017-01-24T14:31:29.427Z"
