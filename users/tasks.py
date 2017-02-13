@@ -103,7 +103,7 @@ def obtain_personalization(
 def obtain_mail(personalization, template):
     mail = Mail()
     mail.set_template_id(template)
-    mail.set_from(Email(settings.DEFAULT_FROM_EMAIL, 'Tapvet Team'))
+    mail.set_from(Email(settings.DEFAULT_FROM_EMAIL, 'TapVet Team'))
     mail.add_personalization(personalization)
     return mail.get()
 

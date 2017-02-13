@@ -159,7 +159,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 EMAIL_SUBJECT_PREFIX = "[TapVet]"
-DEFAULT_FROM_EMAIL = 'blanclink.test@gmail.com'
+DEFAULT_FROM_EMAIL = 'yourteam@tapvet.com'
 
 ADMINS = [
     ('Mayra Canas', 'mayrac@blanclabs.com'),
