@@ -48,7 +48,12 @@ class PostListCreateView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             serializer = self.serializer_class(
-                data=request.data, context={'user': request.user})
+                data=request.data,
+                context={
+                    'user': request.user,
+                    'request': request
+                }
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             headers = self.get_success_headers(serializer.data)
