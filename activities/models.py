@@ -21,6 +21,7 @@ class Activity(models.Model):
     post = models.ForeignKey('posts.post', null=True, blank=True)
     comment = models.ForeignKey('comments.comment', null=True, blank=True)
     follows = models.ForeignKey('users.user', null=True, blank=True)
+    active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
