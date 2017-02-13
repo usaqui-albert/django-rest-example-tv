@@ -18,24 +18,20 @@ class UserLikedPostListView(ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
-        qs = qs.filter(user=user, action=Activity.LIKE).select_related(
-            'user',
+        qs = qs.filter(
+            user=user, action=Activity.LIKE, active=True).select_related(
             'user__groups',
             'user__image',
-            'post',
-            'post__user',
             'post__pet',
             'post__user__groups',
             'post__user__image',
-            'comment',
-            'comment__user',
             'comment__user__groups',
             'comment__user__image',
         ).prefetch_related(
             'post__images',
         )
 
-        return qs.all()
+        return qs.all().order_by('-id')
 
 
 class UserCommentPostListView(ListAPIView):
@@ -47,24 +43,20 @@ class UserCommentPostListView(ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
-        qs = qs.filter(user=user, action=Activity.COMMENT).select_related(
-            'user',
+        qs = qs.filter(
+            user=user, action=Activity.COMMENT, active=True).select_related(
             'user__groups',
             'user__image',
-            'post',
-            'post__user',
             'post__pet',
             'post__user__groups',
             'post__user__image',
-            'comment',
-            'comment__user',
             'comment__user__groups',
             'comment__user__image',
         ).prefetch_related(
             'post__images',
         )
 
-        return qs.all()
+        return qs.all().order_by('-id')
 
 
 class ActivityListView(ListAPIView):
@@ -88,21 +80,16 @@ class ActivityListView(ListAPIView):
             ) |
             Q(
                 post__in=user.likes.all(), action=Activity.COMMENT
-            )
+            ), active=True
         ).exclude(user=user).select_related(
-            'user',
             'user__groups',
             'user__image',
-            'post',
-            'post__user',
             'post__pet',
             'post__user__groups',
             'post__user__image',
-            'comment',
-            'comment__user',
             'comment__user__groups',
             'comment__user__image',
         ).prefetch_related(
             'post__images',
         )
-        return qs.all()
+        return qs.all().order_by('-id')
