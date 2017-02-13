@@ -19,7 +19,7 @@ def vet_signal(sender, instance=None, created=False, **kwargs):
             if instance.veterinarian_type == '4':
                 instance.verified = True
                 instance.save()
-                vet_verify_mail(instance, instance.veterinarian_type)
+                vet_verify_mail(instance.user, instance.veterinarian_type)
 
             welcome_mail(instance.user, 'VET_TECH_STUDENT')
 
