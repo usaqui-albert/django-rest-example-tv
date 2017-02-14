@@ -15,9 +15,18 @@ def new_post_like_signal(sender, instance=None, created=False, **kwargs):
         if post_owner.interested_notification:
             send_notification_message(post_owner.id, liking_post)
 
-        activity = Activity(
+        Activity.objects.update_or_create(
             user=instance.user,
             action=Activity.LIKE,
-            post=instance.post
+            post=instance.post,
+            defaults={'active': True}
         )
-        activity.save()
+
+
+def inactive_post_like_signal(sender, instance=None, **kwargs):
+    Activity.objects.update_or_create(
+        user=instance.user,
+        action=Activity.LIKE,
+        post=instance.post,
+        defaults={'active': False}
+    )

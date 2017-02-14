@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView, RetrieveUpdateAPIView, ListAPIView, DestroyAPIView,
-    get_object_or_404, GenericAPIView
+    get_object_or_404, GenericAPIView, RetrieveUpdateDestroyAPIView
 )
 from rest_framework import permissions, status
 from rest_framework.views import APIView
@@ -48,7 +48,12 @@ class PostListCreateView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         if request.user.is_authenticated():
             serializer = self.serializer_class(
-                data=request.data, context={'user': request.user})
+                data=request.data,
+                context={
+                    'user': request.user,
+                    'request': request
+                }
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             headers = self.get_success_headers(serializer.data)
@@ -158,7 +163,7 @@ class PostListCreateView(ListCreateAPIView):
         return posts_ids or [0]
 
 
-class PostRetrieveUpdateView(RetrieveUpdateAPIView):
+class PostRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
     """
     Service to delete  posts.
 

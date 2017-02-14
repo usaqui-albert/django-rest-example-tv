@@ -1,9 +1,11 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 
-from .signals import post_reporting_signal, new_post_like_signal
+from .signals import (
+    post_reporting_signal, new_post_like_signal, inactive_post_like_signal
+)
 
 min_max_range = [
     MinValueValidator(0),
@@ -40,6 +42,11 @@ post_save.connect(
     new_post_like_signal,
     sender=UserLikesPost,
     dispatch_uid="users.models.userlikespost_post_save"
+)
+post_delete.connect(
+    inactive_post_like_signal,
+    sender=UserLikesPost,
+    dispatch_uid="users.models.userlikespost_post_delete"
 )
 
 

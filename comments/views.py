@@ -93,7 +93,6 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     def get_post(pk):
         qs = Post.objects.filter(pk=pk).select_related('user__groups').first()
         if qs:
-            qs.save()
             return qs
         raise Http404()
 
