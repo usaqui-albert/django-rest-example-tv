@@ -323,9 +323,6 @@ class PaidPostView(APIView):
     :accepted method:
         POST
     """
-    def __init__(self, **kwargs):
-        super(PaidPostView, self).__init__(**kwargs)
-        stripe.api_key = settings.STRIPE_API_KEY
 
     allowed_methods = ('POST',)
     permission_classes = (permissions.IsAuthenticated,)
@@ -337,36 +334,13 @@ class PaidPostView(APIView):
         :param kwargs:
         :return:
         """
-        post = self.get_object()
-        if post.exists():
-            post = post.get()
-            user = post.user
-            if user.stripe_token:
-                response = paid_post_handler(user, settings.PAID_POST_AMOUNT)
-                if response is True:
-                    post.set_paid().save()
-                    return Response({'detail': 'Payment successful'},
-                                    status=status.HTTP_200_OK)
-                else:
-                    return Response({'detail': response},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            no_customer_response = {
-                'detail': 'There is no customer for this user'}
-            return Response(
-                no_customer_response, status=status.HTTP_402_PAYMENT_REQUIRED)
+        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        post = post.get()
+        post.set_paid().save()
         return Response(
-            {'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-    def get_object(self):
-        """Method to get a Post instance and prefetch the owner of the post
-
-        :return: queryset with Post instance in it
-        """
-        post = Post.objects.filter(
-            pk=self.kwargs['pk'],
-            user=self.request.user.id
-        ).select_related('user')
-        return post
+            {'detail': 'Payment successful'},
+            status=status.HTTP_200_OK
+        )
 
 
 class PaymentAmountDetail(RetrieveUpdateAPIView):
