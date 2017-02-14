@@ -26,16 +26,22 @@ def new_comment_signal(sender, instance=None, created=False, **kwargs):
         activity.save()
 
 
-def upvoters_changed(sender, action=None, pk_set=None, **kwargs):
+def upvoters_changed(instance, action=None, pk_set=None, **kwargs):
     if action == 'post_add' and pk_set:
-        instance = kwargs['instance']
         if instance.user.comments_like_notification:
             send_notification_message(instance.user.id, upvoting_comment)
-
-        activity = Activity(
+        Activity.objects.update_or_create(
             user_id=pk_set.pop(),
             action=Activity.UPVOTE,
             comment=instance,
-            post=instance.post
+            post=instance.post,
+            defaults={'active': True}
         )
-        activity.save()
+    elif action == 'post_remove' and pk_set:
+        Activity.objects.update_or_create(
+            user_id=pk_set.pop(),
+            action=Activity.UPVOTE,
+            comment=instance,
+            post=instance.post,
+            defaults={'active': False}
+        )

@@ -19,16 +19,23 @@ def vet_signal(sender, instance=None, created=False, **kwargs):
             if instance.veterinarian_type == '4':
                 instance.verified = True
                 instance.save()
-                vet_verify_mail(instance, instance.veterinarian_type)
+                vet_verify_mail(instance.user, instance.veterinarian_type)
 
             welcome_mail(instance.user, 'VET_TECH_STUDENT')
 
 
-def follows_changed(sender, action=None, pk_set=None, **kwargs):
-    if action == 'post_add':
-        activity = Activity(
+def follows_changed(instance, action=None, pk_set=None, **kwargs):
+    if action == 'post_add' and pk_set:
+        Activity.objects.update_or_create(
             follows_id=pk_set.pop(),
             action=Activity.FOLLOW,
-            user=kwargs['instance']
+            user=instance,
+            defaults={'active': True}
         )
-        activity.save()
+    elif action == 'post_remove' and pk_set:
+        Activity.objects.update_or_create(
+            follows_id=pk_set.pop(),
+            action=Activity.FOLLOW,
+            user=instance,
+            defaults={'active': False}
+        )

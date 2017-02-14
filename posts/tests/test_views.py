@@ -329,7 +329,7 @@ class TestPostByUserListView(CustomTestCase):
             assert x
 
 
-class TestPostRetrieveUpdateDeleteView(CustomTestCase):
+class TestPostRetrieveUpdateView(CustomTestCase):
 
     def test_post_request_not_allowed(self):
         req = self.factory.post('/')
@@ -343,7 +343,7 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
         post = mixer.blend('posts.post', user=user)
         req = self.factory.get('/')
         force_authenticate(req, user=user)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateView.as_view()(req, pk=post.pk)
         assert resp.data['description'] == post.description
         for key in [
             'description', 'pet', 'user', 'id', 'likes_count', 'images',
@@ -361,7 +361,7 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
         post = mixer.blend('posts.post', user=user)
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateView.as_view()(req, pk=post.pk)
         assert resp.data is None
 
     def test_put(self):
@@ -372,7 +372,7 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
         }
         req = self.factory.put('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(
+        resp = views.PostRetrieveUpdateView.as_view()(
             req, pk=post.pk)
         assert resp.data['description'] == 'New description'
 
@@ -384,7 +384,7 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
         }
         req = self.factory.patch('/', data=data)
         force_authenticate(req, user=user)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(
+        resp = views.PostRetrieveUpdateView.as_view()(
             req, pk=post.pk)
         assert resp.data['description'] == 'New description'
 
@@ -397,7 +397,7 @@ class TestPostRetrieveUpdateDeleteView(CustomTestCase):
         }
         req = self.factory.put('/', data=data)
         force_authenticate(req, user=user2)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(
+        resp = views.PostRetrieveUpdateView.as_view()(
             req, pk=post.pk)
         assert resp.status_code == 403
         assert resp.data['detail'] == ('You do not have permission to perform '
@@ -541,7 +541,7 @@ class TestPostLikeView(CustomTestCase):
         # Now we test the counter
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateView.as_view()(req, pk=post.pk)
         assert resp.data['likes_count'] == 1
 
     def test_get_downvote_count(self):
@@ -559,7 +559,7 @@ class TestPostLikeView(CustomTestCase):
         # Now we test the counter
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateView.as_view()(req, pk=post.pk)
         assert resp.data['likes_count'] == 2
         # Now test the downvote
         req = self.factory.delete('/')
@@ -568,7 +568,7 @@ class TestPostLikeView(CustomTestCase):
         assert resp.status_code == 204
         req = self.factory.get('/')
         force_authenticate(req, user=owner)
-        resp = views.PostRetrieveUpdateDeleteView.as_view()(req, pk=post.pk)
+        resp = views.PostRetrieveUpdateView.as_view()(req, pk=post.pk)
         assert resp.data['likes_count'] == 1
 
 
