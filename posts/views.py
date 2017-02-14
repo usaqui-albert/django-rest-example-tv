@@ -334,13 +334,36 @@ class PaidPostView(APIView):
         :param kwargs:
         :return:
         """
-        post = get_object_or_404(Post, pk=self.kwargs['pk'])
-        post = post.get()
-        post.set_paid().save()
-        return Response(
-            {'detail': 'Payment successful'},
-            status=status.HTTP_200_OK
-        )
+        post = self.get_object().first()
+        if post:
+            if post.user.is_vet():
+                return Response(
+                    {'detail': "Vet community does not have paid post"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            post.set_paid().save()
+            return Response(
+                {'detail': 'Payment successful'},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'detail': 'Post not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def get_object(self):
+        """
+        Method to get a Post instance and prefetch the owner of the post
+        and group
+
+        :return: queryset with Post instance in it
+        """
+        post = Post.objects.filter(
+            pk=self.kwargs['pk'],
+            user=self.request.user.id
+        ).select_related('user__groups')
+        return post
 
 
 class PaymentAmountDetail(RetrieveUpdateAPIView):
