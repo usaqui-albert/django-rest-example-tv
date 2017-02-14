@@ -1,7 +1,5 @@
-import stripe
 from operator import xor
 
-from django.conf import settings
 from django.http import Http404
 from django.db import IntegrityError
 from django.db.models import (
@@ -28,7 +26,7 @@ from .serializers import (
 )
 from .models import Post, PaymentAmount, ImagePost, UserLikesPost, Report
 from .utils import (
-    paid_post_handler, get_annotate_params, handler_images_order,
+    get_annotate_params, handler_images_order,
     prefetch_vet_comments, prefetch_owner_comments
 )
 
