@@ -1,14 +1,16 @@
 from rest_framework.serializers import (
-    ModelSerializer, IntegerField, CharField, BooleanField,
+    ModelSerializer, IntegerField, BooleanField,
     SerializerMethodField)
+
+from users.serializers import UserSerializers
+
 
 from .models import Comment, Feedback
 
 
 class CommentSerializer(ModelSerializer):
     upvoters_count = IntegerField(read_only=True)
-    label = CharField(source='user.get_label', read_only=True)
-    full_name = CharField(source='user.full_name', read_only=True)
+    user = UserSerializers(read_only=True)
     upvoted = BooleanField(read_only=True)
 
     class Meta:
