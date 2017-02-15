@@ -1,8 +1,8 @@
 from rest_framework.serializers import (
-    ModelSerializer, IntegerField, BooleanField,
+    ModelSerializer, IntegerField, CharField, BooleanField,
     SerializerMethodField)
 
-from users.serializers import UserSerializers
+from users.serializers import ProfileImageSerializer
 
 
 from .models import Comment, Feedback
@@ -10,14 +10,16 @@ from .models import Comment, Feedback
 
 class CommentSerializer(ModelSerializer):
     upvoters_count = IntegerField(read_only=True)
-    user = UserSerializers(read_only=True)
+    label = CharField(source='user.get_label', read_only=True)
+    full_name = CharField(source='user.full_name', read_only=True)
     upvoted = BooleanField(read_only=True)
+    image = ProfileImageSerializer(source='user.image')
 
     class Meta:
         model = Comment
         fields = (
             'description', 'id', 'user', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'upvoted'
+            'upvoters_count', 'label', 'full_name', 'upvoted', 'image'
         )
         extra_kwargs = {
             'user': {'read_only': True},
