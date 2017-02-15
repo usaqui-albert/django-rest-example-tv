@@ -12,6 +12,7 @@ from helpers.tests_helpers import CustomTestCase
 
 from TapVet import messages
 from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
+
 pytestmark = pytest.mark.django_db
 
 
@@ -182,20 +183,6 @@ class TestPaidPostView(CustomTestCase):
         assert resp.status_code == 404, (
             'Should return Not Found (404) post with pk=1 exists but the'
             'user requesting is not the owner'
-        )
-
-    def test_user_has_no_stripe_customer(self):
-        user = self.load_users_data().get_user(groups_id=1,
-                                               stripe_token=None)
-        mixer.blend('posts.Post', user=user, pk=1)
-
-        req = self.factory.post('/')
-        force_authenticate(req, user=user)
-
-        resp = views.PaidPostView.as_view()(req, pk=1)
-        assert resp.status_code == 402, (
-            'Should return Payment Required (402) user has no a related '
-            'stripe customer'
         )
 
 
