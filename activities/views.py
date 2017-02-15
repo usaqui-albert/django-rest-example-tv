@@ -31,7 +31,7 @@ class UserLikedPostListView(ListAPIView):
             'post__images',
         )
 
-        return qs.all().order_by('-id')
+        return qs.all().order_by('-updated_at')
 
 
 class UserCommentPostListView(ListAPIView):
@@ -56,7 +56,7 @@ class UserCommentPostListView(ListAPIView):
             'post__images',
         )
 
-        return qs.all().order_by('-id')
+        return qs.all().order_by('-updated_at')
 
 
 class ActivityListView(ListAPIView):
@@ -92,4 +92,4 @@ class ActivityListView(ListAPIView):
         ).prefetch_related(
             'post__images',
         )
-        return qs.all().order_by('-id')
+        return qs.all().order_by('-updated_at')

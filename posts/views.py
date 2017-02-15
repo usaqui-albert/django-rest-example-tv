@@ -1,7 +1,5 @@
-import stripe
 from operator import xor
 
-from django.conf import settings
 from django.http import Http404
 from django.db import IntegrityError
 from django.db.models import (
@@ -28,7 +26,7 @@ from .serializers import (
 )
 from .models import Post, PaymentAmount, ImagePost, UserLikesPost, Report
 from .utils import (
-    paid_post_handler, get_annotate_params, handler_images_order,
+    get_annotate_params, handler_images_order,
     prefetch_vet_comments, prefetch_owner_comments
 )
 
@@ -323,9 +321,6 @@ class PaidPostView(APIView):
     :accepted method:
         POST
     """
-    def __init__(self, **kwargs):
-        super(PaidPostView, self).__init__(**kwargs)
-        stripe.api_key = settings.STRIPE_API_KEY
 
     allowed_methods = ('POST',)
     permission_classes = (permissions.IsAuthenticated,)
@@ -337,35 +332,35 @@ class PaidPostView(APIView):
         :param kwargs:
         :return:
         """
-        post = self.get_object()
-        if post.exists():
-            post = post.get()
-            user = post.user
-            if user.stripe_token:
-                response = paid_post_handler(user, settings.PAID_POST_AMOUNT)
-                if response is True:
-                    post.set_paid().save()
-                    return Response({'detail': 'Payment successful'},
-                                    status=status.HTTP_200_OK)
-                else:
-                    return Response({'detail': response},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            no_customer_response = {
-                'detail': 'There is no customer for this user'}
+        post = self.get_object().first()
+        if post:
+            if post.user.is_vet():
+                return Response(
+                    {'detail': "Vet community does not have paid post"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            post.set_paid().save()
             return Response(
-                no_customer_response, status=status.HTTP_402_PAYMENT_REQUIRED)
-        return Response(
-            {'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+                {'detail': 'Payment successful'},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'detail': 'Post not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
     def get_object(self):
-        """Method to get a Post instance and prefetch the owner of the post
+        """
+        Method to get a Post instance and prefetch the owner of the post
+        and group
 
         :return: queryset with Post instance in it
         """
         post = Post.objects.filter(
             pk=self.kwargs['pk'],
             user=self.request.user.id
-        ).select_related('user')
+        ).select_related('user__groups')
         return post
 
 
