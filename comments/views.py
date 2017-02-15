@@ -34,13 +34,6 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
     pagination_class = StandardPagination
     groups_ids = [1, 2]
 
-    def get(self, request, *args, **kwargs):
-        if request.user.is_vet():
-            return Response(
-                {'detail': 'Bad Request'}, status=status.HTTP_400_BAD_REQUEST
-            )
-        return self.list(request, *args, **kwargs)
-
     def get_queryset(self):
         annotate_params = {'upvoters_count': Count('upvoters')}
         user = self.request.user
