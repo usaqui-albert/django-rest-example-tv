@@ -22,7 +22,6 @@ from posts.views import PaymentAmountDetail
 
 urlpatterns = [
     # DASHBOARD
-    url(r'^admin/', admin.site.urls),
     url(
         r'^api/v1/dashboard/users/',
         include('users.dashboard.urls', namespace='dashboard_users')
@@ -62,3 +61,7 @@ urlpatterns = [
     ),
     url(r'^docs/', include('rest_framework_docs.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+if settings.DEBUG:
+    urlpatterns += [url(r'^admin/', admin.site.urls)]
