@@ -115,7 +115,7 @@ class VeterinarianSerializer(ModelSerializer):
     def create(self, validated_data):
         veterinarian = Veterinarian(
             **dict(validated_data, user=self.context['user']))
-        veterinarian.save()
+        veterinarian.change_status().save()
         return veterinarian
 
     def save(self, **kwargs):
@@ -127,6 +127,9 @@ class VeterinarianSerializer(ModelSerializer):
             list(kwargs.items())
         )
         if self.instance:
+            request_user = self.context['user']
+            if self.instance.user.id == request_user.id:
+                self.instance.change_status()
             self.instance = self.update(self.instance, validated_data)
             assert self.instance is not None, (
                 '`update()` did not return an object instance.'
@@ -225,7 +228,8 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
                     serializer = VeterinarianSerializer(
                         instance.veterinarian,
                         data=veterinarian_data,
-                        partial=True
+                        partial=True,
+                        context=self.context
                     )
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
