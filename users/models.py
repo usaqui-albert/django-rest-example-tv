@@ -186,6 +186,7 @@ class Veterinarian(models.Model):
             return self
         return self
 
+
 # Func to connect the signal on post save.
 post_save.connect(
     vet_signal,
