@@ -63,7 +63,8 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         ).annotate(
             **annotate_params
         ).select_related(
-            'user__groups'
+            'user__groups',
+            'user__image'
         ).order_by('-updated_at', '-upvoters_count')
         return qs
 
