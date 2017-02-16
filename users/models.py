@@ -172,6 +172,20 @@ class Veterinarian(models.Model):
                     'the year ' + str(get_current_year() + 20))
         super(Veterinarian, self).save(*args, **kwargs)
 
+    def change_status(self):
+        if not self.veterinarian_type == 4:
+            if self.verified or self.locked:
+                if self.locked and not self.verified:
+                    self.verified = True
+                    self.locked = False
+                else:
+                    self.verified = self.locked = True
+            else:
+                self.verified = False
+                self.locked = True
+            return self
+        return self
+
 
 # Func to connect the signal on post save.
 post_save.connect(
