@@ -15,5 +15,6 @@ class ActivitySerializer(ModelSerializer):
     class Meta:
         model = Activity
         fields = (
-            'user', 'action', 'post', 'comment', 'follows', 'created_at'
+            'user', 'action', 'post', 'comment', 'follows', 'created_at',
+            'updated_at'
         )
