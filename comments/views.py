@@ -114,6 +114,11 @@ class CommentsVetListCreateView(CommentsPetOwnerListCreateView):
             self.serializer_class = CommentVetSerializer
         return self.list(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated() and request.user.is_vet():
+            self.serializer_class = CommentVetSerializer
+        return self.create(request, *args, **kwargs)
+
 
 class CommentVoteView(APIView):
     """
