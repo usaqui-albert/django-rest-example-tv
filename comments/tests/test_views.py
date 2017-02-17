@@ -266,3 +266,12 @@ class TestFeedbackCreateView(CustomTestCase):
         force_authenticate(req, user=user)
         resp = views.FeedbackCreateView.as_view()(req, pk=comment.pk)
         assert resp.status_code == 403
+
+    def test_required_fields(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        comment = mixer.blend('comments.comment', post=post)
+        req = self.factory.post('/', data={})
+        force_authenticate(req, user=user)
+        resp = views.FeedbackCreateView.as_view()(req, pk=comment.pk)
+        assert resp.status_code == 400
