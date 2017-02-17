@@ -49,9 +49,13 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
             post = self.get_post(self.kwargs['pk'])
             is_owner = int(post.user.id) == int(user.id)
             if post and is_owner:
+                comments_ids = [
+                    feedback.comment.id
+                    for feedback in user.feedbacks.all()
+                ]
                 annotate_params['has_feedback'] = Case(
                     When(
-                        pk__in=user.feedbacks.all(),
+                        pk__in=comments_ids,
                         then=Value(True)
                     ),
                     default=Value(False),
@@ -158,7 +162,10 @@ class FeedbackCreateView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         comment = self.get_comment(kwargs['pk'])
         if not request.user.id == comment.post.user_id:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                messages.forbidden_action,
+                status=status.HTTP_403_FORBIDDEN
+            )
         serializer = self.serializer_class(
             data=request.data,
             context={
@@ -180,7 +187,8 @@ class FeedbackCreateView(CreateAPIView):
             )
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     @staticmethod
     def get_comment(pk):
