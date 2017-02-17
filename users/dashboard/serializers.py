@@ -58,7 +58,7 @@ class AdminUserUpdateSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'full_name', 'veterinarian', 'breeder'
+            'full_name', 'veterinarian', 'breeder', 'is_staff'
         )
 
     def update(self, instance, validated_data):
