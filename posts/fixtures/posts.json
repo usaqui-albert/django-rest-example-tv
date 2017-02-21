@@ -1,0 +1,30 @@
+[
+{
+    "model": "posts.feedvariable",
+    "pk": 1,
+    "fields": {
+        "is_vet": true,
+        "post_quantity": 20,
+        "posts_user_has_liked": 1,
+        "posts_user_has_comment": 2,
+        "posts_user_follows": 3,
+        "posts_by_user": 4,
+        "new_posts": 5,
+        "paid_posts": 6
+    }
+},
+{
+    "model": "posts.feedvariable",
+    "pk": 2,
+    "fields": {
+        "is_vet": false,
+        "post_quantity": 20,
+        "posts_user_has_liked": 1,
+        "posts_user_has_comment": 2,
+        "posts_user_follows": 3,
+        "posts_by_user": 4,
+        "new_posts": 5,
+        "paid_posts": null
+    }
+}
+]
