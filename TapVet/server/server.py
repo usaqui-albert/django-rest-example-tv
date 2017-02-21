@@ -4,7 +4,9 @@ from TapVet.settings import *  # NOQA
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    '.blanclabs.com'
+    '.blanclabs.com',
+    'localhost',
+    '.tapvet.com'
 ]
 ADMINS = [
     ('Mayra Canas', 'mayrac@blanclabs.com'),
