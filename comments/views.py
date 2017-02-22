@@ -53,14 +53,15 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
                     feedback.comment.id
                     for feedback in user.feedbacks.all()
                 ]
-                annotate_params['has_feedback'] = Case(
-                    When(
-                        pk__in=comments_ids,
-                        then=Value(True)
-                    ),
-                    default=Value(False),
-                    output_field=BooleanField()
-                )
+                if comments_ids:
+                    annotate_params['has_feedback'] = Case(
+                        When(
+                            pk__in=[1],
+                            then=Value(True),
+                        ),
+                        default=Value(False),
+                        output_field=BooleanField(),
+                    )
         qs = Comment.objects.filter(
             post_id=self.kwargs['pk'],
             user__groups_id__in=self.groups_ids
@@ -74,7 +75,12 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
-            data=request.data, context={'user': request.user})
+            data=request.data,
+            context={
+                'user': request.user,
+                'request': request
+            }
+        )
         serializer.is_valid(raise_exception=True)
         post = self.get_post(kwargs['pk'])
         if not post.is_paid():
