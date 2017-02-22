@@ -8,7 +8,7 @@ class UserAdmin(admin.ModelAdmin):
     '''
         Admin View for User
     '''
-    list_display = ('username', 'email', 'id')
+    list_display = ('username', 'email', 'id', 'get_label', 'get_token')
 
 
 admin.site.register(User, UserAdmin)
