@@ -255,7 +255,10 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
             instance,
             data=request.data,
             partial=partial,
-            context={'user': request.user}
+            context={
+                'user': request.user,
+                'request': request,
+            }
         )
         serializer.is_valid(raise_exception=True)
         try:
