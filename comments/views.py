@@ -74,7 +74,12 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(
-            data=request.data, context={'user': request.user})
+            data=request.data,
+            context={
+                'user': request.user,
+                'request': request
+            }
+        )
         serializer.is_valid(raise_exception=True)
         post = self.get_post(kwargs['pk'])
         if not post.is_paid():
