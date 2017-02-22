@@ -12,6 +12,7 @@ class CommentSerializer(ModelSerializer):
     upvoters_count = IntegerField(read_only=True)
     label = CharField(source='user.get_label', read_only=True)
     full_name = CharField(source='user.full_name', read_only=True)
+    username = CharField(source='user.username', read_only=True)
     upvoted = BooleanField(read_only=True)
     image = ProfileImageSerializer(source='user.image', read_only=True)
 
@@ -19,7 +20,8 @@ class CommentSerializer(ModelSerializer):
         model = Comment
         fields = (
             'description', 'id', 'user', 'post', 'created_at', 'updated_at',
-            'upvoters_count', 'label', 'full_name', 'upvoted', 'image'
+            'upvoters_count', 'label', 'full_name', 'upvoted', 'image',
+            'username'
         )
         extra_kwargs = {
             'user': {'read_only': True},
@@ -40,7 +42,7 @@ class CommentVetSerializer(CommentSerializer):
         fields = (
             'description', 'id', 'post', 'created_at', 'updated_at',
             'upvoters_count', 'label', 'full_name', 'upvoted', 'has_feedback',
-            'image'
+            'image', 'username'
         )
         extra_kwargs = {
             'user': {'read_only': True},
@@ -51,6 +53,9 @@ class CommentVetSerializer(CommentSerializer):
 class CommentVetNamelessSerializer(CommentVetSerializer):
     full_name = SerializerMethodField(read_only=True)
     image = SerializerMethodField(read_only=True)
+    username = SerializerMethodField(
+        read_only=True, method_name='get_full_name'
+    )
 
     @staticmethod
     def get_full_name(obj):

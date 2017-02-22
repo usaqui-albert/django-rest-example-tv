@@ -82,6 +82,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_label(self):
         return settings.APP_LABEL.get(self.groups.id, '')
 
+    def get_token(self):
+        return self.auth_token.key if self.auth_token else None
+
 
 # Func to connect the signal on post save.
 post_save.connect(
