@@ -129,7 +129,11 @@ class AdminUserDetailView(RetrieveUpdateAPIView):
         serializer = AdminUserUpdateSerializer(
             instance,
             data=request.data,
-            partial=partial
+            partial=partial,
+            context={
+                'user': request.user,
+                'request': request
+            }
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)

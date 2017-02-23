@@ -70,7 +70,11 @@ class AdminUserUpdateSerializer(ModelSerializer):
                 serializer = BreederSerializer(
                     instance.breeder,
                     data=breeder_data,
-                    partial=True
+                    partial=True,
+                    context={
+                        'user': self.context['user'],
+                        'request': self.context['request']
+                    }
                 )
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
@@ -80,7 +84,11 @@ class AdminUserUpdateSerializer(ModelSerializer):
                 serializer = VeterinarianSerializer(
                     instance.veterinarian,
                     data=veterinarian_data,
-                    partial=True
+                    partial=True,
+                    context={
+                        'user': self.context['user'],
+                        'request': self.context['request']
+                    }
                 )
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
