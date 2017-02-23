@@ -71,10 +71,7 @@ class AdminUserUpdateSerializer(ModelSerializer):
                     instance.breeder,
                     data=breeder_data,
                     partial=True,
-                    context={
-                        'user': self.context['user'],
-                        'request': self.context['request']
-                    }
+                    context=self.context
                 )
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
@@ -85,10 +82,7 @@ class AdminUserUpdateSerializer(ModelSerializer):
                     instance.veterinarian,
                     data=veterinarian_data,
                     partial=True,
-                    context={
-                        'user': self.context['user'],
-                        'request': self.context['request']
-                    }
+                    context=self.context
                 )
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
