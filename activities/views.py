@@ -76,7 +76,7 @@ class ActivityListView(ListAPIView):
                 action=Activity.LIKE
             ).annotate(
                 beacon=Value(
-                    'Like',
+                    'like',
                     output_field=CharField()
                 )
             ),
@@ -89,7 +89,7 @@ class ActivityListView(ListAPIView):
                 action=Activity.UPVOTE
             ).annotate(
                 beacon=Value(
-                    'Upvote',
+                    'upvote',
                     output_field=CharField()
                 )
             ),
@@ -102,7 +102,7 @@ class ActivityListView(ListAPIView):
                 action=Activity.COMMENT
             ).annotate(
                 beacon=Value(
-                    'Comment', output_field=CharField()
+                    'comment', output_field=CharField()
                 )
             ),
             user
@@ -114,7 +114,7 @@ class ActivityListView(ListAPIView):
                 action=Activity.COMMENT
             ).annotate(
                 beacon=Value(
-                    'Like_Comment',
+                    'like_comment',
                     output_field=CharField()
                 )
             ),
