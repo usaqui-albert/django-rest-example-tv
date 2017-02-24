@@ -410,7 +410,11 @@ class PostByUserListView(ListAPIView):
     def get_queryset(self):
         qs = Post.objects.annotate(
             **get_annotate_params('likes_count')
-        ).filter(user_id=self.kwargs['pk']).exclude(active=False)
+        ).filter(user_id=self.kwargs['pk']).prefetch_related(
+            'images',
+            prefetch_vet_comments,
+            prefetch_owner_comments
+        ).exclude(active=False).exclude(active=False)
         return qs
 
 
