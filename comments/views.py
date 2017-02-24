@@ -56,7 +56,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
                 if comments_ids:
                     annotate_params['has_feedback'] = Case(
                         When(
-                            pk__in=[1],
+                            pk__in=comments_ids,
                             then=Value(True),
                         ),
                         default=Value(False),

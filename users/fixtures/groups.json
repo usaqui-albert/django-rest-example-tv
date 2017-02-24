@@ -3,7 +3,7 @@
     "model": "auth.group",
     "pk": 1,
     "fields": {
-        "name": "Pet owner",
+        "name": "Pet Owner",
         "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
         "permissions": [
             [
