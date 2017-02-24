@@ -112,7 +112,7 @@ class ActivityListView(ListAPIView):
             Activity.objects.filter(
                 post__in=user.likes.all(),
                 action=Activity.COMMENT
-            ).annotate(
+            ).exclude(post__user=user).annotate(
                 beacon=Value(
                     'like_comment',
                     output_field=CharField()
