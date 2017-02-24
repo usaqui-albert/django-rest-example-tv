@@ -24,6 +24,8 @@ from .serializers import (
     PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
     PaidPostSerializer, ReportTypeSerializer
 )
+from activities.models import Activity
+
 from .models import Post, PaymentAmount, ImagePost, UserLikesPost, Report
 from .utils import (
     get_annotate_params, handler_images_order,
@@ -192,6 +194,13 @@ class PostRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
             prefetch_owner_comments
         ).exclude(active=False)
         return queryset.all()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.active = False
+        instance.save()
+        Activity.objects.filter(post=instance).update(active=False)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ImageView(GenericAPIView):
