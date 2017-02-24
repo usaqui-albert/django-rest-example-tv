@@ -414,7 +414,7 @@ class PostByUserListView(ListAPIView):
             'images',
             prefetch_vet_comments,
             prefetch_owner_comments
-        ).exclude(active=False).exclude(active=False)
+        ).exclude(active=False).exclude(active=False).order_by('-id')
         return qs
 
 
