@@ -51,10 +51,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
 
     blur_images = models.BooleanField(default=False)
-    interested_notification = models.BooleanField(default=False)
-    vet_reply_notification = models.BooleanField(default=False)
-    comments_notification = models.BooleanField(default=False)
-    comments_like_notification = models.BooleanField(default=False)
+    interested_notification = models.BooleanField(default=True)
+    vet_reply_notification = models.BooleanField(default=True)
+    comments_notification = models.BooleanField(default=True)
+    comments_like_notification = models.BooleanField(default=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
