@@ -85,6 +85,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_token(self):
         return self.auth_token.key if self.auth_token else None
 
+    def save(self, *args, **kwargs):
+        if self.is_vet():
+            self.blur_images = False
+
+        super(User, self).save(*args, **kwargs)
+
 
 # Func to connect the signal on post save.
 post_save.connect(

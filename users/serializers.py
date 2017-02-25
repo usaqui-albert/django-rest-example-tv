@@ -251,12 +251,14 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        try:
-            old_image = instance.image
-            old_image.delete()
-        except:
-            pass
         if image:
+
+            try:
+                old_image = instance.image
+                old_image.delete()
+            except:
+                pass
+
             self.create_image_profile(image, instance)
         return instance
 
