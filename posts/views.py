@@ -483,7 +483,7 @@ class PostPaidListView(ListAPIView):
     serializer_class = PaidPostSerializer
 
     def get_queryset(self):
-        qs = Post.objects.filter(
+        aux = Post.objects.filter(
             visible_by_vet=True, visible_by_owner=True
         ).exclude(
             comments__user_id=self.request.user.id
@@ -491,8 +491,10 @@ class PostPaidListView(ListAPIView):
             prefetch_vet_comments
         ).order_by(
             '-updated_at', '-comments'
-        )
-        return list(set(qs))
+        ).values_list('id', flat=True)
+        aux_list = list(set(aux))
+        qs = Post.objects.filter(id__in=aux_list)
+        return qs
 
 
 class PostReportView(GenericAPIView):
