@@ -491,8 +491,8 @@ class PostPaidListView(ListAPIView):
             prefetch_vet_comments
         ).order_by(
             '-updated_at', '-comments'
-        ).distinct()
-        return qs
+        )
+        return list(set(qs))
 
 
 class PostReportView(GenericAPIView):
