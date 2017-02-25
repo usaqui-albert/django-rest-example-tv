@@ -488,7 +488,10 @@ class PostPaidListView(ListAPIView):
         ).exclude(
             comments__user_id=self.request.user.id
         ).prefetch_related(
-            prefetch_vet_comments).order_by('-updated_at', '-comments')
+            prefetch_vet_comments
+        ).order_by(
+            '-updated_at', '-comments'
+        ).distinct()
         return qs
 
 
