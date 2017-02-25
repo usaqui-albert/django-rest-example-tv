@@ -558,7 +558,13 @@ class EmailToResetPasswordView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['email']
         verification_code, created = VerificationCode.objects.get_or_create(
-            user=user)
+            user=user
+        )
+        if not created:
+            if verification_code.has_expired():
+                verification_code.delete()
+                verification_code = VerificationCode(user=user)
+                verification_code.save()
         password_reset(user, verification_code.code)
         return Response(messages.request_successfully)
 
