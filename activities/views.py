@@ -31,6 +31,11 @@ class UserLikedPostListView(ListAPIView):
             'comment__user__image',
         ).prefetch_related(
             'post__images',
+        ).annotate(
+                beacon=Value(
+                    'like',
+                    output_field=CharField()
+                )
         )
 
         return qs.all().order_by('-updated_at')
@@ -56,6 +61,11 @@ class UserCommentPostListView(ListAPIView):
             'comment__user__image',
         ).prefetch_related(
             'post__images',
+        ).annotate(
+                beacon=Value(
+                    'comment',
+                    output_field=CharField()
+                )
         )
 
         return qs.all().order_by('-updated_at')
@@ -76,7 +86,7 @@ class ActivityListView(ListAPIView):
                 action=Activity.LIKE
             ).annotate(
                 beacon=Value(
-                    'Like',
+                    'like',
                     output_field=CharField()
                 )
             ),
@@ -89,7 +99,7 @@ class ActivityListView(ListAPIView):
                 action=Activity.UPVOTE
             ).annotate(
                 beacon=Value(
-                    'Upvote',
+                    'upvote',
                     output_field=CharField()
                 )
             ),
@@ -102,7 +112,7 @@ class ActivityListView(ListAPIView):
                 action=Activity.COMMENT
             ).annotate(
                 beacon=Value(
-                    'Comment', output_field=CharField()
+                    'comment', output_field=CharField()
                 )
             ),
             user
@@ -112,9 +122,9 @@ class ActivityListView(ListAPIView):
             Activity.objects.filter(
                 post__in=user.likes.all(),
                 action=Activity.COMMENT
-            ).annotate(
+            ).exclude(post__user=user).annotate(
                 beacon=Value(
-                    'Like_Comment',
+                    'like_comment',
                     output_field=CharField()
                 )
             ),
