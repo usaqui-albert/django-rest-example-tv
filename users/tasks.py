@@ -13,7 +13,7 @@ def refer_a_friend_by_email(receiver_email, sender_user):
     mail = [Email(receiver_email)]
     sendgrid_api(
         obtain_mail(
-            personalization=obtain_personalization(sender_user, to_mails=mail),
+            personalization=obtain_personalization(sender_user, to_mail=mail),
             template=settings.SENDGRID_REFER_FRIEND
         )
     )
