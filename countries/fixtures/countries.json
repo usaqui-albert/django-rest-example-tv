@@ -2368,30 +2368,6 @@
         }
     },
     {
-        "pk": 52,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
-            "name": "American Samoa"
-        }
-    },
-    {
-        "pk": 53,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
-            "name": "Guam"
-        }
-    },
-    {
-        "pk": 54,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
-            "name": "Northern Mariana Islands"
-        }
-    },
-    {
         "pk": 55,
         "model": "countries.state",
         "fields": {
@@ -2405,38 +2381,6 @@
         "fields": {
             "country": 1,
             "name": "Virgin Islands"
-        }
-    },
-    {
-        "pk": 57,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
-            "name": "United States Minor Outlying Islands"
-        }
-    },
-    {
-        "pk": 58,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
-            "name": "Armed Forces Europe"
-        }
-    },
-    {
-        "pk": 59,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
-            "name": "Armed Forces Americas"
-        }
-    },
-    {
-        "pk": 60,
-        "model": "countries.state",
-        "fields": {
-            "country": 1,
-            "name": "Armed Forces Pacific"
         }
     },
     {
