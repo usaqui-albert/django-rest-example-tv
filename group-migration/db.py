@@ -1,10 +1,12 @@
 #! /usr/bin/env python
+import os
 import MySQLdb
 
-host = "localhost"
-passwd = "IvzlWxaK9bJzn86CDWNRxrkog3QIemfSAfDCUX5A"
-user = "tapvet"
-dbname = "tapvet"
+
+host = os.environ.get('MYSQL_SERVER')
+passwd = os.environ.get('MYSQL_PASSWORD')
+user = os.environ.get('MYSQL_USER')
+dbname = os.environ.get('MYSQL_DATABASE')
 
 db = MySQLdb.connect(host=host, user=user, passwd=passwd, db=dbname)
 cursor = db.cursor()
