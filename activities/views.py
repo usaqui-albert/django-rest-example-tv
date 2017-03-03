@@ -83,7 +83,8 @@ class ActivityListView(ListAPIView):
         qs1 = self.helper(
             Activity.objects.filter(
                 post__user=user,
-                action=Activity.LIKE
+                action=Activity.LIKE,
+                active=True
             ).annotate(
                 beacon=Value(
                     'like',
@@ -96,7 +97,8 @@ class ActivityListView(ListAPIView):
         qs2 = self.helper(
             Activity.objects.filter(
                 comment__user=user,
-                action=Activity.UPVOTE
+                action=Activity.UPVOTE,
+                active=True
             ).annotate(
                 beacon=Value(
                     'upvote',
@@ -109,7 +111,8 @@ class ActivityListView(ListAPIView):
         qs3 = self.helper(
             Activity.objects.filter(
                 post__user=user,
-                action=Activity.COMMENT
+                action=Activity.COMMENT,
+                active=True
             ).annotate(
                 beacon=Value(
                     'comment', output_field=CharField()
@@ -121,7 +124,8 @@ class ActivityListView(ListAPIView):
         qs4 = self.helper(
             Activity.objects.filter(
                 post__in=user.likes.all(),
-                action=Activity.COMMENT
+                action=Activity.COMMENT,
+                active=True
             ).exclude(post__user=user).annotate(
                 beacon=Value(
                     'like_comment',
