@@ -13,6 +13,8 @@ from helpers.tests_helpers import CustomTestCase
 from TapVet import messages
 from TapVet.images import STANDARD_SIZE, THUMBNAIL_SIZE
 
+from activities.models import Activity
+
 pytestmark = pytest.mark.django_db
 
 
@@ -344,12 +346,22 @@ class TestPostRetrieveUpdateView(CustomTestCase):
             assert key in resp.data['user_detail']
 
     def test_delete(self):
+        # Like a post
+        liker = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', active=True)
+        req = self.factory.post('/')
+        force_authenticate(req, user=liker)
+        resp = views.PostVoteView.as_view()(req, pk=post.pk)
+        assert Activity.objects.filter(post=post, active=True).count() == 1
         user = self.load_users_data().get_user(groups_id=1)
         post = mixer.blend('posts.post', user=user)
         req = self.factory.delete('/')
         force_authenticate(req, user=user)
         resp = views.PostRetrieveUpdateView.as_view()(req, pk=post.pk)
-        assert resp.data is None
+        post.refresh_from_db()
+        assert not post.active
+        assert resp.status_code == 204
+        assert Activity.objects.filter(post=post, active=True).count() == 0
 
     def test_put(self):
         user = self.load_users_data().get_user(groups_id=1)
