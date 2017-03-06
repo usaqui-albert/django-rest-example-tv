@@ -158,13 +158,3 @@ class ActivityListView(ListAPIView):
         ).prefetch_related(
             'post__images',
         )
-
-    def list(self, request, *args, **kwargs):
-            queryset = self.filter_queryset(self.get_queryset())
-
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                from django.db import connection; print len(connection.queries)
-                # import ipdb; ipdb.set_trace()
-                return self.get_paginated_response(serializer.data)
