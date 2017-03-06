@@ -164,7 +164,8 @@ DEFAULT_FROM_EMAIL = 'yourteam@tapvet.com'
 
 ADMINS = [
     ('Mayra Canas', 'mayrac@blanclabs.com'),
-    ('Leopoldo Pimentel', 'usaqui.albert@gmail.com'),
+    ('Leopoldo Pimentel', 'leopoldop@blanclabs.com'),
+    ('TapVet Team', 'yourteam@tapvet.com'),
 ]
 
 REPORT_MESSAGE_ADMIN_TITLE = " New Report Pending"
