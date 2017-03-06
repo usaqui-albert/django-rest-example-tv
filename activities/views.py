@@ -6,6 +6,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
 from TapVet.pagination import StandardPagination
+from users.models import User
 
 from .models import Activity
 from .serializers import ActivitySerializer
@@ -98,11 +99,17 @@ class ActivityListView(ListAPIView):
             user
         )
         # Verify user is vet
+        qs2_params = {
+            'comment__user': user,
+            'action': Activity.UPVOTE,
+            'active': True
+        }
+        if user.is_vet():
+            qs2_params['user__groups__pk__in'] = User.IS_VET
+
         qs2 = self.helper(
             Activity.objects.filter(
-                comment__user=user,
-                action=Activity.UPVOTE,
-                active=True
+                **qs2_params
             ).annotate(
                 beacon=Value(
                     'upvote',
@@ -138,7 +145,6 @@ class ActivityListView(ListAPIView):
             ),
             user
         )
-
         return sorted(
             chain(qs1, qs2, qs3, qs4),
             key=lambda instance: instance.updated_at,
@@ -152,3 +158,13 @@ class ActivityListView(ListAPIView):
         ).prefetch_related(
             'post__images',
         )
+
+    def list(self, request, *args, **kwargs):
+            queryset = self.filter_queryset(self.get_queryset())
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                from django.db import connection; print len(connection.queries)
+                # import ipdb; ipdb.set_trace()
+                return self.get_paginated_response(serializer.data)
