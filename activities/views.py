@@ -10,6 +10,16 @@ from TapVet.pagination import StandardPagination
 from .models import Activity
 from .serializers import ActivitySerializer
 
+select_tuples = (
+    'user__groups',
+    'user__image',
+    'post__pet',
+    'post__user__groups',
+    'post__user__image',
+    'comment__user__groups',
+    'comment__user__image',
+)
+
 
 class UserLikedPostListView(ListAPIView):
     queryset = Activity.objects.all()
@@ -18,24 +28,20 @@ class UserLikedPostListView(ListAPIView):
     pagination_class = StandardPagination
 
     def get_queryset(self):
+
         qs = self.queryset
         user = self.request.user
         qs = qs.filter(
-            user=user, action=Activity.LIKE, active=True).select_related(
-            'user__groups',
-            'user__image',
-            'post__pet',
-            'post__user__groups',
-            'post__user__image',
-            'comment__user__groups',
-            'comment__user__image',
+            user=user, action=Activity.LIKE, active=True
+        ).select_related(
+            *select_tuples
         ).prefetch_related(
             'post__images',
         ).annotate(
-                beacon=Value(
-                    'like',
-                    output_field=CharField()
-                )
+            beacon=Value(
+                'like',
+                output_field=CharField()
+            )
         )
 
         return qs.all().order_by('-updated_at')
@@ -50,22 +56,20 @@ class UserCommentPostListView(ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
+        # Veriify is user is vet!
         qs = qs.filter(
-            user=user, action=Activity.COMMENT, active=True).select_related(
-            'user__groups',
-            'user__image',
-            'post__pet',
-            'post__user__groups',
-            'post__user__image',
-            'comment__user__groups',
-            'comment__user__image',
+            user=user,
+            action=Activity.COMMENT,
+            active=True
+        ).select_related(
+            *select_tuples
         ).prefetch_related(
             'post__images',
         ).annotate(
-                beacon=Value(
-                    'comment',
-                    output_field=CharField()
-                )
+            beacon=Value(
+                'comment',
+                output_field=CharField()
+            )
         )
 
         return qs.all().order_by('-updated_at')
@@ -93,7 +97,7 @@ class ActivityListView(ListAPIView):
             ),
             user
         )
-
+        # Verify user is vet
         qs2 = self.helper(
             Activity.objects.filter(
                 comment__user=user,
@@ -143,15 +147,6 @@ class ActivityListView(ListAPIView):
 
     @staticmethod
     def helper(qs, user):
-        select_tuples = (
-            'user__groups',
-            'user__image',
-            'post__pet',
-            'post__user__groups',
-            'post__user__image',
-            'comment__user__groups',
-            'comment__user__image',
-        )
         return qs.exclude(user=user).select_related(
             *select_tuples
         ).prefetch_related(
