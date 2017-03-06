@@ -57,11 +57,16 @@ class UserCommentPostListView(ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
-        # Veriify is user is vet!
+        # Veriify is user is vet
+        qs_params = {
+            'comment__user': user,
+            'action': Activity.COMMENT,
+            'active': True
+        }
+        if user.is_vet():
+            qs_params['post__user__groups__pk__in'] = User.IS_VET
         qs = qs.filter(
-            user=user,
-            action=Activity.COMMENT,
-            active=True
+            **qs_params
         ).select_related(
             *select_tuples
         ).prefetch_related(
