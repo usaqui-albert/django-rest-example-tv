@@ -57,7 +57,7 @@ class UserCommentPostListView(ListAPIView):
     def get_queryset(self):
         qs = self.queryset
         user = self.request.user
-        # Veriify is user is vet
+        # Verify is user is vet
         qs_params = {
             'comment__user': user,
             'action': Activity.COMMENT,
