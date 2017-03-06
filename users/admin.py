@@ -8,6 +8,8 @@ class UserAdmin(admin.ModelAdmin):
     '''
         Admin View for User
     '''
+    search_fields = ('email', 'username')
+    list_filter = ('groups',)
     list_display = ('username', 'email', 'id', 'get_label', 'get_token')
 
 

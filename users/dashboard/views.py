@@ -19,6 +19,7 @@ from TapVet.pagination import StandardPagination
 from users.serializers import UserLoginSerializer, VeterinarianSerializer
 from users.models import User, Veterinarian
 from pets.views import PetListByUser
+from posts.models import Post
 
 from .serializers import (
     AdminAuthTokenSerializer, AdminUserSerializer, AdminVerificationSerializer,
@@ -197,6 +198,7 @@ class AdminVetVerificationView(GenericAPIView):
             vet_serializer = VeterinarianSerializer(vet)
             if serializer.validated_data['verified']:
                 vet_verify_mail(vet.user, vet.veterinarian_type)
+                Post.objects.filter(user=vet.user).update(visible_by_vet=True)
             return Response(
                 vet_serializer.data,
                 status=status.HTTP_202_ACCEPTED
