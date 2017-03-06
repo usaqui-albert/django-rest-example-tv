@@ -34,6 +34,8 @@ class AreaInterest(models.Model):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    IS_VET = [3, 4, 5]
+    IS_OWNER = [1, 2]
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(max_length=100, unique=True)
     full_name = models.CharField(max_length=100)
@@ -69,7 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def is_vet(self):
         if hasattr(self, 'groups'):
-            return self.groups.id in [3, 4, 5]
+            return self.groups.pk in self.IS_VET
         else:
             return False
 

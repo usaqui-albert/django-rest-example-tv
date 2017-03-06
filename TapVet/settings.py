@@ -142,7 +142,7 @@ STATIC_ROOT = os.environ.get('STATIC_ROOT')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
+        'TapVet.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     )
 }
