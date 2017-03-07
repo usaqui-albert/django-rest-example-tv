@@ -109,7 +109,9 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
 
     def get_first_vet_comment(self, obj):
         user = self.context['request'].user
-        if user.is_authenticated and not user.is_vet():
+        if user.is_authenticated and user.is_vet():
+            return None
+        else:
             if hasattr(
                 obj,
                 'vet_comments_queryset'
@@ -121,10 +123,8 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
                     'id': first_vet_comment.id,
                     'label': first_vet_comment.user.get_label()
                 }
-            else:
-                return None
-        else:
-            return None
+
+        return None
 
     @staticmethod
     def get_vet_comments(obj):
