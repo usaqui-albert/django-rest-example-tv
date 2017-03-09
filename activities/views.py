@@ -151,16 +151,19 @@ class ActivityListView(ListAPIView):
             ),
             user
         )
-        user_likes = list(UserLikesPost.objects.filter(
-            post_id__in=[activity.post.id for activity in qs4],
-            user=user
-        ).select_related('post'))
+        user_likes = list(
+            UserLikesPost.objects.filter(
+                post_id__in=[activity.post.id for activity in qs4],
+                user=user
+            ).select_related('post')
+        )
         qs4 = list(qs4)
         qs5 = []
         for index, activity in enumerate(qs4):
             for like in user_likes:
                 if like.post.id == activity.post.id:
                     if activity.updated_at > like.created_at:
+                        # Only append the new ones after the like
                         qs5.append(activity)
 
         return sorted(
