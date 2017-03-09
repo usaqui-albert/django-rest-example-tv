@@ -43,7 +43,7 @@ class CommentVetSerializer(CommentSerializer):
         fields = (
             'description', 'id', 'post', 'created_at', 'updated_at',
             'upvoters_count', 'label', 'full_name', 'upvoted', 'has_feedback',
-            'image', 'username'
+            'image', 'username', 'user_id'
         )
         extra_kwargs = {
             'user': {'read_only': True},
