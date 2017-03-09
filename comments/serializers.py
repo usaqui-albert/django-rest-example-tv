@@ -15,13 +15,14 @@ class CommentSerializer(ModelSerializer):
     username = CharField(source='user.username', read_only=True)
     upvoted = BooleanField(read_only=True)
     image = ProfileImageSerializer(source='user.image', read_only=True)
+    user_id = IntegerField(read_only=True, source='user.id')
 
     class Meta:
         model = Comment
         fields = (
             'description', 'id', 'user', 'post', 'created_at', 'updated_at',
             'upvoters_count', 'label', 'full_name', 'upvoted', 'image',
-            'username'
+            'username', 'user_id'
         )
         extra_kwargs = {
             'user': {'read_only': True},
