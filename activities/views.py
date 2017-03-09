@@ -159,7 +159,7 @@ class ActivityListView(ListAPIView):
         )
         qs4 = list(qs4)
         qs5 = []
-        for index, activity in enumerate(qs4):
+        for activity in qs4:
             for like in user_likes:
                 if like.post.id == activity.post.id:
                     if activity.updated_at > like.created_at:
