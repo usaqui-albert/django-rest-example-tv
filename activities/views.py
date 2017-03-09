@@ -156,14 +156,15 @@ class ActivityListView(ListAPIView):
             user=user
         ).select_related('post'))
         qs4 = list(qs4)
+        qs5 = []
         for index, activity in enumerate(qs4):
             for like in user_likes:
                 if like.post.id == activity.post.id:
-                    if activity.updated_at < like.created_at:
-                        qs4.pop(index)
+                    if activity.updated_at > like.created_at:
+                        qs5.append(activity)
 
         return sorted(
-            chain(qs1, qs2, qs3, qs4),
+            chain(qs1, qs2, qs3, qs5),
             key=lambda instance: instance.updated_at,
             reverse=True
         )
@@ -175,3 +176,11 @@ class ActivityListView(ListAPIView):
         ).prefetch_related(
             'post__images',
         )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            from django.db import connection; print len(connection.queries)
+            return self.get_paginated_response(serializer.data)
