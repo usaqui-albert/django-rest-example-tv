@@ -10,6 +10,7 @@ def get_user_devices(user_id):
     apns_device = APNSDevice.objects.filter(user=user_id).first()
     return gcm_device, apns_device
 
+
 def send_notification_message(user_id, message):
     gcm_device, apns_device = get_user_devices(user_id)
 
