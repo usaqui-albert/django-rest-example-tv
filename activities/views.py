@@ -138,18 +138,20 @@ class ActivityListView(ListAPIView):
             user
         )
 
-        qs4 = self.helper(
-            Activity.objects.filter(
-                post__in=user.likes.all(),
-                action=Activity.COMMENT,
-                active=True
-            ).exclude(post__user=user).annotate(
-                beacon=Value(
-                    'like_comment',
-                    output_field=CharField()
-                )
-            ),
-            user
+        qs4 = list(
+            self.helper(
+                Activity.objects.filter(
+                    post__in=user.likes.all(),
+                    action=Activity.COMMENT,
+                    active=True
+                ).exclude(post__user=user).annotate(
+                    beacon=Value(
+                        'like_comment',
+                        output_field=CharField()
+                    )
+                ),
+                user
+            )
         )
         user_likes = list(
             UserLikesPost.objects.filter(
@@ -157,7 +159,6 @@ class ActivityListView(ListAPIView):
                 user=user
             ).select_related('post')
         )
-        qs4 = list(qs4)
         qs5 = []
         for activity in qs4:
             for like in user_likes:
