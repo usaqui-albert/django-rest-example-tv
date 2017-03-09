@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from TapVet.pagination import StandardPagination
 from users.models import User
+from posts.models import UserLikesPost
 
 from .models import Activity
 from .serializers import ActivitySerializer
@@ -150,6 +151,17 @@ class ActivityListView(ListAPIView):
             ),
             user
         )
+        user_likes = list(UserLikesPost.objects.filter(
+            post_id__in=[activity.post.id for activity in qs4],
+            user=user
+        ).select_related('post'))
+        qs4 = list(qs4)
+        for index, activity in enumerate(qs4):
+            for like in user_likes:
+                if like.post.id == activity.post.id:
+                    if activity.updated_at < like.created_at:
+                        qs4.pop(index)
+
         return sorted(
             chain(qs1, qs2, qs3, qs4),
             key=lambda instance: instance.updated_at,
