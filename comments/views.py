@@ -70,7 +70,7 @@ class CommentsPetOwnerListCreateView(ListCreateAPIView):
         ).select_related(
             'user__groups',
             'user__image'
-        ).order_by('-updated_at', '-upvoters_count')
+        ).order_by('-upvoters_count', '-updated_at')
         return qs
 
     def create(self, request, *args, **kwargs):

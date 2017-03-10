@@ -5,8 +5,11 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.filters import (
     SearchFilter, DjangoFilterBackend, OrderingFilter
 )
+from rest_framework.serializers import BooleanField
 
 from TapVet.pagination import StandardPagination
+from activities.models import Activity
+
 from ..models import Post
 from .serializers import AdminPostSerializer
 
@@ -52,3 +55,18 @@ class AdminPostDetailView(RetrieveUpdateAPIView):
     permission_classes = (IsAdminUser,)
     allowed_methods = ('PATCH', 'GET')
     queryset = Post.objects.all().select_related('user__image')
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        active = None
+        if 'active' in request.data:
+            active = BooleanField().to_representation(request.data['active'])
+        if (
+            ('active' in request.data) and
+            active != instance.active
+        ):
+            Activity.objects.filter(
+                post=instance).update(active=active)
+        return super(
+            AdminPostDetailView, self
+        ).update(request, *args, **kwargs)

@@ -107,21 +107,24 @@ class PostSerializer(ModelSerializer, ImageSerializerMixer):
         image_post.save()
         return image_post
 
-    @staticmethod
-    def get_first_vet_comment(obj):
-        if hasattr(
-            obj,
-            'vet_comments_queryset'
-        ) and obj.vet_comments_queryset:
-            first_vet_comment = obj.vet_comments_queryset[0]
-            return {
-                'description': first_vet_comment.description,
-                'created_at': first_vet_comment.created_at,
-                'id': first_vet_comment.id,
-                'label': first_vet_comment.user.get_label()
-            }
-        else:
+    def get_first_vet_comment(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated and user.is_vet():
             return None
+        else:
+            if hasattr(
+                obj,
+                'vet_comments_queryset'
+            ) and obj.vet_comments_queryset:
+                first_vet_comment = obj.vet_comments_queryset[0]
+                return {
+                    'description': first_vet_comment.description,
+                    'created_at': first_vet_comment.created_at,
+                    'id': first_vet_comment.id,
+                    'label': first_vet_comment.user.get_label()
+                }
+
+        return None
 
     @staticmethod
     def get_vet_comments(obj):
