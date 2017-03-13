@@ -73,7 +73,7 @@ class ProfileImageSerializer(ModelSerializer):
 
 class UserSerializers(ModelSerializer):
     image = ProfileImageSerializer(read_only=True)
-    label = CharField(source='user.get_label', read_only=True)
+    label = CharField(source='get_label', read_only=True)
 
     class Meta:
         model = User
@@ -222,7 +222,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
                     )
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
-        elif instance.groups.id in [3, 4, 5]:
+        elif instance.groups.id in User.IS_VET:
             if veterinarian_data:
                 if hasattr(instance, 'veterinarian'):
                     serializer = VeterinarianSerializer(
