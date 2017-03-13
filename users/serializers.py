@@ -222,7 +222,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
                     )
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
-        elif instance.groups.id in [3, 4, 5]:
+        elif instance.groups.id in User.IS_VET:
             if veterinarian_data:
                 if hasattr(instance, 'veterinarian'):
                     serializer = VeterinarianSerializer(
