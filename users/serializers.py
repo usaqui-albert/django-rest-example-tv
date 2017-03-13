@@ -110,7 +110,7 @@ class VeterinarianSerializer(ModelSerializer):
             'verified', 'veterinarian_type', 'id', 'country', 'state',
             'locked', 'license_number'
         )
-        read_only_fields = ('user', 'id')
+        read_only_fields = ('user', 'id', 'locked', 'verified')
 
     def create(self, validated_data):
         veterinarian = Veterinarian(
