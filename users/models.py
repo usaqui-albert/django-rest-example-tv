@@ -82,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
 
     def get_label(self):
-        return settings.APP_LABEL.get(self.get_group_id, '')
+        return settings.APP_LABEL.get(self.get_group_id(), '')
 
     def get_token(self):
         return self.auth_token.key if self.auth_token else None
@@ -94,7 +94,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(*args, **kwargs)
 
     def get_group_id(self, *args, **kwargs):
-        if self.groups:
+        if hasattr(self, 'groups'):
             return self.groups.id
         else:
             return None
