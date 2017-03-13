@@ -73,7 +73,7 @@ class ProfileImageSerializer(ModelSerializer):
 
 class UserSerializers(ModelSerializer):
     image = ProfileImageSerializer(read_only=True)
-    label = CharField(source='user.get_label', read_only=True)
+    label = CharField(source='get_label', read_only=True)
 
     class Meta:
         model = User

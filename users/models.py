@@ -82,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
 
     def get_label(self):
-        return settings.APP_LABEL.get(self.groups.id, '')
+        return settings.APP_LABEL.get(self.get_group_id, '')
 
     def get_token(self):
         return self.auth_token.key if self.auth_token else None
@@ -92,6 +92,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.blur_images = False
 
         super(User, self).save(*args, **kwargs)
+
+    def get_group_id(self, *args, **kwargs):
+        if self.groups:
+            return self.groups.id
+        else:
+            return None
 
 
 # Func to connect the signal on post save.
