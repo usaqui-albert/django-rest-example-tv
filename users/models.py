@@ -187,7 +187,7 @@ class Veterinarian(models.Model):
         super(Veterinarian, self).save(*args, **kwargs)
 
     def change_status(self):
-        if not self.veterinarian_type == 4:
+        if not int(self.veterinarian_type) == 4:
             if self.verified or self.locked:
                 if self.locked and not self.verified:
                     self.verified = True
