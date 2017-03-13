@@ -94,10 +94,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         super(User, self).save(*args, **kwargs)
 
     def get_group_id(self, *args, **kwargs):
-        if hasattr(self, 'groups'):
-            return self.groups.id
-        else:
-            return None
+        return self.groups.id if hasattr(self, 'groups') else None
 
 
 # Func to connect the signal on post save.
