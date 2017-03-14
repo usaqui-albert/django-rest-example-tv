@@ -82,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             return False
 
     def get_label(self):
-        return settings.APP_LABEL.get(self.groups.id, '')
+        return settings.APP_LABEL.get(self.get_group_id(), '')
 
     def get_token(self):
         return self.auth_token.key if self.auth_token else None
@@ -92,6 +92,9 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.blur_images = False
 
         super(User, self).save(*args, **kwargs)
+
+    def get_group_id(self, *args, **kwargs):
+        return self.groups.id if hasattr(self, 'groups') else None
 
 
 # Func to connect the signal on post save.
@@ -184,7 +187,7 @@ class Veterinarian(models.Model):
         super(Veterinarian, self).save(*args, **kwargs)
 
     def change_status(self):
-        if not self.veterinarian_type == 4:
+        if not int(self.veterinarian_type) == 4:
             if self.verified or self.locked:
                 if self.locked and not self.verified:
                     self.verified = True

@@ -180,6 +180,7 @@ class VeterinarianListCreateView(ListCreateAPIView):
     queryset = Veterinarian.objects.all()
 
     def create(self, request, *args, **kwargs):
+        request.data['veterinarian_type'] = request.user.groups.id
         serializer = self.serializer_class(
             data=request.data,
             context={'user': request.user}
@@ -192,7 +193,8 @@ class VeterinarianListCreateView(ListCreateAPIView):
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
         headers = self.get_success_headers(serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 class AreaInterestListView(ListAPIView):

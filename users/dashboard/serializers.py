@@ -76,7 +76,7 @@ class AdminUserUpdateSerializer(ModelSerializer):
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
 
-        elif instance.groups.id in [3, 4, 5] and veterinarian_data:
+        elif instance.groups.id in User.IS_VET and veterinarian_data:
             if hasattr(instance, 'veterinarian'):
                 serializer = VeterinarianSerializer(
                     instance.veterinarian,
