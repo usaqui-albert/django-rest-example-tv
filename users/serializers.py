@@ -110,7 +110,7 @@ class VeterinarianSerializer(ModelSerializer):
             'verified', 'veterinarian_type', 'id', 'country', 'state',
             'locked', 'license_number'
         )
-        read_only_fields = ('user', 'id')
+        read_only_fields = ('user', 'id', 'locked', 'verified')
 
     def create(self, validated_data):
         veterinarian = Veterinarian(
@@ -131,18 +131,12 @@ class VeterinarianSerializer(ModelSerializer):
             if self.instance.user.id == request_user.id:
                 self.instance.change_status()
             self.instance = self.update(self.instance, validated_data)
-            assert self.instance is not None, (
-                '`update()` did not return an object instance.'
-            )
         else:
             area_interest = validated_data.pop('area_interest', [])
             self.instance = self.create(validated_data)
             if area_interest:
                 self.instance.area_interest.set(area_interest)
 
-            assert self.instance is not None, (
-                '`create()` did not return an object instance.'
-            )
         return self.instance
 
 
