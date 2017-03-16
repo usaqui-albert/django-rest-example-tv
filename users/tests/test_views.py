@@ -489,11 +489,10 @@ class TestBreederListCreateView:
         )
 
 
-class TestVeterinarianListCreateView:
-    factory = RequestFactory()
+class TestVeterinarianListCreateView(CustomTestCase):
 
     def test_get_request(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user()
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.VeterinarianListCreateView.as_view()(req)
@@ -507,7 +506,7 @@ class TestVeterinarianListCreateView:
             'Authentication credentials were not provided')
 
     def test_post_request_bad(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user()
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': 1989,
@@ -524,7 +523,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
@@ -545,6 +544,8 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_year(self):
+        user = self.load_users_data().get_user(groups_id=4)
+
         user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
@@ -566,6 +567,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_year_high(self):
+        user = self.load_users_data().get_user(groups_id=4)
         user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
@@ -587,7 +589,8 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_no_country_student(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=4)
+        user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         data = {
             'veterinary_school': 'CharField',
@@ -603,7 +606,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_no_country_vet(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=3)
         area_interest = mixer.blend(models.AreaInterest)
         data = {
             'veterinary_school': 'CharField',
@@ -620,7 +623,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_empty(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=5)
         req = self.factory.post('/')
         force_authenticate(req, user=user)
         resp = views.VeterinarianListCreateView.as_view()(req)
@@ -631,7 +634,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_type(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=3)
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': get_current_year() - 10,
@@ -648,7 +651,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_state_no_exists(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         data = {
@@ -668,7 +671,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_state(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=5)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State)
