@@ -56,7 +56,7 @@ class ImageSerializerMixer(object):
         the feed frontend and choose one or the other.
 
         '''
-        output = self.image_with_background(img, size, StringIO())
+        output = self.image_no_background(img, size, StringIO())
         image = InMemoryUploadedFile(
             output, 'ImageField',
             self.image_format[0][1] % image_stream.name.split('.')[0],
