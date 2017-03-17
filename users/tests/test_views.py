@@ -296,6 +296,18 @@ class TestUserDetailView(CustomTestCase):
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
         assert resp.status_code == 200, 'Should return OK 200()'
 
+    def test_get_request_non_authenticated_vet_and_object_exist(self):
+        user = self.load_users_data().get_user()
+        req = self.factory.get('/?vet=True')
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
+        assert resp.status_code == 200, 'Should return OK 200()'
+
+    def test_get_request_non_authenticated_vet_and_no_query(self):
+        user = self.load_users_data().get_user()
+        req = self.factory.get('/')
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
+        assert resp.status_code == 400
+
     def test_get_request_with_authentication(self):
         user = self.load_users_data().get_user()
         req = self.factory.get('/')
