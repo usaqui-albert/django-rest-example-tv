@@ -1,7 +1,6 @@
 from operator import xor
 from push_notifications.models import APNSDevice, GCMDevice
 
-from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Count, Value, Case, When, BooleanField
 from django.core.exceptions import ValidationError
@@ -25,10 +24,7 @@ from TapVet.pagination import StandardPagination
 from TapVet.permissions import IsOwnerOrReadOnly
 
 from .models import User, Breeder, Veterinarian, AreaInterest, VerificationCode
-from helpers.stripe_helpers import (
-    stripe_errors_handler, get_customer_in_stripe, card_list,
-    get_first_card_token, add_card_to_customer, delete_card_from_customer
-)
+
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
@@ -261,7 +257,10 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
                     if instance.is_vet():
                         self.serializer_class = UserOwnerVetSerializer
             else:
-                raise ValidationError('Invalid query params')
+                return Response(
+                    'Invalid query params',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         serializer = self.get_serializer(instance)
         return Response(
             self.get_verified_and_locked_out(serializer.data)
