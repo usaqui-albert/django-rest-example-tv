@@ -214,7 +214,7 @@ class FeedBackByVetListView(ListAPIView):
 
     def get_queryset(self):
         queryset = Feedback.objects.filter(
-            comment__user__groups_id=self.kwargs.get('pk', None)
+            comment__user_id=self.kwargs.get('pk', None)
         )
         return queryset
 
