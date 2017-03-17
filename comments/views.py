@@ -2,7 +2,9 @@ from django.db.models import Count
 from django.http import Http404
 from django.utils import timezone
 
-from rest_framework.generics import ListCreateAPIView, CreateAPIView
+from rest_framework.generics import (
+    ListCreateAPIView, CreateAPIView, ListAPIView,
+)
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -163,7 +165,7 @@ class CommentVoteView(APIView):
 class FeedbackCreateView(CreateAPIView):
     serializer_class = FeedbackSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = Feedback
+    queryset = Feedback.objects.none()
 
     def create(self, request, *args, **kwargs):
         comment = self.get_comment(kwargs['pk'])
@@ -203,3 +205,36 @@ class FeedbackCreateView(CreateAPIView):
         if comment:
             return comment
         raise Http404()
+
+
+class FeedBackByVetListView(ListAPIView):
+    serializer_class = FeedbackSerializer
+    permission_classes = (permissions.AllowAny,)
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        queryset = Feedback.objects.filter(
+            comment__user__groups_id=self.kwargs.get('pk', None)
+        )
+        return queryset
+
+
+class FeedBackByVetReviewView(APIView):
+    allowed_methods = ('GET',)
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        review = Feedback.objects.filter(
+            comment__user_id=self.kwargs.get('pk', None)
+        ).aggregate(
+            was_helpful=Count(
+                Case(
+                    When(
+                        was_helpful=True,
+                        then=1
+                    )
+                )
+            ),
+            count=Count('id')
+        )
+        return Response(review, status=status.HTTP_200_OK)
