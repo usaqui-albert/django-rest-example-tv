@@ -2,7 +2,7 @@ from rest_framework.serializers import (
     ModelSerializer, IntegerField, CharField, BooleanField,
     SerializerMethodField, NullBooleanField)
 
-from users.serializers import ProfileImageSerializer
+from users.serializers import ProfileImageSerializer, UserSerializers
 
 
 from .models import Comment, Feedback
@@ -69,12 +69,14 @@ class CommentVetNamelessSerializer(CommentVetSerializer):
 
 class FeedbackSerializer(ModelSerializer):
     was_helpful = NullBooleanField(required=True)
+    user = UserSerializers(required=False)
 
     class Meta:
         model = Feedback
-        fields = ('was_helpful', 'description')
+        fields = ('was_helpful', 'description', 'user')
         extra_kwargs = {
-            'was_helpful': {'required': True, 'allow_null': False}
+            'was_helpful': {'required': True, 'allow_null': False},
+            'user': {'read_only': True}
         }
 
     def create(self, validated_data):
