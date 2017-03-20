@@ -239,23 +239,17 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserUpdateSerializer
     queryset = User.objects.all()
 
-    def get(self, request, *args, **kwargs):
-
-        return self.retrieve(request, *args, **kwargs)
-
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         if request.user.is_authenticated:
-            if not request.user.is_vet():
-                if instance.is_vet():
-                    self.serializer_class = UserOwnerVetSerializer
+            if not request.user.is_vet() and instance.is_vet():
+                self.serializer_class = UserOwnerVetSerializer
         else:
             veterinarian = bool(self.request.query_params.get('vet', None))
             pet_owner = bool(self.request.query_params.get('owner', None))
             if xor(veterinarian, pet_owner):
-                if not veterinarian:
-                    if instance.is_vet():
-                        self.serializer_class = UserOwnerVetSerializer
+                if not veterinarian and instance.is_vet():
+                    self.serializer_class = UserOwnerVetSerializer
             else:
                 return Response(
                     'Invalid query params',
