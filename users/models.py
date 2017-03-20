@@ -63,6 +63,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    def __unicode__(self):
+        return u'%d %s' % (self.id, self.username)
+
     def __str__(self):
         return self.email
 

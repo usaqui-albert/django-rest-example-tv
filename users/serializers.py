@@ -157,6 +157,35 @@ class AreaInterestSerializer(ModelSerializer):
         }
 
 
+class UserOwnerVetSerializer(ModelSerializer):
+    follows_count = IntegerField(read_only=True)
+    followed_by_count = IntegerField(read_only=True)
+    comments_count = IntegerField(read_only=True)
+    interest_count = IntegerField(read_only=True)
+    upvotes_count = IntegerField(read_only=True)
+    label = CharField(source='get_label', read_only=True)
+    full_name = SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'full_name', 'id',
+            'follows_count', 'followed_by_count',
+            'comments_count', 'interest_count', 'upvotes_count', 'label'
+        )
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'username': {'read_only': True},
+            'user': {'read_only': True},
+            'groups': {'read_only': True},
+            'verified': {'read_only': True},
+        }
+
+    @staticmethod
+    def get_full_name(obj):
+        return 'Veterinary Professional #%s' % (1000 + obj.id)
+
+
 class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     breeder = BreederSerializer(required=False)
     veterinarian = VeterinarianSerializer(required=False)

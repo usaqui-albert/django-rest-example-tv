@@ -1,8 +1,6 @@
-import stripe
-from stripe.error import CardError, InvalidRequestError, APIConnectionError
+from operator import xor
 from push_notifications.models import APNSDevice, GCMDevice
 
-from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Count, Value, Case, When, BooleanField
 from django.core.exceptions import ValidationError
@@ -26,16 +24,14 @@ from TapVet.pagination import StandardPagination
 from TapVet.permissions import IsOwnerOrReadOnly
 
 from .models import User, Breeder, Veterinarian, AreaInterest, VerificationCode
-from helpers.stripe_helpers import (
-    stripe_errors_handler, get_customer_in_stripe, card_list,
-    get_first_card_token, add_card_to_customer, delete_card_from_customer
-)
+
 from .serializers import (
     CreateUserSerializer, UserSerializers, VeterinarianSerializer,
     BreederSerializer, GroupsSerializer, AreaInterestSerializer,
     UserUpdateSerializer, ReferFriendSerializer, UserLoginSerializer,
     UserFollowsSerializer, EmailToResetPasswordSerializer,
-    RestorePasswordSerializer, AuthTokenMailSerializer, DeviceSerializer
+    RestorePasswordSerializer, AuthTokenMailSerializer, DeviceSerializer,
+    UserOwnerVetSerializer
 )
 from .tasks import refer_a_friend_by_email, password_reset, send_feedback
 from TapVet.utils import get_user_devices
@@ -245,6 +241,20 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        if request.user.is_authenticated:
+            if not request.user.is_vet() and instance.is_vet():
+                self.serializer_class = UserOwnerVetSerializer
+        else:
+            veterinarian = bool(self.request.query_params.get('vet', None))
+            pet_owner = bool(self.request.query_params.get('owner', None))
+            if xor(veterinarian, pet_owner):
+                if not veterinarian and instance.is_vet():
+                    self.serializer_class = UserOwnerVetSerializer
+            else:
+                return Response(
+                    'Invalid query params',
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         serializer = self.get_serializer(instance)
         return Response(
             self.get_verified_and_locked_out(serializer.data)
@@ -291,7 +301,7 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
                     output_field=BooleanField()
                 )
             )
-        qs = self.queryset.annotate(**params)
+        qs = self.queryset.annotate(**params).select_related('groups')
         return qs.all()
 
     def delete(self, request, *args, **kwargs):
@@ -310,106 +320,6 @@ class UserRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
             data['is_verified'] = veterinarian_data.pop('verified')
             data['is_locked'] = veterinarian_data.pop('locked')
         return data
-
-
-class StripeCustomerView(APIView):
-    """Service to create a stripe customer for a TapVet user
-
-    :accepted methods:
-        POST
-        GET
-    """
-
-    def __init__(self, **kwargs):
-        super(StripeCustomerView, self).__init__(**kwargs)
-        stripe.api_key = settings.STRIPE_API_KEY
-
-    permission_classes = (permissions.IsAuthenticated,)
-
-    @staticmethod
-    def post(request, **kwargs):
-        """
-
-        :param request:
-        :param kwargs:
-        :return:
-        """
-        user = request.user
-        if user.id == int(kwargs['pk']):
-            token = request.data.get('token', None)
-            if token:
-                if user.stripe_token:
-                    customer = get_customer_in_stripe(user)
-                    if isinstance(customer, str):
-                        response_msg = customer
-                    else:
-                        card_token = get_first_card_token(
-                            customer.sources.data)
-                        added = add_card_to_customer(customer, token)
-                        if added is True:
-                            deleted = delete_card_from_customer(
-                                customer,
-                                card_token
-                            )
-                            if deleted is True:
-                                return Response(
-                                    {'stripe': user.stripe_token},
-                                    status=status.HTTP_200_OK
-                                )
-                            else:
-                                response_msg = deleted
-                        else:
-                            response_msg = added
-                else:
-                    try:
-                        customer = stripe.Customer.create(
-                            source=token,
-                            description='Customer for %s' % user.__str__()
-                        )
-                    except (
-                        APIConnectionError, InvalidRequestError,
-                        CardError
-                    ) as err:
-                        response_msg = {
-                            'detail': stripe_errors_handler(err)}
-                    else:
-                        cus_token = customer.id
-                        user.stripe_token = cus_token
-                        user.save()
-                        return Response(
-                            {'stripe': cus_token},
-                            status=status.HTTP_201_CREATED
-                        )
-            else:
-                response_msg = {'detail': 'Token field is required'}
-            return Response(response_msg, status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            messages.forbidden_action,
-            status=status.HTTP_403_FORBIDDEN
-        )
-
-    @staticmethod
-    def get(request, **kwargs):
-        """
-
-        :param request:
-        :param kwargs:
-        :return:
-        """
-        user = request.user
-        if user.id == int(kwargs['pk']):
-            customer = get_customer_in_stripe(user)
-            if isinstance(customer, str):
-                return Response(
-                    {"detail": customer},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            cards = customer.sources.data
-            return Response(card_list(cards))
-        return Response(
-            messages.forbidden_action,
-            status=status.HTTP_403_FORBIDDEN
-        )
 
 
 class UserFollowView(APIView):
