@@ -19,24 +19,33 @@ from .models import (
 from .mixins import Group
 
 
-class CreateUserSerializer(ModelSerializer):
+class SettingsMixerSerializer:
+
+    @staticmethod
+    def get_settings(obj):
+        return {
+            'blur_images': obj.blur_images,
+            'interested_notification': obj.interested_notification,
+            'vet_reply_notification': obj.vet_reply_notification,
+            'comments_notification': obj.comments_notification,
+            'comments_like_notification': obj.comments_like_notification
+        }
+
+
+class CreateUserSerializer(ModelSerializer, SettingsMixerSerializer):
     """Serializer to handle the creation of a user"""
+    settings = SerializerMethodField(read_only=True)
+
     class Meta:
         model = User
         fields = (
             'password', 'username', 'email', 'full_name', 'groups', 'id',
-            'blur_images', 'interested_notification', 'vet_reply_notification',
-            'comments_notification', 'comments_like_notification'
+            'settings'
         )
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
-            'groups': {'required': True},
-            'blur_images': {'read_only': True},
-            'interested_notification': {'read_only': True},
-            'vet_reply_notification': {'read_only': True},
-            'comments_notification': {'read_only': True},
-            'comments_like_notification': {'read_only': True},
+            'groups': {'required': True}
         }
 
     @staticmethod
@@ -195,7 +204,9 @@ class UserOwnerVetSerializer(ModelSerializer):
         return 'Veterinary Professional #%s' % (1000 + obj.id)
 
 
-class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
+class UserUpdateSerializer(
+    ModelSerializer, ImageSerializerMixer, SettingsMixerSerializer
+):
     breeder = BreederSerializer(required=False)
     veterinarian = VeterinarianSerializer(required=False)
     image = ImageField(write_only=True, required=False)
@@ -207,6 +218,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
     upvotes_count = IntegerField(read_only=True)
     followed = BooleanField(read_only=True)
     label = CharField(source='get_label', read_only=True)
+    settings = SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -216,7 +228,7 @@ class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
             'interested_notification', 'vet_reply_notification',
             'comments_notification', 'comments_like_notification',
             'follows_count', 'followed_by_count', 'comments_count',
-            'interest_count', 'upvotes_count', 'label'
+            'interest_count', 'upvotes_count', 'label', 'settings'
         )
         extra_kwargs = {
             'password': {'write_only': True},
@@ -342,7 +354,7 @@ class TokenSerializer(ModelSerializer):
             }
 
 
-class UserLoginSerializer(ModelSerializer):
+class UserLoginSerializer(ModelSerializer, SettingsMixerSerializer):
     image = ProfileImageSerializer(read_only=True)
     label = CharField(source='get_label', read_only=True)
     token = CharField(source="auth_token.key", read_only=True)
@@ -355,16 +367,6 @@ class UserLoginSerializer(ModelSerializer):
             'stripe_token', 'image', 'label', 'token', 'settings',
             'created_at'
         )
-
-    @staticmethod
-    def get_settings(obj):
-        return {
-            'blur_images': obj.blur_images,
-            'interested_notification': obj.interested_notification,
-            'vet_reply_notification': obj.vet_reply_notification,
-            'comments_notification': obj.comments_notification,
-            'comments_like_notification': obj.comments_like_notification
-        }
 
 
 class UserFollowsSerializer(UserSerializers):
