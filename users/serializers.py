@@ -31,7 +31,12 @@ class CreateUserSerializer(ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
-            'groups': {'required': True}
+            'groups': {'required': True},
+            'blur_images': {'read_only': True},
+            'interested_notification': {'read_only': True},
+            'vet_reply_notification': {'read_only': True},
+            'comments_notification': {'read_only': True},
+            'comments_like_notification': {'read_only': True},
         }
 
     @staticmethod
