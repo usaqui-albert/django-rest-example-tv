@@ -23,7 +23,11 @@ class CreateUserSerializer(ModelSerializer):
     """Serializer to handle the creation of a user"""
     class Meta:
         model = User
-        fields = ('password', 'username', 'email', 'full_name', 'groups', 'id')
+        fields = (
+            'password', 'username', 'email', 'full_name', 'groups', 'id',
+            'blur_images', 'interested_notification', 'vet_reply_notification',
+            'comments_notification', 'comments_like_notification'
+        )
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
