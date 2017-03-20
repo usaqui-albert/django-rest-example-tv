@@ -292,9 +292,21 @@ class TestUserDetailView(CustomTestCase):
 
     def test_get_request_non_authenticated_user_and_object_exist(self):
         user = self.load_users_data().get_user()
-        req = self.factory.get('/')
+        req = self.factory.get('/?owner=True')
         resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
         assert resp.status_code == 200, 'Should return OK 200()'
+
+    def test_get_request_non_authenticated_vet_and_object_exist(self):
+        user = self.load_users_data().get_user()
+        req = self.factory.get('/?vet=True')
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
+        assert resp.status_code == 200, 'Should return OK 200()'
+
+    def test_get_request_non_authenticated_vet_and_no_query(self):
+        user = self.load_users_data().get_user()
+        req = self.factory.get('/')
+        resp = views.UserRetrieveUpdateView.as_view()(req, pk=user.id)
+        assert resp.status_code == 400
 
     def test_get_request_with_authentication(self):
         user = self.load_users_data().get_user()
@@ -489,11 +501,10 @@ class TestBreederListCreateView:
         )
 
 
-class TestVeterinarianListCreateView:
-    factory = RequestFactory()
+class TestVeterinarianListCreateView(CustomTestCase):
 
     def test_get_request(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user()
         req = self.factory.get('/')
         force_authenticate(req, user=user)
         resp = views.VeterinarianListCreateView.as_view()(req)
@@ -507,7 +518,7 @@ class TestVeterinarianListCreateView:
             'Authentication credentials were not provided')
 
     def test_post_request_bad(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user()
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': 1989,
@@ -524,7 +535,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State, country=country)
@@ -545,6 +556,8 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_year(self):
+        user = self.load_users_data().get_user(groups_id=4)
+
         user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
@@ -566,6 +579,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_year_high(self):
+        user = self.load_users_data().get_user(groups_id=4)
         user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
@@ -587,7 +601,8 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_no_country_student(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=4)
+        user = mixer.blend(models.User, groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         data = {
             'veterinary_school': 'CharField',
@@ -603,7 +618,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_no_country_vet(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=3)
         area_interest = mixer.blend(models.AreaInterest)
         data = {
             'veterinary_school': 'CharField',
@@ -620,7 +635,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_empty(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=5)
         req = self.factory.post('/')
         force_authenticate(req, user=user)
         resp = views.VeterinarianListCreateView.as_view()(req)
@@ -631,7 +646,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_type(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=3)
         data = {
             'veterinary_school': 'CharField',
             'graduating_year': get_current_year() - 10,
@@ -648,7 +663,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_state_no_exists(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=4)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         data = {
@@ -668,7 +683,7 @@ class TestVeterinarianListCreateView:
         )
 
     def test_post_request_bad_state(self):
-        user = mixer.blend(models.User)
+        user = self.load_users_data().get_user(groups_id=5)
         area_interest = mixer.blend(models.AreaInterest)
         country = mixer.blend(models_c.Country)
         state = mixer.blend(models_c.State)
@@ -712,78 +727,6 @@ class TestAreaInterestListView(CustomTestCase):
         resp = views.AreaInterestListView.as_view()(req)
         assert resp.status_code == 405, (
             '"detail": "Method "POST" not allowed."')
-
-
-class TestStripeCustomerView(CustomTestCase):
-
-    def test_user_no_authenticated(self):
-        req = self.factory.post('/')
-        resp = views.StripeCustomerView.as_view()(req)
-        assert resp.status_code == 401, 'Should return Unauthorized (401)'
-
-    def test_put_request_not_allow(self):
-        user = self.get_user()
-        req = self.factory.put('/')
-        force_authenticate(req, user=user)
-        resp = views.StripeCustomerView.as_view()(req)
-        assert resp.status_code == 405, (
-            'Should return Method Not Allowed (405)')
-
-    def test_user_not_owner(self):
-        user = self.get_user(pk=1)
-        req = self.factory.post('/')
-        force_authenticate(req, user=user)
-
-        resp = views.StripeCustomerView.as_view()(req, pk=2)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You are not allowed to do this action.'
-        assert resp.status_code == 403, 'Should return Forbidden (403)'
-
-    def test_post_request_no_data(self):
-        user = self.get_user()
-        req = self.factory.post('/', {})
-        force_authenticate(req, user=user)
-
-        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Token field is required'
-        assert resp.status_code == 400, 'Should return Bad Request (400)'
-
-    def test_post_request_empty_token(self):
-        user = self.get_user()
-        req = self.factory.post('/', {'token': ''})
-        force_authenticate(req, user=user)
-
-        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'Token field is required'
-        assert resp.status_code == 400, 'Should return Bad Request (400)'
-
-    def test_get_request_user_no_authenticated(self):
-        req = self.factory.get('/')
-        resp = views.StripeCustomerView.as_view()(req)
-        assert resp.status_code == 401, 'Should return Unauthorized (401)'
-
-    def test_get_cards_user_not_owner(self):
-        user = self.get_user(pk=1)
-        req = self.factory.get('/')
-        force_authenticate(req, user=user)
-
-        resp = views.StripeCustomerView.as_view()(req, pk=2)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'You are not allowed to do this action.'
-        assert resp.status_code == 403, 'Should return Forbidden (403)'
-
-    def test_get_request_user_has_no_stripe_customer(self):
-        user = self.get_user(stripe_token=None)
-        req = self.factory.get('/')
-        force_authenticate(req, user=user)
-
-        resp = views.StripeCustomerView.as_view()(req, pk=user.pk)
-        assert 'detail' in resp.data
-        assert resp.data['detail'] == 'There is no stripe customer available '\
-                                      'for this user'
-        assert resp.status_code == 404, 'Should return Not Found (404)'
 
 
 class TestUserFollowView(CustomTestCase):

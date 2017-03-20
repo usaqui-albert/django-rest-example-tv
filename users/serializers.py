@@ -23,11 +23,20 @@ class CreateUserSerializer(ModelSerializer):
     """Serializer to handle the creation of a user"""
     class Meta:
         model = User
-        fields = ('password', 'username', 'email', 'full_name', 'groups', 'id')
+        fields = (
+            'password', 'username', 'email', 'full_name', 'groups', 'id',
+            'blur_images', 'interested_notification', 'vet_reply_notification',
+            'comments_notification', 'comments_like_notification'
+        )
         extra_kwargs = {
             'password': {'write_only': True},
             'id': {'read_only': True},
-            'groups': {'required': True}
+            'groups': {'required': True},
+            'blur_images': {'read_only': True},
+            'interested_notification': {'read_only': True},
+            'vet_reply_notification': {'read_only': True},
+            'comments_notification': {'read_only': True},
+            'comments_like_notification': {'read_only': True},
         }
 
     @staticmethod
@@ -155,6 +164,35 @@ class AreaInterestSerializer(ModelSerializer):
             'id': {'read_only': True},
             'name': {'read_only': True}
         }
+
+
+class UserOwnerVetSerializer(ModelSerializer):
+    follows_count = IntegerField(read_only=True)
+    followed_by_count = IntegerField(read_only=True)
+    comments_count = IntegerField(read_only=True)
+    interest_count = IntegerField(read_only=True)
+    upvotes_count = IntegerField(read_only=True)
+    label = CharField(source='get_label', read_only=True)
+    full_name = SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'full_name', 'id',
+            'follows_count', 'followed_by_count',
+            'comments_count', 'interest_count', 'upvotes_count', 'label'
+        )
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'username': {'read_only': True},
+            'user': {'read_only': True},
+            'groups': {'read_only': True},
+            'verified': {'read_only': True},
+        }
+
+    @staticmethod
+    def get_full_name(obj):
+        return 'Veterinary Professional #%s' % (1000 + obj.id)
 
 
 class UserUpdateSerializer(ModelSerializer, ImageSerializerMixer):
