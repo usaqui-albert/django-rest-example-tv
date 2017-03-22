@@ -11,6 +11,8 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         if not kwargs.get('raw', False):  # No loaddata trigger
             if not instance.is_vet():
                 welcome_mail(instance, 'OWNER_BREEDER')
+            else:
+                welcome_mail(instance.user, 'VET_TECH_STUDENT')
 
 
 def vet_signal(sender, instance=None, created=False, **kwargs):
@@ -20,8 +22,6 @@ def vet_signal(sender, instance=None, created=False, **kwargs):
                 instance.verified = True
                 instance.save()
                 vet_verify_mail(instance.user, instance.veterinarian_type)
-
-            welcome_mail(instance.user, 'VET_TECH_STUDENT')
 
 
 def follows_changed(instance, action=None, pk_set=None, **kwargs):
