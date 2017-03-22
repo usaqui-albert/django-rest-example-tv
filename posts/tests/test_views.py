@@ -47,6 +47,18 @@ class TestPostListCreateView(CustomTestCase):
         resp = views.PostListCreateView.as_view()(req)
         assert resp.status_code == 200, 'Should return 200 OK'
 
+    def test_get_request_non_authenticated_vet(self):
+        self.load_feed_variables()
+        req = self.factory.get('/?vet=1')
+        resp = views.PostListCreateView.as_view()(req)
+        assert resp.status_code == 200, 'Should return 200 OK'
+
+    def test_get_request_non_authenticated_bad(self):
+        self.load_feed_variables()
+        req = self.factory.get('/')
+        resp = views.PostListCreateView.as_view()(req)
+        assert resp.status_code == 400
+
     def test_get_request_authenticated_user(self):
         self.load_feed_variables()
         user = self.load_users_data().get_user(groups_id=1)
