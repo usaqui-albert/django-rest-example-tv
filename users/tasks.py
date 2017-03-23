@@ -55,7 +55,7 @@ def vet_verify_mail(user, veterinarian_type):
 
 
 def send_feedback(user, message):
-    substitutions = [Substitution('-message-', message)]
+    substitutions = [Substitution('-message-', message.encode('utf-8'))]
     sendgrid_api(
         obtain_mail(
             personalization=obtain_personalization(
