@@ -9,7 +9,6 @@ ALLOWED_HOSTS = [
     '.tapvet.com'
 ]
 ADMINS = [
-    ('Mayra Canas', 'mayrac@blanclabs.com'),
     ('TapVet Team', 'yourteam@tapvet.com'),
 ]
 

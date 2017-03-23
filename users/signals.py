@@ -12,7 +12,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
             if not instance.is_vet():
                 welcome_mail(instance, 'OWNER_BREEDER')
             else:
-                welcome_mail(instance.user, 'VET_TECH_STUDENT')
+                welcome_mail(instance, 'VET_TECH_STUDENT')
 
 
 def vet_signal(sender, instance=None, created=False, **kwargs):
