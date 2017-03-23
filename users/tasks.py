@@ -56,10 +56,13 @@ def vet_verify_mail(user, veterinarian_type):
 
 def send_feedback(user, message):
     substitutions = [Substitution('-message-', message.encode('utf-8'))]
+    mails = [
+        Email(email=admin[1], name=admin[0]) for admin in settings.ADMINS
+    ]
     sendgrid_api(
         obtain_mail(
             personalization=obtain_personalization(
-                user, substitutions, to_mail=settings.ADMINS[0][1]),
+                user, substitutions, to_mails=mails),
             template=settings.SENDGRID_FEEDBACK
         )
     )
@@ -69,12 +72,15 @@ def send_report(user, report):
     substitutions = [
         Substitution('-post-', report.post.id),
         Substitution('-type-', report.get_type_display()),
-        Substitution('-post_message-', report.post.description)
+        Substitution('-post_message-', report.post.description.encode('utf-8'))
+    ]
+    mails = [
+        Email(email=admin[1], name=admin[0]) for admin in settings.ADMINS
     ]
     sendgrid_api(
         obtain_mail(
             personalization=obtain_personalization(
-                user, substitutions, to_mail=settings.ADMINS[0][1]),
+                user, substitutions, to_mails=mails),
             template=settings.SENDGRID_REPORT
         )
     )
