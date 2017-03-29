@@ -1,0 +1,19 @@
+Hello ADMIN, the user:<strong> {{ vet.user.username }} </strong>, just registered a new <strong>Vet account</strong> account.<br>
+The complete information is: <br>
+<strong>Full Name: </strong> {{vet.user.full_name}} <br>
+<strong>Email: </strong> {{vet.user.email}} <br>
+<strong>Veterinarian type: </strong> {{vet.get_veterinarian_type_display}} <br>
+<strong>Area interest: </strong> <br>
+    <ul>
+        {% for area in vet.area_interest.all %}
+            <li>{{vet.area_interest}}</li> 
+        {% empty %}
+        <li>No area of interest selected</li>
+        {% endfor %}
+    </ul>
+<strong>Veterinary school: </strong> {{vet.veterinary_school}} <br>
+<strong>Graduating year: </strong> {{vet.graduating_year}} <br>
+<br>
+<br>
+--<br>
+This mail has sent you by TapVet administration system

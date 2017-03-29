@@ -1,0 +1,187 @@
+[
+    {
+        "model": "auth.permission",
+        "pk": null,
+        "fields": {
+            "name": "Is Pet Owner Community",
+            "content_type": [
+                "users",
+                "user"
+            ],
+            "codename": "is_pet_owner"
+        }
+    },
+    {
+        "model": "auth.permission",
+        "pk": null,
+        "fields": {
+            "name": "Is Vet Community",
+            "content_type": [
+                "users",
+                "user"
+            ],
+            "codename": "is_vet"
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 1,
+        "fields": {
+            "name": "Pet Owner",
+            "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
+            "permissions": [
+                [
+                    "add_pet",
+                    "pets",
+                    "pet"
+                ],
+                [
+                    "is_pet_owner",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 2,
+        "fields": {
+            "name": "Breeder",
+            "description": "Congratulations on joining the TapVet Community for Pet Owners and Breeders. Please register your account to get started.",
+            "permissions": [
+                [
+                    "add_pet",
+                    "pets",
+                    "pet"
+                ],
+                [
+                    "is_pet_owner",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 3,
+        "fields": {
+            "name": "&#128274 Veterinarian",
+            "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
+            "permissions": [
+                [
+                    "is_vet",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 4,
+        "fields": {
+            "name": "&#128274 Veterinary Student",
+            "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
+            "permissions": [
+                [
+                    "is_vet",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 5,
+        "fields": {
+            "name": "&#128274 Veterinary Technician",
+            "description": "Congratulations on joining the private TapVet Veterinarian Community exclusive to Veterinary Doctors, Technicians and Students.\r\nPlease register your account to get started. Only the User Name and picture you choose will be visible to others in your community.",
+            "permissions": [
+                [
+                    "is_vet",
+                    "users",
+                    "user"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "auth.group",
+        "pk": 6,
+        "fields": {
+            "name": "Admin",
+            "description": "",
+            "permissions": []
+        }
+    },
+    {
+        "model": "users.areainterest",
+        "pk": 1,
+        "fields": {
+            "name": "Small Animal"
+        }
+    },
+    {
+        "model": "users.areainterest",
+        "pk": 2,
+        "fields": {
+            "name": "Large Animal"
+        }
+    },
+    {
+        "model": "users.areainterest",
+        "pk": 3,
+        "fields": {
+            "name": "Academia"
+        }
+    },
+    {
+        "model": "users.areainterest",
+        "pk": 4,
+        "fields": {
+            "name": "Industry"
+        }
+    },
+    {
+        "model": "users.areainterest",
+        "pk": 5,
+        "fields": {
+            "name": "Government"
+        }
+    },
+    {
+        "model": "users.areainterest",
+        "pk": 6,
+        "fields": {
+            "name": "Zoo"
+        }
+    },
+    {
+        "model": "users.areainterest",
+        "pk": 7,
+        "fields": {
+            "name": "Other"
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": null,
+        "fields": {
+            "password": "pbkdf2_sha256$30000$w0izZHKuV60c$skCD7l7YfPN2YUWcY1RyD+xENU4YnyIlRMGjGJ4O4xc=",
+            "is_superuser": false,
+            "groups": 1,
+            "username": "tapvet",
+            "email": "yourteam@tapvet.com",
+            "full_name": "TapVet Administrator",
+            "is_active": true,
+            "is_staff": true,
+            "stripe_token": null,
+            "add_paid_post": true,
+            "created_at": "2016-10-04T22:06:07.660Z",
+            "updated_at": "2016-10-11T20:20:41.564Z"
+        }
+    }
+]
