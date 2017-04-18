@@ -56,7 +56,7 @@ class TestCreateUserSerializer(CustomTestCase):
         data = {
             'email': 'john_doe@test.com',
             'password': 'a1234567',
-            'full_name': 'John',
+            'full_name': '',
             'username': 'JDoe'
         }
         serializer = serializers.CreateUserSerializer(data=data)
