@@ -55,9 +55,9 @@ class CreateUserSerializer(ModelSerializer, SettingsMixerSerializer):
         :param value:
         :return:
         """
-        if len(value) < 5:
+        if len(value) < 0:
             raise ValidationError(
-                'Invalid full name, should be longer than 5 characters')
+                'Invalid full name, should be longer than zero characters')
         return value
 
     @staticmethod
