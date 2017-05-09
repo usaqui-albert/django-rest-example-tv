@@ -20,12 +20,12 @@ from TapVet import messages
 from TapVet.permissions import IsVet
 from TapVet.pagination import StandardPagination, CardsPagination
 from TapVet.permissions import IsOwnerOrReadOnly
-from .serializers import (
-    PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
-    PaidPostSerializer, ReportTypeSerializer
-)
 from activities.models import Activity
 
+from .serializers import (
+    PostSerializer, PaymentAmountSerializer, ImagePostSerializer,
+    PaidPostSerializer, ReportTypeSerializer, PostReceiptSerializer
+)
 from .models import Post, PaymentAmount, ImagePost, UserLikesPost, Report
 from .utils import (
     get_annotate_params, handler_images_order,
@@ -324,8 +324,23 @@ class ImageDetailView(DestroyAPIView):
         raise Http404()
 
 
-class PaidPostView(APIView):
-    """Service to set a post as paid
+class PaidPostView(GenericAPIView):
+    """
+    Service to set a post as paid
+    Expected Android Payload:
+    #purchaseState
+    #packageName
+    #productId
+    #transacction_id --> Please use orderID
+    #developerPayload
+    #purchaseToken
+
+    Expected IOS Payload:
+    #purchaseState
+    #packageName
+    #productId
+    #transacction_id
+    #receipt
 
     :accepted method:
         POST
@@ -333,44 +348,37 @@ class PaidPostView(APIView):
 
     allowed_methods = ('POST',)
     permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = PostReceiptSerializer
 
     def post(self, request, **kwargs):
-        """
+        return self.create(request, **kwargs)
 
-        :param request:
-        :param kwargs:
-        :return:
-        """
-        post = self.get_object().first()
-        if post:
-            if post.user.is_vet():
-                return Response(
-                    {'detail': "Vet community does not have paid post"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            post.set_paid().save()
-            return Response(
-                {'detail': 'Payment successful'},
-                status=status.HTTP_200_OK
-            )
+    def get_post(self, user, post_pk):
+        post = Post.objects.filter(id=post_pk).select_related('user').first()
+        if not post or user.id != post.user.id:
+            raise Http404
         else:
-            return Response(
-                {'detail': 'Post not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return post
 
-    def get_object(self):
-        """
-        Method to get a Post instance and prefetch the owner of the post
-        and group
-
-        :return: queryset with Post instance in it
-        """
-        post = Post.objects.filter(
-            pk=self.kwargs['pk'],
-            user=self.request.user.id
-        ).select_related('user__groups')
-        return post
+    def create(self, request, *args, **kwargs):
+        post = self.get_post(request.user, kwargs['pk'])
+        serializer = self.serializer_class(
+            data=request.data,
+            context={
+                'request': request,
+                'post': post
+            }
+        )
+        # import ipdb; ipdb.set_trace()
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+        except ValidationError:
+            return Response('Bad Payload', status=status.HTTP_400_BAD_REQUEST)
+        post.set_paid().save()
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED
+        )
 
 
 class PaymentAmountDetail(RetrieveUpdateAPIView):
