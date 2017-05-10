@@ -369,7 +369,6 @@ class PaidPostView(GenericAPIView):
                 'post': post
             }
         )
-        # import ipdb; ipdb.set_trace()
         serializer.is_valid(raise_exception=True)
         try:
             serializer.save()

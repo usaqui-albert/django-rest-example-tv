@@ -209,7 +209,6 @@ class PostReceiptSerializer(ModelSerializer):
         purchaseState = validated_data.pop('purchaseState', None)
         packageName = validated_data.pop('packageName', None)
         productId = validated_data.pop('productId', None)
-        # import ipdb; ipdb.set_trace()
 
         if (
             int(purchaseState) != 0 or
