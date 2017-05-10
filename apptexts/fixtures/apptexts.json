@@ -18,15 +18,5 @@
         "created_at": "2017-01-23T19:12:50.074Z",
         "updated_at": "2017-01-24T14:01:37.004Z"
     }
-},
-{
-    "model": "apptexts.apptext",
-    "pk": 3,
-    "fields": {
-        "key": "main.post.confirmPost.sendVet",
-        "description": "Send to vets for comments",
-        "created_at": "2017-01-23T19:17:04.527Z",
-        "updated_at": "2017-01-24T14:31:29.427Z"
-    }
 }
 ]

@@ -2,13 +2,13 @@ from StringIO import StringIO
 from PIL import Image as Img
 from rest_framework.serializers import (
     ModelSerializer, IntegerField, ImageField, ValidationError,
-    BooleanField, SerializerMethodField, Serializer, ChoiceField
+    BooleanField, SerializerMethodField, Serializer, ChoiceField, CharField
 )
 
 from TapVet.images import ImageSerializerMixer, STANDARD_SIZE, THUMBNAIL_SIZE
 from users.serializers import UserSerializers
 
-from .models import Post, ImagePost, PaymentAmount, Report
+from .models import Post, ImagePost, PaymentAmount, Report, PostReceipt
 
 
 class ImagePostSerializer(ModelSerializer):
@@ -184,3 +184,45 @@ class PostSmallSerializer(ModelSerializer):
             'user': {'read_only': True},
             'id': {'read_only': True},
         }
+
+
+class PostReceiptSerializer(ModelSerializer):
+    purchaseState = IntegerField(write_only=True, required=True)
+    packageName = CharField(write_only=True, required=True)
+    productId = CharField(write_only=True, required=True)
+
+    class Meta:
+        model = PostReceipt
+        fields = (
+            'created_at', 'transacction_id', 'receipt',
+            'developerPayload', 'purchaseToken', 'purchaseState', 'productId',
+            'packageName', 'post', 'id'
+        )
+        extra_kwargs = {
+            'post': {'read_only': True},
+            'user': {'read_only': True},
+            'id': {'read_only': True},
+        }
+
+    def create(self, validated_data):
+        msg = 'Bad Payload'
+        purchaseState = validated_data.pop('purchaseState', None)
+        packageName = validated_data.pop('packageName', None)
+        productId = validated_data.pop('productId', None)
+
+        if (
+            int(purchaseState) != 0 or
+            packageName != 'com.blanclink.tapvet' or
+            productId != 'product1'
+        ):
+            raise ValidationError(msg)
+        post_receipt = PostReceipt(
+            **dict(
+                validated_data,
+                user=self.context['request'].user,
+                post=self.context['post']
+            )
+        )
+        post_receipt.save()
+
+        return post_receipt
