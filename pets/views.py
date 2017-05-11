@@ -18,7 +18,7 @@ from TapVet.permissions import IsOwnerOrReadOnly
 
 class PetCreateView(CreateAPIView):
     """
-    Service to create new and list pets.
+    Service to create new pets
     Need authentication
 
     :accepted methods:
