@@ -202,14 +202,14 @@ class PostReceipt(models.Model):
     def save(self, *args, **kwargs):
         msg = 'Incorrect Object'
         if self.receipt:
-            if self.purchaseToken:
+            if self.purchase_token:
                 raise ValidationError(msg)
-            if self.developerPayload:
+            if self.developer_payload:
                 raise ValidationError(msg)
-            if not (self.purchaseToken or self.developerPayload):
+            if not (self.purchase_token or self.developer_payload):
                 self.store = self.APPLE
         else:
-            if not self.purchaseToken and self.developerPayload:
+            if not self.purchase_token and self.developer_payload:
                 raise ValidationError(msg)
             else:
                 self.store = self.GOOGLE
