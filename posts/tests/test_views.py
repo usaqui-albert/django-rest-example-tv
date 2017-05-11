@@ -209,12 +209,12 @@ class TestPaidPostView(CustomTestCase):
 
     def test_android_payload(self):
         request = {
-            'purchaseState': 0,
-            'packageName': 'com.blanclink.tapvet',
-            'productId': 'product1',
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
             'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
-            'developerPayload': 'ASDASDSDFxcvxzcvzxcvASDF',
-            'purchaseToken': 'ASDSDFSADFSADF'
+            'developer_payload': 'ASDASDSDFxcvxzcvzxcvASDF',
+            'purchase_token': 'ASDSDFSADFSADF'
         }
         user = self.load_users_data().get_user(groups_id=1)
         post = mixer.blend('posts.post', user=user)
@@ -229,12 +229,12 @@ class TestPaidPostView(CustomTestCase):
 
     def test_android_bad_payload(self):
         request = {
-            'purchaseState': 0,
-            'packageName': 'com.blanclink.tapvet',
-            'productId': 'product1',
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
             'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
-            'developerPayload': 'ASDASDSDFxcvxzcvzxcvASDF',
-            'purchaseToken': 'ASDSDFSADFSADF',
+            'developer_payload': 'ASDASDSDFxcvxzcvzxcvASDF',
+            'purchase_token': 'ASDSDFSADFSADF',
             'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG'
         }
         user = self.load_users_data().get_user(groups_id=1)
@@ -247,12 +247,12 @@ class TestPaidPostView(CustomTestCase):
 
     def test_android_bad_payload2(self):
         request = {
-            'purchaseState': 1,
-            'packageName': 'com.blanclink.tapvet',
-            'productId': 'product1',
+            'purchase_state': 1,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
             'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
-            'developerPayload': 'ASDASDSDFxcvxzcvzxcvASDF',
-            'purchaseToken': 'ASDSDFSADFSADF',
+            'developer_payload': 'ASDASDSDFxcvxzcvzxcvASDF',
+            'purchase_token': 'ASDSDFSADFSADF',
             'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG'
         }
         user = self.load_users_data().get_user(groups_id=1)
@@ -265,9 +265,9 @@ class TestPaidPostView(CustomTestCase):
 
     def test_ios_payload(self):
         request = {
-            'purchaseState': 0,
-            'packageName': 'com.blanclink.tapvet',
-            'productId': 'product1',
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
             'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
             'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG'
         }
@@ -284,12 +284,12 @@ class TestPaidPostView(CustomTestCase):
 
     def test_ios_bad_payload(self):
         request = {
-            'purchaseState': 0,
-            'packageName': 'com.blanclink.tapvet',
-            'productId': 'product1',
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
             'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
             'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG',
-            'purchaseToken': 'ASDSDFSADFSADF',
+            'purchase_token': 'ASDSDFSADFSADF',
         }
         user = self.load_users_data().get_user(groups_id=1)
         post = mixer.blend('posts.post', user=user)

@@ -187,16 +187,16 @@ class PostSmallSerializer(ModelSerializer):
 
 
 class PostReceiptSerializer(ModelSerializer):
-    purchaseState = IntegerField(write_only=True, required=True)
-    packageName = CharField(write_only=True, required=True)
-    productId = CharField(write_only=True, required=True)
+    purchase_state = IntegerField(write_only=True, required=True)
+    package_name = CharField(write_only=True, required=True)
+    product_id = CharField(write_only=True, required=True)
 
     class Meta:
         model = PostReceipt
         fields = (
             'created_at', 'transacction_id', 'receipt',
-            'developerPayload', 'purchaseToken', 'purchaseState', 'productId',
-            'packageName', 'post', 'id'
+            'developer_payload', 'purchase_token', 'purchase_state',
+            'product_id', 'package_name', 'post', 'id'
         )
         extra_kwargs = {
             'post': {'read_only': True},
@@ -206,14 +206,14 @@ class PostReceiptSerializer(ModelSerializer):
 
     def create(self, validated_data):
         msg = 'Bad Payload'
-        purchaseState = validated_data.pop('purchaseState', None)
-        packageName = validated_data.pop('packageName', None)
-        productId = validated_data.pop('productId', None)
+        purchase_state = validated_data.pop('purchase_state', None)
+        package_name = validated_data.pop('package_name', None)
+        product_id = validated_data.pop('product_id', None)
 
         if (
-            int(purchaseState) != 0 or
-            packageName != 'com.blanclink.tapvet' or
-            productId != 'product1'
+            int(purchase_state) != 0 or
+            package_name != 'com.blanclink.tapvet' or
+            product_id != 'product1'
         ):
             raise ValidationError(msg)
         post_receipt = PostReceipt(
