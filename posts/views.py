@@ -328,17 +328,17 @@ class PaidPostView(GenericAPIView):
     """
     Service to set a post as paid
     Expected Android Payload:
-    #purchaseState
-    #packageName
-    #productId
+    #purchase_state
+    #package_name
+    #product_id
     #transacction_id --> Please use orderID
-    #developerPayload
-    #purchaseToken
+    #developer_payload
+    #purchase_token
 
     Expected IOS Payload:
-    #purchaseState
-    #packageName
-    #productId
+    #purchase_state
+    #package_name
+    #product_id
     #transacction_id
     #receipt
 
