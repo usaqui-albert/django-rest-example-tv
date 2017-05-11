@@ -191,10 +191,10 @@ class PostReceipt(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     # Apple
     transacction_id = models.CharField(max_length=200)  # will store orderId
-    receipt = models.CharField(max_length=1200, null=True, blank=True)
+    receipt = models.TextField(null=True, blank=True)
     # Google
-    developerPayload = models.CharField(null=True, blank=True, max_length=50)
-    purchaseToken = models.CharField(null=True, blank=True, max_length=50)
+    developer_payload = models.CharField(null=True, blank=True, max_length=50)
+    purchase_token = models.CharField(null=True, blank=True, max_length=50)
     store = models.CharField(
         choices=STORE_CHOICES, max_length=50, blank=True, null=True
     )
