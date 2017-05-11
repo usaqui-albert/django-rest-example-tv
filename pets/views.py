@@ -22,7 +22,6 @@ class PetCreateView(CreateAPIView):
     Need authentication
 
     :accepted methods:
-    GET = Retrieve pet list, need admin status
     POST = Create a Pet
     """
     serializer_class = PetSerializer
