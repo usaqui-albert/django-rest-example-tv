@@ -199,6 +199,106 @@ class TestPaidPostView(CustomTestCase):
             'user requesting is not the owner'
         )
 
+    def test_none_payload(self):
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.post('/')
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req, pk=post.pk)
+        assert resp.status_code == 400
+
+    def test_android_payload(self):
+        request = {
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
+            'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
+            'developer_payload': 'ASDASDSDFxcvxzcvzxcvASDF',
+            'purchase_token': 'ASDSDFSADFSADF'
+        }
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.post('/', data=request)
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req, pk=post.pk)
+        assert models.Post.objects.get(pk=resp.data['post']).is_paid()
+        assert models.PostReceipt.objects.get(
+            id=resp.data['id']
+        ).store == 'google'
+        assert resp.status_code == 201
+
+    def test_android_bad_payload(self):
+        request = {
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
+            'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
+            'developer_payload': 'ASDASDSDFxcvxzcvzxcvASDF',
+            'purchase_token': 'ASDSDFSADFSADF',
+            'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG'
+        }
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.post('/', data=request)
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req, pk=post.pk)
+        assert resp.data == 'Bad Payload'
+        assert resp.status_code == 400
+
+    def test_android_bad_payload2(self):
+        request = {
+            'purchase_state': 1,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
+            'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
+            'developer_payload': 'ASDASDSDFxcvxzcvzxcvASDF',
+            'purchase_token': 'ASDSDFSADFSADF',
+            'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG'
+        }
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.post('/', data=request)
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req, pk=post.pk)
+        assert resp.data[0] == 'Bad Payload'
+        assert resp.status_code == 400
+
+    def test_ios_payload(self):
+        request = {
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
+            'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
+            'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG'
+        }
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.post('/', data=request)
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req, pk=post.pk)
+        assert models.Post.objects.get(pk=resp.data['post']).is_paid()
+        assert models.PostReceipt.objects.get(
+            id=resp.data['id']
+        ).store == 'apple'
+        assert resp.status_code == 201
+
+    def test_ios_bad_payload(self):
+        request = {
+            'purchase_state': 0,
+            'package_name': 'com.blanclink.tapvet',
+            'product_id': 'product1',
+            'transacction_id': 'sdfasdfASDFADFsadfasdfasdfa',
+            'receipt': 'ADSHJKKLKJKLKJHJKJHGHJKJHUJHG',
+            'purchase_token': 'ASDSDFSADFSADF',
+        }
+        user = self.load_users_data().get_user(groups_id=1)
+        post = mixer.blend('posts.post', user=user)
+        req = self.factory.post('/', data=request)
+        force_authenticate(req, user=user)
+        resp = views.PaidPostView.as_view()(req, pk=post.pk)
+        assert resp.data == 'Bad Payload'
+        assert resp.status_code == 400
+
 
 class TestPaymentAmountDetail(CustomTestCase):
 

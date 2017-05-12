@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db.models.signals import post_save, post_delete
 
@@ -177,3 +177,41 @@ post_save.connect(
     sender=Report,
     dispatch_uid="posts.models.report_post_save"
 )
+
+
+class PostReceipt(models.Model):
+    APPLE = 'apple'
+    GOOGLE = 'google'
+    STORE_CHOICES = (
+        (APPLE, 'App Store.'),
+        (GOOGLE, 'Play Store.'),
+    )
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    post = models.ForeignKey('posts.post', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # Apple
+    transacction_id = models.CharField(max_length=200)  # will store orderId
+    receipt = models.TextField(null=True, blank=True)
+    # Google
+    developer_payload = models.CharField(null=True, blank=True, max_length=50)
+    purchase_token = models.CharField(null=True, blank=True, max_length=50)
+    store = models.CharField(
+        choices=STORE_CHOICES, max_length=50, blank=True, null=True
+    )
+
+    def save(self, *args, **kwargs):
+        msg = 'Incorrect Object'
+        if self.receipt:
+            if self.purchase_token:
+                raise ValidationError(msg)
+            if self.developer_payload:
+                raise ValidationError(msg)
+            if not (self.purchase_token or self.developer_payload):
+                self.store = self.APPLE
+        else:
+            if not self.purchase_token and self.developer_payload:
+                raise ValidationError(msg)
+            else:
+                self.store = self.GOOGLE
+
+        super(PostReceipt, self).save(*args, **kwargs)
